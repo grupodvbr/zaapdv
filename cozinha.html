@@ -140,7 +140,7 @@ body{
 const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw5WEC9e-icOWelS0T7bksyDBw4EML9DzYCtsUajZ3hqujGVariFgNAEbv_CB7y_8Ljgg/exec";
 
-// HTML da tarefa
+// BOLHA HTML
 function gerarHTML(t){
     return `
         <div class="msg-box">
@@ -152,6 +152,7 @@ function gerarHTML(t){
 
         <div class="options-box">
             <div class="btn-row">
+
                 <div class="option-btn ${t.status === "sim" ? "green" : ""}"
                      id="sim-${t.id}" onclick="resposta(${t.id},'sim')">
                     Sim
@@ -163,43 +164,24 @@ function gerarHTML(t){
                     Não
                     <div class="progress-bar" id="pb-nao-${t.id}"></div>
                 </div>
+
             </div>
         </div>
     `;
 }
 
-// CARREGAR LISTA
-async function carregarTarefas(){
+// CARREGAR APENAS HOJE E AMANHÃ (instantâneo)
+async function carregarHojeAmanha(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
 
     const hoje = dados.hoje || [];
     const amanha = dados.amanha || [];
-    const ontem = dados.ontem || [];
-    const anterioresObj = dados.anteriores || {};
-
-    const anterioresKeys = Object.keys(anterioresObj).sort((a,b)=>{
-        const pa = a.split("/").reverse().join("-");
-        const pb = b.split("/").reverse().join("-");
-        return pa > pb ? 1 : -1;
-    });
 
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    // ANTERIORES
-    anterioresKeys.forEach(dataLabel=>{
-        box.innerHTML += `<div class="date-badge">${dataLabel}</div>`;
-        anterioresObj[dataLabel].forEach(t=> box.innerHTML += gerarHTML(t));
-    });
-
-    // ONTEM
-    if(ontem.length){
-        box.innerHTML += `<div class="date-badge">Ontem</div>`;
-        ontem.forEach(t=> box.innerHTML += gerarHTML(t));
-    }
-
-    // HOJE (ponto inicial da tela)
+    // HOJE
     box.innerHTML += `<div class="date-badge" id="hojeAnchor">Hoje</div>`;
     hoje.length ? hoje.forEach(t=> box.innerHTML += gerarHTML(t))
                 : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para hoje.</p>`;
@@ -209,13 +191,47 @@ async function carregarTarefas(){
     amanha.length ? amanha.forEach(t=> box.innerHTML += gerarHTML(t))
                   : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
 
-    // ⭐ SCROLL AUTOMÁTICO PARA O "HOJE"
+    // Scroll direto no HOJE
     setTimeout(()=>{
         const anchor = document.getElementById("hojeAnchor");
         if(anchor){
             anchor.scrollIntoView({ behavior:"instant", block:"start" });
         }
-    }, 50);
+    },50);
+
+    return dados; // devolve para reutilizar
+}
+
+// CARREGAR ONTEM E ANTERIORES depois (background)
+function carregarAnteriores(dados){
+    const ontem = dados.ontem || [];
+    const anterioresObj = dados.anteriores || {};
+    const box = document.getElementById("tarefasBox");
+
+    // INSERIR ANTES DO HOJE
+    const hojeNode = document.getElementById("hojeAnchor");
+
+    // ONTEM
+    if(ontem.length){
+        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">Ontem</div>`);
+        ontem.reverse().forEach(t=>{
+            hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
+        });
+    }
+
+    // ANTERIORES
+    const keys = Object.keys(anterioresObj).sort((a,b)=>{
+        const pa = a.split("/").reverse().join("-");
+        const pb = b.split("/").reverse().join("-");
+        return pa > pb ? 1 : -1;
+    });
+
+    keys.forEach(label=>{
+        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">${label}</div>`);
+        anterioresObj[label].reverse().forEach(t=>{
+            hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
+        });
+    });
 }
 
 // SALVAR RESPOSTA
@@ -223,7 +239,7 @@ async function resposta(id,tipo){
 
     let btnSim = document.getElementById(`sim-${id}`);
     let btnNao = document.getElementById(`nao-${id}`);
-    let pb  = document.getElementById(`pb-${tipo}-${id}`);
+    let pb = document.getElementById(`pb-${tipo}-${id}`);
 
     btnSim.classList.remove("green","red");
     btnNao.classList.remove("green","red");
@@ -231,7 +247,7 @@ async function resposta(id,tipo){
     pb.style.width = "40%";
     setTimeout(()=> pb.style.width = "100%",170);
 
-    await fetch(ENDPOINT, {
+    await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             acao:"responder",
@@ -246,7 +262,11 @@ async function resposta(id,tipo){
     },350);
 }
 
-carregarTarefas();
+// INICIAR
+(async ()=>{
+    const dados = await carregarHojeAmanha(); // carrega rápido
+    setTimeout(()=> carregarAnteriores(dados), 250); // carrega depois
+})();
 </script>
 
 </body>
