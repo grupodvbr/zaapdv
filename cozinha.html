@@ -140,27 +140,13 @@ const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw5WEC9e-icOWelS0T7bksyDBw4EML9DzYCtsUajZ3hqujGVariFgNAEbv_CB7y_8Ljgg/exec";
 
 // FORMATADORES
-function formatarDataCompleta(iso){
-    if(!iso) return "";
-    const d = new Date(iso);
-    if(isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("pt-BR") + " às " +
-           d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-}
-
-function formatarConclusao(txt){
-    return txt ? txt : "";
-}
-
-// HTML DA TAREFA
 function gerarHTML(t){
-
     return `
         <div class="msg-box">
             <div>${t.tarefa}</div>
 
             <div class="msg-time">
-                ${t.conclusao ? `<br>🕘 ${t.conclusao}` : ""}
+                ${t.conclusao ? `🕘 ${t.conclusao}` : ""}
             </div>
         </div>
 
@@ -184,7 +170,7 @@ function gerarHTML(t){
     `;
 }
 
-// CARREGAR TAREFAS
+// CARREGAR LISTA
 async function carregarTarefas(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
@@ -194,38 +180,45 @@ async function carregarTarefas(){
     const ontem = dados.ontem || [];
     const anterioresObj = dados.anteriores || {};
 
-    // transformar objeto em array ordenado
+    // transformar objeto em lista ordenada ASC (do mais antigo para o mais recente)
     const anterioresKeys = Object.keys(anterioresObj).sort((a,b)=>{
-        // ordenar datas dd/mm/yyyy
         const pa = a.split("/").reverse().join("-");
         const pb = b.split("/").reverse().join("-");
-        return pa < pb ? 1 : -1; // mais recente primeiro
+        return pa > pb ? 1 : -1;
     });
 
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    // HOJE
-    box.innerHTML += `<div class="date-badge">Hoje</div>`;
-    hoje.length ? hoje.forEach(t => box.innerHTML += gerarHTML(t))
-                : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para hoje.</p>`;
+    // ======================
+    // DATAS ANTERIORES (antes de ontem)
+    // ======================
+    anterioresKeys.forEach(dataLabel => {
+        box.innerHTML += `<div class="date-badge">${dataLabel}</div>`;
+        anterioresObj[dataLabel].forEach(t => box.innerHTML += gerarHTML(t));
+    });
 
-    // AMANHÃ
-    box.innerHTML += `<div class="date-badge">Amanhã</div>`;
-    amanha.length ? amanha.forEach(t => box.innerHTML += gerarHTML(t))
-                  : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
-
+    // ======================
     // ONTEM
+    // ======================
     if(ontem.length){
         box.innerHTML += `<div class="date-badge">Ontem</div>`;
         ontem.forEach(t => box.innerHTML += gerarHTML(t));
     }
 
-    // ANTERIORES (organizados)
-    anterioresKeys.forEach(dataLabel => {
-        box.innerHTML += `<div class="date-badge">${dataLabel}</div>`;
-        anterioresObj[dataLabel].forEach(t => box.innerHTML += gerarHTML(t));
-    });
+    // ======================
+    // HOJE  (sempre na tela inicial)
+    // ======================
+    box.innerHTML += `<div class="date-badge">Hoje</div>`;
+    hoje.length ? hoje.forEach(t => box.innerHTML += gerarHTML(t))
+                : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para hoje.</p>`;
+
+    // ======================
+    // AMANHÃ
+    // ======================
+    box.innerHTML += `<div class="date-badge">Amanhã</div>`;
+    amanha.length ? amanha.forEach(t => box.innerHTML += gerarHTML(t))
+                  : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
 }
 
 // SALVAR RESPOSTA
@@ -234,7 +227,6 @@ async function resposta(id,tipo){
     let btnSim = document.getElementById(`sim-${id}`);
     let btnNao = document.getElementById(`nao-${id}`);
 
-    let btn = document.getElementById(`${tipo}-${id}`);
     let pb  = document.getElementById(`pb-${tipo}-${id}`);
 
     // reset
@@ -254,11 +246,8 @@ async function resposta(id,tipo){
     });
 
     setTimeout(()=>{
-        if(tipo==="sim"){
-            btnSim.classList.add("green");
-        } else {
-            btnNao.classList.add("red");
-        }
+        if(tipo==="sim") btnSim.classList.add("green");
+        else btnNao.classList.add("red");
     },350);
 }
 
