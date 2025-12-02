@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cozinha – Tarefas</title>
+
+<style>
+body {
+    margin: 0;
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+/* TOPO */
+.header {
+    height: calc(60px + env(safe-area-inset-top));
+    padding-top: calc(10px + env(safe-area-inset-top));
+    padding-left: 18px;
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    font-weight: 700;
+    border-bottom: 1px solid #ddd;
+}
+
+/* ÁREA DAS MENSAGENS */
+.chat-area {
+    padding: 20px;
+}
+
+/* TAREFA (mensagem do sistema igual WhatsApp) */
+.msg {
+    background: #f1f1f7;
+    padding: 14px;
+    border-radius: 16px;
+    max-width: 90%;
+    margin-bottom: 18px;
+    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.msg-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.btn-azul {
+    background: #007aff;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 22px;
+    font-size: 15px;
+    border: none;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.obs-box {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+}
+
+/* RODAPÉ */
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 14px;
+    background: #ffffff;
+    border-top: 1px solid #ddd;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Cozinha</div>
+
+<div class="chat-area" id="tarefasBox">
+    <p>Carregando tarefas...</p>
+</div>
+
+<div class="footer">
+    <small style="opacity:.5;">Tarefas do dia – conectado à planilha</small>
+</div>
+
+<script>
+/* SETOR ATUAL */
+const SETOR_ATUAL = "Cozinha";
+
+/* BUSCAR TAREFAS */
+async function carregarTarefas() {
+    const resp = await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec?acao=listar&setor=" + SETOR_ATUAL);
+    const dados = await resp.json();
+
+    const box = document.getElementById("tarefasBox");
+    box.innerHTML = "";
+
+    if (dados.length === 0) {
+        box.innerHTML = "<p>Nenhuma tarefa para hoje.</p>";
+        return;
+    }
+
+    dados.forEach(tarefa => {
+        const item = document.createElement("div");
+        item.className = "msg";
+        item.innerHTML = `
+            <div class="msg-title">${tarefa.tarefa}</div>
+            <div>Status: <b>${tarefa.status}</b></div>
+            <textarea class="obs-box" id="obs-${tarefa.id}" placeholder="Observações (opcional)">${tarefa.observacao || ""}</textarea>
+
+            <button class="btn-azul" onclick="marcarFeita(${tarefa.id})">✔ Marcar como feita</button>
+        `;
+        box.appendChild(item);
+    });
+}
+
+/* MARCAR COMO FEITA */
+async function marcarFeita(id) {
+    const obs = document.getElementById("obs-" + id).value;
+
+    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec", {
+        method: "POST",
+        body: JSON.stringify({
+            acao: "finalizar",
+            id: id,
+            observacao: obs
+        })
+    });
+
+    alert("Tarefa concluída!");
+    carregarTarefas();
+}
+
+carregarTarefas();
+</script>
+
+</body>
+</html>
