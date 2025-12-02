@@ -2,21 +2,25 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-
-<!-- BLOQUEAR ZOOM -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 
 <title>Tarefas – Cozinha</title>
 
 <style>
+/* ======================================================
+   BASE
+====================================================== */
 body{
     margin:0;
     background:#efeae2;
-    font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-    overscroll-behavior-y: contain;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    overscroll-behavior-y:contain;
 }
 
-/* HEADER */
+/* ======================================================
+   HEADER
+====================================================== */
 .header{
     height:calc(65px + env(safe-area-inset-top));
     padding-top:calc(10px + env(safe-area-inset-top));
@@ -34,21 +38,32 @@ body{
 .header img{
     width:46px;height:46px;border-radius:50%;object-fit:cover;
 }
-.header-name{font-size:18px;font-weight:700;}
-.status-line{font-size:13px;color:#999;margin-top:2px;}
-.status-online{color:#007aff;}
+.header-name{
+    font-size:18px;
+    font-weight:700;
+}
+.status-line{
+    font-size:13px;
+    margin-top:2px;
+    font-weight:500;
+    color:#999;
+}
+.status-online{
+    color:#007aff;
+}
 
-/* LISTA */
+/* ======================================================
+   LISTA / CONVERSA
+====================================================== */
 .chat-area{
     padding:16px;
-    padding-bottom:250px;
+    padding-bottom:220px;
     overflow-y:auto;
     height:calc(100vh - 90px);
-    position:relative;
 }
 .date-badge{
     width:fit-content;
-    margin:12px auto;
+    margin:10px auto 18px;
     background:#d9d9d9;
     padding:6px 14px;
     border-radius:8px;
@@ -57,23 +72,21 @@ body{
     font-weight:500;
 }
 
-/* MENSAGENS */
+/* Caixa de mensagem */
 .msg-box{
     background:#fff;
     border-radius:10px;
     padding:12px 16px;
     max-width:78%;
-    box-shadow:0 1px 1px rgba(0,0,0,.15);
-    margin-bottom:10px;
+    margin-bottom:12px;
+    box-shadow:0 1px 1px rgba(0,0,0,0.15);
     position:relative;
     transition:transform .2s;
 }
-
 .msg-user{
     background:#dcf8c6;
     margin-left:auto;
 }
-
 .msg-citacao{
     font-size:12px;
     color:#555;
@@ -82,36 +95,54 @@ body{
     margin-bottom:6px;
 }
 .msg-img{
-    width:100%;
-    border-radius:10px;
+    width:92%;
     margin-top:8px;
+    border-radius:10px;
 }
 
-/* SIM/NÃO */
+.msg-time{
+    font-size:11px;
+    color:#777;
+    text-align:right;
+    margin-top:6px;
+}
+
+/* ======================================================
+   BOTÕES SIM / NÃO
+====================================================== */
 .options-box{
     background:#fff;
     border-radius:10px;
     padding:10px 16px;
     max-width:78%;
-    box-shadow:0 1px 1px rgba(0,0,0,.15);
-    margin-bottom:22px;
+    box-shadow:0 1px 1px rgba(0,0,0,0.15);
+    margin-bottom:20px;
 }
-.btn-row{display:flex;gap:10px;}
+.btn-row{
+    display:flex;
+    gap:10px;
+}
 .option-btn{
     flex:1;
     background:#f0f0f0;
     color:#555;
     border-radius:10px;
     padding:12px;
+    font-size:16px;
     text-align:center;
     cursor:pointer;
     user-select:none;
-    position:relative;
 }
-.option-btn.green{background:#c8f7d4;color:#0a8f47;font-weight:600;}
-.option-btn.red{background:#f7c8c8;color:#c62828;font-weight:600;}
+.option-btn.green{ background:#c8f7d4 !important; color:#0a8f47 !important; }
+.option-btn.red{   background:#f7c8c8 !important; color:#c62828 !important; }
+.option-disabled{
+    pointer-events:none;
+    opacity:.35;
+}
 
-/* SWIPE */
+/* ======================================================
+   SWIPE / RESPOSTA
+====================================================== */
 .reply-hint{
     position:absolute;
     left:-40px;
@@ -123,73 +154,89 @@ body{
     color:#007aff;
 }
 
-/* CAIXA RESPOSTA */
 #responderBox{
     position:fixed;
-    bottom:0;left:0;
+    bottom:0;
+    left:0;
     width:100%;
+    background:#fff;
     padding:12px;
-    background:white;
-    display:none;
     border-top:1px solid #ccc;
-    z-index:50;
+    display:none;
 }
-#responderTopo{
-    display:flex;
-    justify-content:space-between;
+#responderCitacao{
+    font-size:13px;
+    color:#007aff;
     margin-bottom:6px;
 }
-#citacaoTexto{font-size:13px;font-weight:600;color:#007aff;}
-#cancelarResp{color:#ff3b30;font-size:15px;cursor:pointer;}
 #responderInput{
     width:100%;
     padding:12px;
     border-radius:10px;
     border:1px solid #ccc;
-    font-size:15px;
 }
 #responderSend{
     margin-top:8px;
     background:#007aff;
     color:white;
-    padding:12px;
-    border-radius:10px;
+    padding:11px;
     text-align:center;
-    font-size:16px;
+    border-radius:10px;
+}
+#closeReply{
+    text-align:center;
+    margin-top:6px;
+    color:#d00;
+    font-size:13px;
 }
 
-/* FOTO */
+/* ======================================================
+   FOTO
+====================================================== */
 #fotoBox{
-    position:fixed;
-    bottom:0;left:0;
-    width:100%;
+    padding:12px;
     background:white;
     border-top:1px solid #ccc;
-    padding:15px;
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
     display:none;
-    z-index:60;
 }
 #btnFoto{
     background:#007aff;
-    padding:14px;
-    border-radius:10px;
-    text-align:center;
     color:white;
-    cursor:pointer;
-    font-size:16px;
+    padding:12px;
+    text-align:center;
+    border-radius:10px;
 }
 #previewFoto{
-    width:160px;
-    border-radius:12px;
-    margin-top:12px;
+    width:180px;
     display:none;
+    margin-top:10px;
+    border-radius:12px;
 }
 
+/* ======================================================
+   PULL REFRESH
+====================================================== */
+#pullIcon{
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:3px solid #999;
+    border-top-color:transparent;
+    margin:0 auto;
+    margin-top:-40px;
+    opacity:0;
+    transition:opacity .2s, transform .2s;
+}
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
     <img src="icons/cozinha.png">
     <div>
@@ -198,187 +245,299 @@ body{
     </div>
 </div>
 
-<div class="chat-area" id="tarefasBox"></div>
+<div id="pullIcon"></div>
 
-<!-- RESPOSTA -->
+<div id="tarefasBox" class="chat-area"></div>
+
+<!-- Caixa de Resposta -->
 <div id="responderBox">
-    <div id="responderTopo">
-        <div id="citacaoTexto"></div>
-        <div id="cancelarResp">✕</div>
-    </div>
+    <div id="responderCitacao"></div>
     <input id="responderInput" placeholder="Digite sua resposta…">
     <div id="responderSend">Enviar</div>
+    <div id="closeReply">Cancelar</div>
 </div>
 
-<!-- FOTO -->
+<!-- Caixa de Foto -->
 <div id="fotoBox">
-    <div id="fotoMsg" style="margin-bottom:8px;">Esta tarefa exige foto obrigatória.</div>
+    <div id="fotoMsg"></div>
     <div id="btnFoto">📷 Tirar Foto</div>
     <img id="previewFoto">
 </div>
 
 <script>
-/* CONFIG */
+/* =================================================================
+   CONFIG
+================================================================= */
 const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbx7MG7s-SxFqbg8sTouCfd3kUxxv8D2ADOrkLUaFQgpOi1OERzb9H4BysGiTkPp6U26hw/exec";
-const usuario = JSON.parse(localStorage.getItem("usuarioLogado")||"{}").nome || "Usuário";
 
-let tarefaAtual = null;
-let citacaoAtual = "";
+const usuario = localStorage.getItem("usuarioLogado")
+      ? JSON.parse(localStorage.getItem("usuarioLogado")).nome
+      : "Usuário";
 
-/* ========== GERAR HTML ========== */
+/* Estado */
+let tarefaRespondendo = null;
+let citacaoTexto = "";
+let aguardandoFoto = false;
+
+/* =================================================================
+   GERAR HTML DA TAREFA
+================================================================= */
 function gerarHTML(t){
-    let html = "";
 
-    // Comentários existentes
-    if(t.comentarios){
-        t.comentarios.split("\n").forEach(c=>{
-            html += `
+    /* renderiza comentários */
+    let comentariosHTML = "";
+    if (t.comentarios){
+        const linhas = t.comentarios.split("\n");
+        linhas.forEach(l=>{
+            comentariosHTML += `
             <div class="msg-box msg-user">
-                <div class="msg-citacao">${c}</div>
+                <div class="msg-citacao">${l}</div>
             </div>`;
         });
     }
 
-    // Foto existente
+    /* renderiza foto */
+    let fotoHTML = "";
     if(t.fotoURL){
-        html += `
+        fotoHTML = `
         <div class="msg-box msg-user">
             <img src="${t.fotoURL}" class="msg-img">
-        </div>
-        `;
+        </div>`;
     }
 
-    // Mensagem original
-    html += `
-    <div class="msg-box" data-id="${t.id}">
-        <div class="reply-hint">↩</div>
-        <div>${t.tarefa}</div>
-        <div class="msg-time">${t.conclusao ? "🕘 "+t.conclusao : ""}</div>
-    </div>
+    /* botão sim/não bloqueado se foto obrigatória */
+    const disableBtns = (t.fotoObrigatoria === "sim" && !t.fotoURL)
+        ? "option-disabled"
+        : "";
 
-    <div class="options-box">
-        <div class="btn-row">
-            <div class="option-btn ${t.status==="sim"?"green":""}" onclick="marcarSim(${t.id},'${t.fotoObrigatoria}')">Sim</div>
-            <div class="option-btn ${t.status==="nao"?"red":""}" onclick="marcarNao(${t.id})">Não</div>
+    return `
+        ${comentariosHTML}
+        ${fotoHTML}
+
+        <div class="msg-box tarefa" data-id="${t.id}" data-text="${t.tarefa}">
+            <div class="reply-hint">↩</div>
+            <div>${t.tarefa}</div>
+            <div class="msg-time">${t.dataBR} - ${t.hora || ""}</div>
         </div>
-    </div>
-    `;
 
-    return html;
+        <div class="options-box">
+            <div class="btn-row">
+
+                <div class="option-btn ${disableBtns}"
+                     onclick="confirmarSimNao(${t.id},'sim','${t.fotoObrigatoria}')">
+                     Sim
+                </div>
+
+                <div class="option-btn ${disableBtns}"
+                     onclick="confirmarSimNao(${t.id},'nao','${t.fotoObrigatoria}')">
+                     Não
+                </div>
+
+            </div>
+        </div>
+    `;
 }
 
-/* ========== SWIPE ========== */
-function ativarSwipe(){
-    document.querySelectorAll(".msg-box").forEach(msg=>{
-        let startX=0,drag=false;
+/* =================================================================
+   LOADING RAPIDO (HOJE/AMANHÃ)
+================================================================= */
+async function carregarHojeAmanha(){
+    const dados = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
 
-        msg.addEventListener("touchstart",e=>{
-            startX=e.touches[0].clientX; drag=false;
+    const hoje = dados.hoje || [];
+    const amanha = dados.amanha || [];
+
+    const box = document.getElementById("tarefasBox");
+    box.innerHTML = "";
+
+    /* HOJE */
+    box.insertAdjacentHTML("beforeend", `<div class="date-badge" id="hojeAnchor">Hoje</div>`);
+    hoje.forEach(t=> box.insertAdjacentHTML("beforeend", gerarHTML(t)));
+
+    /* AMANHÃ */
+    box.insertAdjacentHTML("beforeend", `<div class="date-badge">Amanhã</div>`);
+    amanha.forEach(t=> box.insertAdjacentHTML("beforeend", gerarHTML(t)));
+
+    ativarSwipe();
+
+    return dados;
+}
+
+/* =================================================================
+   CARREGAR HISTORICO
+================================================================= */
+function carregarAnteriores(dados){
+    const ontem = dados.ontem || [];
+    const anteriores = dados.anteriores || {};
+    const hojeNode = document.getElementById("hojeAnchor");
+
+    if(ontem.length){
+        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">Ontem</div>`);
+        ontem.forEach(t=> hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t)));
+    }
+
+    const datas = Object.keys(anteriores).sort((a,b)=>{
+        return a.split("/").reverse().join("") > b.split("/").reverse().join("") ? 1 : -1;
+    });
+
+    datas.forEach(d=>{
+        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">${d}</div>`);
+        anteriores[d].forEach(t=>{
+            hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
+        });
+    });
+
+    ativarSwipe();
+}
+
+/* =================================================================
+   SIM / NÃO
+================================================================= */
+function confirmarSimNao(id,tipo,fotoObrigatoria){
+
+    if(fotoObrigatoria==="sim"){
+        /* se for obrigatório, só libera após enviar foto */
+        tarefaRespondendo = id;
+        aguardandoFoto = true;
+
+        document.getElementById("fotoMsg").innerText =
+           "Esta tarefa exige foto antes de concluir.";
+        document.getElementById("fotoBox").style.display="block";
+        return;
+    }
+
+    enviarSimNao(id,tipo);
+}
+
+async function enviarSimNao(id,tipo){
+    await fetch(ENDPOINT,{
+        method:"POST",
+        body:JSON.stringify({
+            acao:"responder",
+            id:id,
+            resposta:tipo
+        })
+    });
+
+    location.reload();
+}
+
+/* =================================================================
+   SWIPE PARA RESPONDER
+================================================================= */
+function ativarSwipe(){
+    const msgs = document.querySelectorAll(".tarefa");
+
+    msgs.forEach(msg=>{
+        let startX = 0;
+        let dragged = false;
+
+        msg.addEventListener("touchstart", e=>{
+            startX = e.touches[0].clientX;
+            dragged = false;
         });
 
-        msg.addEventListener("touchmove",e=>{
-            let d=e.touches[0].clientX-startX;
-            if(d>0){
-                drag=true;
-                msg.style.transform=`translateX(${d}px)`;
-                msg.querySelector(".reply-hint").style.opacity=d>40?1:0;
+        msg.addEventListener("touchmove", e=>{
+            let diff = e.touches[0].clientX - startX;
+
+            if(diff > 0){
+                dragged = true;
+                msg.style.transform = `translateX(${diff}px)`;
+                msg.querySelector(".reply-hint").style.opacity = diff>40 ? 1 : 0;
             }
         });
 
-        msg.addEventListener("touchend",()=>{
-            msg.style.transform="";
-            msg.querySelector(".reply-hint").style.opacity=0;
+        msg.addEventListener("touchend", e=>{
+            msg.style.transform = "";
+            msg.querySelector(".reply-hint").style.opacity = 0;
 
-            if(drag){
-                abrirResposta(msg);
+            if(dragged){
+                abrirCaixaResposta(msg);
             }
         });
     });
 }
 
-/* ========== ABRIR RESPOSTA ========== */
-function abrirResposta(msg){
-    tarefaAtual = msg.dataset.id;
-    citacaoAtual = msg.innerText.trim().split("\n")[0];
+/* =================================================================
+   ABRIR CAIXA DE RESPOSTA
+================================================================= */
+function abrirCaixaResposta(msg){
+    const id = msg.dataset.id;
+    const texto = msg.dataset.text;
 
-    document.getElementById("citacaoTexto").textContent = `Responder: "${citacaoAtual}"`;
+    tarefaRespondendo = id;
+    citacaoTexto = texto;
 
-    document.getElementById("responderBox").style.display = "block";
-    document.getElementById("fotoBox").style.display = "none";
+    document.getElementById("responderCitacao").innerText =
+       `Respondendo: “${texto}”`;
+
+    document.getElementById("responderBox").style.display="block";
     document.getElementById("responderInput").focus();
 }
 
-document.getElementById("cancelarResp").onclick = ()=>{
-    tarefaAtual=null;
+/* fechar resposta */
+document.getElementById("closeReply").onclick = ()=>{
     document.getElementById("responderBox").style.display="none";
+    document.getElementById("responderInput").value = "";
+    tarefaRespondendo = null;
 };
 
-/* ========== ENVIAR COMENTÁRIO ========== */
+/* =================================================================
+   ENVIAR COMENTÁRIO
+================================================================= */
 document.getElementById("responderSend").onclick = async ()=>{
     const texto = document.getElementById("responderInput").value.trim();
-    if(!texto || !tarefaAtual) return;
+    if(!texto || !tarefaRespondendo) return;
 
     await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             acao:"registrarComentario",
-            id:tarefaAtual,
-            comentario:`${usuario}: ${texto}`
+            id:tarefaRespondendo,
+            usuario,
+            msg:texto
         })
     });
 
     location.reload();
 };
 
-/* ========== SIM / NAO ========== */
-async function marcarSim(id,fotoObg){
-    await fetch(ENDPOINT,{
-        method:"POST",
-        body:JSON.stringify({acao:"responder",id:id,resposta:"sim"})
-    });
+/* =================================================================
+   FOTO OBRIGATÓRIA
+================================================================= */
+document.getElementById("btnFoto").onclick = ()=>{
 
-    if(fotoObg==="sim"){
-        tarefaAtual = id;
-        document.getElementById("fotoBox").style.display="block";
-        document.getElementById("responderBox").style.display="none";
-    }else{
-        location.reload();
-    }
-}
-async function marcarNao(id){
-    await fetch(ENDPOINT,{
-        method:"POST",
-        body:JSON.stringify({acao:"responder",id:id,resposta:"nao"})
-    });
-    location.reload();
-}
-
-/* ========== FOTO OBRIGATÓRIA ========== */
-document.getElementById("btnFoto").onclick=()=>{
-    const input=document.createElement("input");
+    const input = document.createElement("input");
     input.type="file";
     input.accept="image/*";
     input.capture="environment";
 
-    input.onchange=e=>{
-        const file=e.target.files[0];
-        const reader=new FileReader();
+    input.onchange = async e =>{
+        const file = e.target.files[0];
+        const reader = new FileReader();
 
-        reader.onload=async ()=>{
-            const base64=reader.result.split(",")[1];
+        reader.onload = async ()=>{
 
-            document.getElementById("previewFoto").src=reader.result;
+            const base64 = reader.result.split(",")[1];
+
+            /* preview */
+            document.getElementById("previewFoto").src = reader.result;
             document.getElementById("previewFoto").style.display="block";
 
+            /* envia pro drive */
             await fetch(ENDPOINT,{
                 method:"POST",
                 body:JSON.stringify({
                     acao:"registrarFoto",
-                    id:tarefaAtual,
-                    base64:base64
+                    id:tarefaRespondendo,
+                    base64
                 })
             });
+
+            /* agora libera SIM/NÃO */
+            aguardandoFoto = false;
+            document.getElementById("fotoBox").style.display="none";
 
             location.reload();
         };
@@ -389,25 +548,51 @@ document.getElementById("btnFoto").onclick=()=>{
     input.click();
 };
 
-/* ========== CARREGAR INICIAL ========== */
+/* =================================================================
+   PULL TO REFRESH
+================================================================= */
+let startY = 0;
+let pulling = false;
+
+const pullIcon = document.getElementById("pullIcon");
+const chat = document.getElementById("tarefasBox");
+
+chat.addEventListener("touchstart", e=>{
+    if(chat.scrollTop === 0){
+        startY = e.touches[0].clientY;
+        pulling = true;
+    }
+});
+chat.addEventListener("touchmove", e=>{
+    if(!pulling) return;
+
+    let dist = e.touches[0].clientY - startY;
+
+    if(dist > 0 && dist < 90){
+        pullIcon.style.opacity = 1;
+        pullIcon.style.transform = `rotate(${dist*4}deg)`;
+    }
+});
+chat.addEventListener("touchend", async ()=>{
+    pullIcon.style.opacity = 0;
+    pulling = false;
+
+    const dados = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
+    carregarAnteriores(dados);
+});
+
+/* =================================================================
+   INICIAR
+================================================================= */
 (async ()=>{
-    document.getElementById("statusSetor").textContent="Carregando…";
+    const status = document.getElementById("statusSetor");
+    status.innerText = "Carregando…";
 
-    const resp = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
-    const box=document.getElementById("tarefasBox");
-
-    box.innerHTML="";
-    box.insertAdjacentHTML("beforeend","<div class='date-badge'>Hoje</div>");
-    (resp.hoje||[]).forEach(t=>box.insertAdjacentHTML("beforeend",gerarHTML(t)));
-
-    box.insertAdjacentHTML("beforeend","<div class='date-badge'>Amanhã</div>");
-    (resp.amanha||[]).forEach(t=>box.insertAdjacentHTML("beforeend",gerarHTML(t)));
-
-    ativarSwipe();
+    const dados = await carregarHojeAmanha();
 
     setTimeout(()=>{
-        document.getElementById("statusSetor").textContent="Online";
-        document.getElementById("statusSetor").classList.add("status-online");
+        status.innerText = "Online";
+        status.classList.add("status-online");
     },300);
 })();
 </script>
