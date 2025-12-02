@@ -8,8 +8,25 @@
 
 <title>Grupo DV</title>
 
+<!-- =============================== -->
+<!-- ICONES DO APP (TELA INICIAL) -->
+<!-- =============================== -->
+
+<!-- Ícone padrão Apple / iPhone -->
+<link rel="apple-touch-icon" href="icons/logo.png">
+
+<!-- Para iPhone com splash fullscreen -->
+<link rel="apple-touch-startup-image" href="icons/logo.png">
+
+<!-- Favicon padrão navegador -->
+<link rel="icon" type="image/png" href="icons/logo.png">
+
+<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="white">
+
 <meta name="theme-color" content="#ffffff">
 
 <style>
@@ -28,7 +45,7 @@ html, body{
   background:#ffffff;
   height:100vh;
   overflow:hidden;
-  touch-action: pan-y !important; /* impede pinch-zoom */
+  touch-action: pan-y !important;
 }
 
 /* ===========================================
@@ -537,7 +554,7 @@ function filtro(tipo){
       el.style.display = qtd > 0 ? "flex" : "none";
     }
     else{
-      el.style.display = "none"; // futura ativação de urgentes/recorrentes
+      el.style.display = "none"; 
     }
   });
 }
