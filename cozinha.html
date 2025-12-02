@@ -235,7 +235,7 @@ body{
 /* ========================= CONFIG ========================== */
 
 const SETOR = "Cozinha";
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbwqqeAncTYhzsEKp8Xy7qfw91okLxTkNyOipWdaH9RZRXVyhabLmc-Jd_6oyW42deRlAQ/exec"; // <<<<<< COLOQUE AQUI
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbwqqeAncTYhzsEKp8Xy7qfw91okLxTkNyOipWdaH9RZRXVyhabLmc-Jd_6oyW42deRlAQ/exec";
 
 let fotoArquivo = null;
 let tarefaFoto = null;
@@ -296,6 +296,8 @@ async function carregarHojeAmanha(){
     return dados;
 }
 
+/* ========================= HISTÓRICO ========================== */
+
 function carregarAnteriores(d){
     const anchor = document.getElementById("hojeAnchor");
 
@@ -324,18 +326,22 @@ function btnNao(id){
 function btnSim(id, precisaFoto){
     if(precisaFoto){
         tarefaFoto = id;
+        fotoArquivo = null;
+        document.getElementById("previewFoto").src = "";
         document.getElementById("cameraBox").style.display = "block";
         document.getElementById("cameraInput").click();
-    } else {
-        fetch(ENDPOINT,{
-            method:"POST",
-            body:JSON.stringify({acao:"responder", id, resposta:"sim"})
-        });
-        carregarHojeAmanha();
+        return;
     }
+
+    fetch(ENDPOINT,{
+        method:"POST",
+        body:JSON.stringify({acao:"responder", id, resposta:"sim"})
+    });
+
+    carregarHojeAmanha();
 }
 
-/* ========================= FOTO ========================== */
+/* ========================= FOTO (UPLOAD REAL) ========================== */
 
 document.getElementById("cameraInput").onchange = e=>{
     const file = e.target.files[0];
@@ -351,7 +357,6 @@ document.getElementById("cameraInput").onchange = e=>{
     reader.readAsDataURL(file);
 };
 
-
 function cancelarFoto(){
     fotoArquivo = null;
     tarefaFoto = null;
@@ -364,34 +369,31 @@ async function enviarFoto(){
     const cameraBox = document.getElementById("cameraBox");
     const preview = document.getElementById("previewFoto");
 
-    // mostrar carregando
     cameraBox.style.opacity = "0.6";
     cameraBox.style.pointerEvents = "none";
     preview.style.filter = "grayscale(1)";
 
     try {
-        // FORM DATA REAL
+        // AQUI AGORA ESTÁ 100% COMPATÍVEL COM O GAS
         let fd = new FormData();
-        fd.append("acao", "uploadFoto");
         fd.append("id", tarefaFoto);
         fd.append("setor", SETOR);
-        fd.append("file", fotoArquivo, fotoArquivo.name);
+        fd.append("imagem", fotoArquivo);  // nome do campo não importa
 
-        // PRIMEIRO ENVIA A FOTO
         const up = await fetch(ENDPOINT, {
             method: "POST",
             body: fd
         }).then(r => r.json());
 
         if(!up.ok){
-            alert("Erro ao enviar foto: " + up.msg);
+            alert("Erro ao enviar foto");
             cameraBox.style.opacity = "1";
             cameraBox.style.pointerEvents = "auto";
             preview.style.filter = "none";
             return;
         }
 
-        // SALVAR STATUS SIM (após foto OK)
+        // Só depois marca como SIM
         await fetch(ENDPOINT, {
             method: "POST",
             body: JSON.stringify({
@@ -401,16 +403,14 @@ async function enviarFoto(){
             })
         });
 
-        // fechar e recarregar tela
         cancelarFoto();
         carregarHojeAmanha();
 
     } catch(e){
-        alert("Falha no envio da foto.");
+        alert("Falha ao enviar foto");
         console.log(e);
     }
 }
-
 
 /* ========================= PULL TO REFRESH ========================== */
 
