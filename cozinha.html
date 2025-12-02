@@ -46,7 +46,7 @@ body{
 
 .date-badge{
     width:fit-content;
-    margin:18px auto;
+    margin:12px auto 22px;
     background:#d9d9d9;
     padding:6px 14px;
     border-radius:8px;
@@ -69,7 +69,6 @@ body{
     color:#777;
     text-align:right;
     margin-top:6px;
-    line-height:1.4;
 }
 
 .options-box{
@@ -136,20 +135,18 @@ body{
 <script>
 
 const SETOR = "Cozinha";
+
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw6OhDOdpP6fK2PYVEnLeVn-olZ2hbyM3WdcaGcI8NqKhHN2UM4vkSYT3MIQeaw0AeF9A/exec";
 
-/* FORMATADORES */
-function formatDateBR(dateStr){
-    if(!dateStr) return "";
-    const p = dateStr.split("-");
-    return `${p[2]}/${p[1]}/${p[0]}`;
+/* 🟢 Função para formatar data da tarefa */
+function formatarDataTarefa(dataISO, hora){
+    if(!dataISO) return "";
+
+    const [y,m,d] = dataISO.split("-");
+    return `${d}/${m}/${y} às ${hora}`;
 }
 
-function formatTimeBR(hora){
-    return hora || "";
-}
-
-/* CARREGAR TAREFAS */
+/* 🟢 Carregar tarefas */
 async function carregarTarefas(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
@@ -162,43 +159,39 @@ async function carregarTarefas(){
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    /* ---------------- HOJE ---------------- */
+    /* HOJE */
     box.innerHTML += `<div class="date-badge">Hoje</div>`;
-    hoje.length ? hoje.forEach(t => box.innerHTML += gerarHTML(t,true))
+    hoje.length ? hoje.forEach(t => box.innerHTML += gerarHTML(t))
                 : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para hoje.</p>`;
 
-    /* ---------------- AMANHÃ ---------------- */
+    /* AMANHÃ */
     box.innerHTML += `<div class="date-badge">Amanhã</div>`;
-    amanha.length ? amanha.forEach(t => box.innerHTML += gerarHTML(t,true))
-                  : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
+    amanha.length ? amanha.forEach(t => box.innerHTML += gerarHTML(t))
+                : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
 
-    /* ---------------- ONTEM ---------------- */
-    if(ontem.length){
-        box.innerHTML += `<div class="date-badge">Ontem</div>`;
-        ontem.forEach(t => box.innerHTML += gerarHTML(t,false));
-    }
+    /* ONTEM */
+    box.innerHTML += `<div class="date-badge">Ontem</div>`;
+    ontem.length ? ontem.forEach(t => box.innerHTML += gerarHTML(t))
+                 : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa ontem.</p>`;
 
-    /* ---------------- DIAS ANTIGOS ---------------- */
-    Object.keys(anteriores).forEach(data=>{
+    /* ANTERIORES */
+    for (const data in anteriores){
         box.innerHTML += `<div class="date-badge">${data}</div>`;
-        anteriores[data].forEach(t => box.innerHTML += gerarHTML(t,false));
-    });
+        anteriores[data].forEach(t => box.innerHTML += gerarHTML(t));
+    }
 }
 
-/* GERAR HTML */
-function gerarHTML(t,isTodayOrTomorrow){
+/* 🟢 HTML */
+function gerarHTML(t){
 
-    const dataTarefa = t.dataBR;
-    const horaTarefa = t.hora;
-    const conclusao = t.conclusao || "";
+    const dataTarefa = formatarDataTarefa(t.data, t.hora);
 
     return `
         <div class="msg-box">
             <div>${t.tarefa}</div>
-
             <div class="msg-time">
-                ${isTodayOrTomorrow ? `${dataTarefa} às ${horaTarefa}` : ""}
-                ${conclusao ? `<br><b>${conclusao}</b>` : ""}
+                ${dataTarefa}
+                ${t.conclusao ? "<br><b>"+t.conclusao+"</b>" : ""}
             </div>
         </div>
 
@@ -222,11 +215,14 @@ function gerarHTML(t,isTodayOrTomorrow){
     `;
 }
 
-/* AO RESPONDER */
+/* 🟢 Responder */
 async function resposta(id,tipo){
 
     let btn = document.getElementById(`${tipo}-${id}`);
+    let outro = document.getElementById(`${tipo === "sim" ? "nao" : "sim"}-${id}`);
     let pb  = document.getElementById(`pb-${tipo}-${id}`);
+
+    outro.classList.remove("green","red");
 
     pb.style.width = "40%";
     setTimeout(()=> pb.style.width = "100%",170);
@@ -240,21 +236,12 @@ async function resposta(id,tipo){
         })
     });
 
-    /* Reset visual imediatamente */
-    document.getElementById(`sim-${id}`).classList.remove("green");
-    document.getElementById(`nao-${id}`).classList.remove("red");
-
     setTimeout(()=>{
-        if(tipo==="sim"){
-            btn.classList.add("green");
-        } else {
-            btn.classList.add("red");
-        }
+        btn.classList.add(tipo === "sim" ? "green" : "red");
     },350);
 }
 
 carregarTarefas();
-
 </script>
 
 </body>
