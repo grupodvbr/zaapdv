@@ -1,148 +1,220 @@
-/****************************************************
- *   SISTEMA DE TAREFAS • GRUPO DV
- *   Backend para o aplicativo estilo WhatsApp
- *   → 100% compatível com datas da sua planilha
- ****************************************************/
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tarefas – Cozinha</title>
 
-const NOME_ABA = "tarefas";
-
-/****************************************************
- * GET
- ****************************************************/
-function doGet(e) {
-  const acao = e.parameter.acao;
-  const setor = e.parameter.setor;
-
-  if (acao === "listarTudo") {
-    return listarTudo(setor);
-  }
-
-  return json({ erro: "Ação GET inválida" });
+<style>
+body{
+    margin:0;
+    background:#efeae2;
+    font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/****************************************************
- * POST
- ****************************************************/
-function doPost(e) {
-  const dados = JSON.parse(e.postData.contents);
-  const acao = dados.acao;
-
-  if (acao === "responder") {
-    return salvarResposta(dados);
-  }
-
-  return json({ erro: "Ação POST inválida" });
+/* HEADER */
+.header{
+    height:calc(65px + env(safe-area-inset-top));
+    padding-top:calc(10px + env(safe-area-inset-top));
+    padding-left:16px;
+    padding-right:16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:10;
 }
 
-/****************************************************
- * JSON SAFE
- ****************************************************/
-function json(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+.header img{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    object-fit:cover;
 }
 
-/****************************************************
- * SHEET
- ****************************************************/
-function getSheet() {
-  const ss = SpreadsheetApp.getActive();
-  const sh = ss.getSheetByName(NOME_ABA);
-  if (!sh) throw new Error("Aba 'tarefas' não encontrada.");
-  return sh;
+.header-name{
+    font-size:18px;
+    font-weight:700;
 }
 
-/****************************************************
- * NORMALIZAR DATA (100% INFALÍVEL)
- ****************************************************/
-function normalizarData(valor) {
-
-  if (!valor) return "";
-
-  // Caso seja objeto Date do Sheets
-  if (Object.prototype.toString.call(valor) === "[object Date]" && !isNaN(valor.getTime())) {
-    return Utilities.formatDate(valor, "America/Bahia", "yyyy-MM-dd");
-  }
-
-  valor = valor.toString().trim();
-
-  // Já estiver correto
-  if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-    return valor;
-  }
-
-  // DD/MM/YYYY
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
-    let [d, m, y] = valor.split("/");
-    return `${y}-${m}-${d}`;
-  }
-
-  // DD-MM-YYYY
-  if (/^\d{2}-\d{2}-\d{4}$/.test(valor)) {
-    let [d, m, y] = valor.split("-");
-    return `${y}-${m}-${d}`;
-  }
-
-  // Padrões longos
-  let d = new Date(valor);
-  if (!isNaN(d.getTime())) {
-    return Utilities.formatDate(d, "America/Bahia", "yyyy-MM-dd");
-  }
-
-  return "";
+/* CHAT AREA */
+.chat-area{
+    padding:16px;
+    padding-bottom:140px;
 }
 
-/****************************************************
- * LISTAR HOJE + AMANHÃ
- ****************************************************/
-function listarTudo(setor) {
-
-  const hoje = Utilities.formatDate(new Date(), "America/Bahia", "yyyy-MM-dd");
-  const amanha = Utilities.formatDate(new Date(Date.now() + 86400000), "America/Bahia", "yyyy-MM-dd");
-
-  const sh = getSheet();
-  const dados = sh.getDataRange().getValues();
-
-  let respHoje = [];
-  let respAmanha = [];
-
-  dados.slice(1).forEach(l => {
-    const [id, set, tarefa, dataBruta, hora, status, obs] = l;
-
-    const data = normalizarData(dataBruta);
-
-    if (set == setor && data === hoje) {
-      respHoje.push({ id, tarefa, hora, data, status, observacao: obs || "" });
-    }
-
-    if (set == setor && data === amanha) {
-      respAmanha.push({ id, tarefa, hora, data, status, observacao: obs || "" });
-    }
-  });
-
-  return json({
-    hoje: respHoje,
-    amanha: respAmanha
-  });
+/* DATA */
+.date-badge{
+    width:fit-content;
+    margin:12px auto 22px;
+    background:#d9d9d9;
+    padding:6px 14px;
+    border-radius:8px;
+    font-size:13px;
+    color:#444;
+    font-weight:500;
 }
 
-/****************************************************
- * SALVAR RESPOSTA
- ****************************************************/
-function salvarResposta(dados) {
-  const sh = getSheet();
-  const valores = sh.getDataRange().getValues();
-
-  const id = Number(dados.id);
-  const resposta = dados.resposta;
-
-  for (let i = 1; i < valores.length; i++) {
-    if (valores[i][0] == id) {
-      sh.getRange(i + 1, 6).setValue(resposta); // Coluna F – Status
-      break;
-    }
-  }
-
-  return json({ ok: true });
+/* BOLHA */
+.msg-box{
+    background:#fff;
+    border-radius:10px;
+    padding:12px 16px;
+    max-width:78%;
+    box-shadow:0 1px 1px rgba(0,0,0,0.15);
+    margin-bottom:4px;
 }
+
+.msg-time{
+    font-size:11px;
+    color:#777;
+    text-align:right;
+    margin-top:6px;
+}
+
+/* BOTÕES */
+.options-box{
+    background:#fff;
+    border-radius:10px;
+    padding:10px 16px;
+    max-width:78%;
+    box-shadow:0 1px 1px rgba(0,0,0,0.15);
+    margin-bottom:20px;
+}
+
+.btn-row{
+    display:flex;
+    gap:10px;
+}
+
+.option-btn{
+    flex:1;
+    background:#f0f0f0;
+    color:#555;
+    border-radius:10px;
+    padding:12px;
+    font-size:16px;
+    text-align:center;
+    cursor:pointer;
+    position:relative;
+    user-select:none;
+    overflow:hidden;
+}
+
+.option-btn.green{
+    background:#c8f7d4 !important;
+    color:#0a8f47 !important;
+    font-weight:600;
+}
+
+.option-btn.red{
+    background:#f7c8c8 !important;
+    color:#c62828 !important;
+    font-weight:600;
+}
+
+/* progress */
+.progress-bar{
+    position:absolute;
+    bottom:0;
+    left:0;
+    height:4px;
+    background:#007aff;
+    width:0%;
+    transition:width 0.4s linear;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <img id="fotoSetor" src="FOTO-DO-SETOR">
+    <div id="nomeSetor" class="header-name">Cozinha</div>
+</div>
+
+<div class="chat-area" id="tarefasBox">
+    <div class="date-badge">Hoje</div>
+</div>
+
+<script>
+const SETOR = "Cozinha";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzAZGvk-Dn2HmbiyXYkA8Zh0UvCUUlUMEcLa60B5LSHwlKTFZ6vACnW3hsvufeKCYGuXQ/exec";
+
+async function carregarTarefas(){
+    const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
+    const dados = await req.json();
+
+    const hoje = dados.hoje || [];
+    const amanha = dados.amanha || [];
+
+    const box = document.getElementById("tarefasBox");
+
+    box.innerHTML = `<div class="date-badge">Hoje</div>`;
+
+    hoje.length
+        ? hoje.forEach(t => box.innerHTML += gerarHTML(t))
+        : box.innerHTML += `<p style="text-align:center;color:#666;margin-bottom:20px;">Nenhuma tarefa para hoje.</p>`;
+
+    box.innerHTML += `<div class="date-badge">Amanhã</div>`;
+
+    amanha.length
+        ? amanha.forEach(t => box.innerHTML += gerarHTML(t))
+        : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
+}
+
+function gerarHTML(t){
+    return `
+        <div class="msg-box">
+            <div>${t.tarefa}</div>
+            <div class="msg-time">${t.hora || ""}</div>
+        </div>
+
+        <div class="options-box">
+            <div class="btn-row">
+
+                <div class="option-btn" id="sim-${t.id}" onclick="resposta(${t.id},'sim')">
+                    Sim
+                    <div class="progress-bar" id="pb-sim-${t.id}"></div>
+                </div>
+
+                <div class="option-btn" id="nao-${t.id}" onclick="resposta(${t.id},'nao')">
+                    Não
+                    <div class="progress-bar" id="pb-nao-${t.id}"></div>
+                </div>
+
+            </div>
+        </div>
+    `;
+}
+
+async function resposta(id,tipo){
+
+    let btn = document.getElementById(`${tipo}-${id}`);
+    let pb  = document.getElementById(`pb-${tipo}-${id}`);
+
+    pb.style.width = "40%";
+    setTimeout(()=> pb.style.width = "100%",150);
+
+    await fetch(ENDPOINT, {
+        method:"POST",
+        body:JSON.stringify({
+            acao:"responder",
+            id:id,
+            resposta:tipo
+        })
+    });
+
+    setTimeout(()=>{
+        btn.classList.add(tipo === "sim" ? "green" : "red");
+    },400);
+}
+
+carregarTarefas();
+</script>
+
+</body>
+</html>
