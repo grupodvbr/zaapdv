@@ -150,7 +150,7 @@ const SETOR = "Cozinha";
 
 /* BUSCAR TAREFAS */
 async function carregarTarefas(){
-    const url = "https://script.google.com/macros/s/AKfycbyy160XEbYhpCLD3ViyWnTj31V_a2JYfsgDlv753YZ5fg_p029G-2knIod0wNdVq_UWdQ/exec?acao=listarTudo&setor="+SETOR;
+    const url = "https://script.google.com/macros/s/AKfycbxwLkQT1FBe-jw-BwySQP9m8daG-lf7HEIulN_A2z5zcvgIzwzDxHnRaTQYqn1ek7krRQ/exec?acao=listarTudo&setor="+SETOR;
 
     const req = await fetch(url);
     const dados = await req.json();
@@ -202,7 +202,7 @@ async function resposta(id,tipo){
     pb.style.width = "40%";
     setTimeout(()=> pb.style.width = "100%",150);
 
-    await fetch("https://script.google.com/macros/s/AKfycbyy160XEbYhpCLD3ViyWnTj31V_a2JYfsgDlv753YZ5fg_p029G-2knIod0wNdVq_UWdQ/exec",{
+    await fetch("https://script.google.com/macros/s/AKfycbxwLkQT1FBe-jw-BwySQP9m8daG-lf7HEIulN_A2z5zcvgIzwzDxHnRaTQYqn1ek7krRQ/exec",{
         method:"POST",
         body:JSON.stringify({acao:"responder",id:id,resposta:tipo})
     });
