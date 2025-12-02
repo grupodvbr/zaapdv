@@ -153,6 +153,9 @@ body {
     background: #ffffff;
     border-top: 1px solid #d9d9d9;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+
+    /* garantir sem fundo */
+    background-image: none !important;
 }
 
 .nav-btn {
@@ -164,17 +167,35 @@ body {
     color: #7d7d80;
     font-size: 11px;
     font-weight: 500;
+
+    /* SEM CAIXA */
+    border: none !important;
+    outline: none !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    appearance: none !important;
 }
 
 .nav-btn.active {
     color: #000000;
 }
 
+/* ÍCONES — remover QUALQUER fundo */
 .nav-btn img {
     width: 27px;
     height: 27px;
     margin-bottom: 3px;
     object-fit: contain;
+
+    /* remove qualquer borda ou caixa */
+    background: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    /* limpa halos claros do PNG */
+    image-rendering: -webkit-optimize-contrast;
 }
 </style>
 </head>
