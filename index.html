@@ -5,296 +5,445 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grupo DV</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="white">
 <meta name="theme-color" content="#ffffff">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <style>
-/* ============================
+/* ===========================================
    BASE GERAL
-============================ */
+=========================================== */
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system, BlinkMacSystemFont,sans-serif;
 }
 
 body{
-    background:#ffffff;
-    height:100vh;
-    overflow:hidden;
+  background:#ffffff;
+  height:100vh;
+  overflow:hidden;
 }
 
-/* ============================
-   TOPO
-============================ */
+/* ===========================================
+   LOGIN
+=========================================== */
+#loginTela{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:white;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  z-index:20;
+}
+
+.login-box{
+  width:100%;
+  max-width:340px;
+  background:#fff;
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 8px 28px rgba(0,0,0,0.15);
+}
+
+.login-box h2{
+  text-align:center;
+  margin-bottom:15px;
+  font-size:22px;
+}
+
+.input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  margin-bottom:14px;
+  font-size:16px;
+}
+
+.btn{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#007aff;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+
+#loginErro{
+  color:red;
+  font-size:14px;
+  margin-top:6px;
+  text-align:center;
+  display:none;
+}
+
+
+/* ===========================================
+   TOPO (foto do usuário)
+=========================================== */
 .topbar{
-    width:100%;
-    height:calc(58px + env(safe-area-inset-top));
-    padding:0 20px;
-    padding-top:calc(10px + env(safe-area-inset-top));
-    display:flex;
-    align-items:flex-end;
-    border-bottom:1px solid #e6e6e6;
-    background:#ffffff;
-}
-.topbar .title{
-    font-size:32px;
-    font-weight:700;
-    margin-bottom:7px;
+  width:100%;
+  height:calc(58px + env(safe-area-inset-top));
+  padding:0 20px;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  border-bottom:1px solid #e6e6e6;
+  background:#ffffff;
 }
 
-/* ============================
-   ÁREA PRINCIPAL
-============================ */
+.title{
+  font-size:32px;
+  font-weight:700;
+  margin-bottom:7px;
+}
+
+#userFotoBtn{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  overflow:hidden;
+  cursor:pointer;
+  margin-bottom:8px;
+  border:2px solid #ddd;
+}
+
+#userFotoBtn img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* ===========================================
+   POPUP PERFIL
+=========================================== */
+#popupPerfil{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,.35);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:30;
+}
+
+.perfil-box{
+  width:90%;
+  max-width:330px;
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  text-align:center;
+}
+
+.perfil-foto{
+  width:90px; height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #007aff;
+  margin-bottom:12px;
+}
+
+.perfil-nome{
+  font-size:20px;
+  font-weight:700;
+}
+
+.perfil-cargo{
+  font-size:15px;
+  margin-bottom:12px;
+  color:#007aff;
+}
+
+.popup-btn{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  background:#f2f2f7;
+  margin-top:10px;
+  cursor:pointer;
+}
+
+#sairBtn{
+  background:#ff3b30;
+  color:white;
+}
+
+
+/* ===========================================
+   ÁREA PRINCIPAL (seus cards)
+=========================================== */
 .page{
-    height:calc(100vh - (75px + env(safe-area-inset-bottom)));
-    overflow-y:auto;
-    padding-bottom:140px;
-    padding-top:10px;
+  height:calc(100vh - (75px + env(safe-area-inset-bottom)));
+  overflow-y:auto;
+  padding-top:10px;
 }
 
-/* Busca */
-.search-box{
-    padding:10px 14px;
-}
+.search-box{ padding:10px 14px; }
 .search-box input{
-    width:100%;
-    padding:12px 14px;
-    border-radius:14px;
-    background:#f2f2f7;
-    border:none;
-    font-size:16px;
+  width:100%; padding:12px 14px;
+  background:#f2f2f7;
+  border:none; border-radius:14px;
 }
 
-/* Tabs */
-.tabs-row{
-    display:flex;
-    padding:6px 12px;
-    gap:8px;
-}
-.tab-btn{
-    padding:6px 12px;
-    background:#f2f2f7;
-    border:none;
-    border-radius:20px;
-    font-size:14px;
-}
-.tab-btn.active{
-    background:#d7f8d1;
-    font-weight:600;
-    color:#1d9c4d;
-}
-
-/* Setores */
 .section-title{
-    padding:12px 16px;
-    color:#6e6e73;
-    font-size:14px;
-    font-weight:600;
+  padding:12px 16px;
+  color:#6e6e73;
+  font-size:14px;
+  font-weight:600;
 }
 
-/* Linha dos setores */
 .chat-item{
-    display:flex;
-    gap:14px;
-    padding:12px 16px;
-    align-items:center;
-    cursor:pointer;
-    border-bottom:1px solid #ededed;
+  display:flex; gap:14px; padding:12px 16px;
+  border-bottom:1px solid #ededed;
+  cursor:pointer;
 }
 
 .avatar{
-    width:60px;
-    height:60px;
-    border-radius:50%;
-    object-fit:cover;
+  width:60px; height:60px;
+  border-radius:50%;
+  object-fit:cover;
 }
 
-.chat-info{flex:1;}
+.chat-info{ flex:1; }
+.chat-title{ font-size:18px; font-weight:600; }
+.chat-msg{ font-size:14px; color:#777; }
 
-.chat-title{
-    font-size:18px;
-    font-weight:600;
-}
 
-.chat-msg{
-    font-size:14px;
-    color:#777;
-    margin-top:2px;
-}
-
-.chat-time{
-    font-size:12px;
-    color:#888;
-}
-
-/* ============================
-   BARRA INFERIOR – WhatsApp Style
-============================ */
+/* ===========================================
+   MENU INFERIOR
+=========================================== */
 .bottombar{
-    height:calc(75px + env(safe-area-inset-bottom));
-    padding-bottom:env(safe-area-inset-bottom);
-    width:100%;
-    position:fixed;
-    bottom:0;
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
-    background:#ffffff;
-    border-top:1px solid #d9d9d9;
-    box-shadow:0 -2px 10px rgba(0,0,0,0.04);
+  height:calc(75px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  position:fixed; bottom:0; width:100%;
+  background:white;
+  border-top:1px solid #e6e6e6;
+  display:flex; justify-content:space-around; align-items:center;
 }
 
 .nav-btn{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    width:70px;
-    padding-top:4px;
-    color:#7d7d80;
-    font-size:11px;
-    font-weight:500;
-    background:none !important;
-    border:none !important;
-    box-shadow:none !important;
+  background:none; border:none;
+  display:flex; flex-direction:column;
+  align-items:center; font-size:11px;
+  color:#7d7d80;
 }
 
-.nav-btn.active{color:#000;}
+.nav-btn.active{ color:black; }
 
 .nav-btn img{
-    width:27px;
-    height:27px;
-    margin-bottom:3px;
-    object-fit:contain;
-    background:none !important;
-    border:none !important;
-    box-shadow:none !important;
+  width:27px; height:27px;
+  margin-bottom:3px;
 }
 </style>
 </head>
-
 <body>
 
-<header class="topbar">
-    <span class="title">Grupo DV</span>
-</header>
+<!-- ================= LOGIN ================= -->
+<div id="loginTela">
+  <div class="login-box">
+    <h2>Entrar</h2>
 
-<div id="mainPage" class="page">
+    <input id="loginNome" class="input" placeholder="Usuário">
+    <input id="loginSenha" class="input" placeholder="Senha" type="password">
 
-    <div class="search-box">
-        <input type="text" placeholder="Pesquise setores ou tarefas">
-    </div>
-
-    <div class="tabs-row">
-        <button class="tab-btn active">Todas</button>
-        <button class="tab-btn">Pendentes</button>
-        <button class="tab-btn">Recorrentes</button>
-        <button class="tab-btn">Urgentes</button>
-    </div>
-
-    <div class="section-title">Setores com tarefas hoje</div>
-
-    <div class="chat-list">
-
-        <!-- COZINHA -->
-        <div class="chat-item" onclick="openSetor('cozinha.html')">
-            <img src="icons/cozinha.png" class="avatar">
-            <div class="chat-info">
-                <div class="chat-title">Cozinha</div>
-                <div id="cozinhaCount" class="chat-msg">Carregando...</div>
-            </div>
-            <div class="chat-time">Hoje</div>
-        </div>
-
-        <!-- SALÃO -->
-        <div class="chat-item" onclick="openSetor('salao.html')">
-            <img src="icons/salao.png" class="avatar">
-            <div class="chat-info">
-                <div class="chat-title">Salão</div>
-                <div id="salaoCount" class="chat-msg">Carregando...</div>
-            </div>
-            <div class="chat-time">Hoje</div>
-        </div>
-
-        <!-- FINANCEIRO -->
-        <div class="chat-item" onclick="openSetor('financeiro.html')">
-            <img src="icons/financeiro.png" class="avatar">
-            <div class="chat-info">
-                <div class="chat-title">Financeiro</div>
-                <div id="financeiroCount" class="chat-msg">Carregando...</div>
-            </div>
-            <div class="chat-time">Hoje</div>
-        </div>
-
-    </div>
+    <button class="btn" onclick="fazerLogin()">Acessar</button>
+    <div id="loginErro">Usuário ou senha incorretos</div>
+  </div>
 </div>
 
-<!-- NAVBAR -->
+<!-- ================= POPUP PERFIL ================= -->
+<div id="popupPerfil">
+  <div class="perfil-box">
+    <img id="perfilFoto" class="perfil-foto">
+    <div id="perfilNome" class="perfil-nome"></div>
+    <div id="perfilCargo" class="perfil-cargo"></div>
+
+    <div id="perfilFechar" class="popup-btn">Fechar</div>
+    <div id="sairBtn" class="popup-btn">Sair</div>
+  </div>
+</div>
+
+
+<!-- ================= INTERFACE PRINCIPAL ================= -->
+<header class="topbar">
+  <span class="title">Grupo DV</span>
+
+  <div id="userFotoBtn" onclick="abrirPerfil()" style="display:none">
+    <img id="userFoto">
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="search-box">
+    <input type="text" placeholder="Pesquise setores ou tarefas">
+  </div>
+
+  <div class="section-title">Setores com tarefas hoje</div>
+
+  <div class="chat-list">
+
+      <div class="chat-item" onclick="openSetor('cozinha.html')">
+          <img src="icons/cozinha.png" class="avatar">
+          <div class="chat-info">
+              <div class="chat-title">Cozinha</div>
+              <div id="cozinhaCount" class="chat-msg">Carregando...</div>
+          </div>
+          <div class="chat-time">Hoje</div>
+      </div>
+
+      <div class="chat-item" onclick="openSetor('salao.html')">
+          <img src="icons/salao.png" class="avatar">
+          <div class="chat-info">
+              <div class="chat-title">Salão</div>
+              <div id="salaoCount" class="chat-msg">Carregando...</div>
+          </div>
+          <div class="chat-time">Hoje</div>
+      </div>
+
+      <div class="chat-item" onclick="openSetor('financeiro.html')">
+          <img src="icons/financeiro.png" class="avatar">
+          <div class="chat-info">
+              <div class="chat-title">Financeiro</div>
+              <div id="financeiroCount" class="chat-msg">Carregando...</div>
+          </div>
+          <div class="chat-time">Hoje</div>
+      </div>
+
+  </div>
+</div>
+
+<!-- MENU -->
 <nav class="bottombar">
-
-    <button class="nav-btn" onclick="openPage('agenda.html')">
-        <img src="icons/agenda.png">
-        <span>Reuniões</span>
-    </button>
-
-    <button class="nav-btn" onclick="openPage('analise.html')">
-        <img src="icons/analise.png">
-        <span>Análise</span>
-    </button>
-
-    <button class="nav-btn" onclick="openPage('grupodv.html')">
-        <img src="icons/grupodv.png">
-        <span>Grupo DV</span>
-    </button>
-
-    <button class="nav-btn active">
-        <img src="icons/tarefas.png">
-        <span>Tarefas</span>
-    </button>
-
-    <button class="nav-btn" onclick="openPage('ajustes.html')">
-        <img src="icons/ajustes.png">
-        <span>Ajustes</span>
-    </button>
-
+  <button class="nav-btn"><img src="icons/agenda.png">Reuniões</button>
+  <button class="nav-btn"><img src="icons/analise.png">Análise</button>
+  <button class="nav-btn"><img src="icons/grupodv.png">Grupo DV</button>
+  <button class="nav-btn active"><img src="icons/tarefas.png">Tarefas</button>
+  <button class="nav-btn"><img src="icons/ajustes.png">Ajustes</button>
 </nav>
 
+
 <script>
-// ============================
-// ENDPOINT DO GAS
-// ============================
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbyC6u_ojnVamyZJL3q_NaBA9X1XsAvNUuc2bARqLFkzkCeufGMEs6AEb3bS8IU9A33ScA/exec";
+/* ===========================================
+   USUÁRIOS CADASTRADOS NO INDEX
+=========================================== */
+const usuarios = [
+  { id:1, nome:"João Silva", cargo:"Gerente", senha:"1234", foto:"icons/user1.png" },
+  { id:2, nome:"Maria Santos", cargo:"Supervisor", senha:"2025", foto:"icons/user2.png" },
+];
 
-// Função ultrarrápida do INDEX
-async function carregar(setor, idElemento){
-    try{
-        const r = await fetch(`${ENDPOINT}?acao=contarPendentesIndex&setor=${encodeURIComponent(setor)}`);
-        const json = await r.json();
-        const qtd = json.pendentes ?? 0;
+/* ===========================================
+   LOGIN
+=========================================== */
+function fazerLogin(){
+  const nome = document.getElementById("loginNome").value.trim();
+  const senha = document.getElementById("loginSenha").value.trim();
 
-        document.getElementById(idElemento).textContent =
-            qtd > 0 ? `${qtd} tarefas hoje` : "Nenhuma tarefa";
+  const user = usuarios.find(u => 
+     (u.nome.toLowerCase().includes(nome.toLowerCase())) &&
+      u.senha === senha
+  );
 
-    }catch(e){
-        document.getElementById(idElemento).textContent = "Erro";
-    }
+  if(!user){
+    document.getElementById("loginErro").style.display="block";
+    return;
+  }
+
+  localStorage.setItem("usuarioLogado", JSON.stringify(user));
+  registrarHistorico(`${user.nome} fez login`);
+  iniciarSessao();
 }
 
-// Carregar para cada setor
+/* ===========================================
+   INICIAR SESSÃO
+=========================================== */
+function iniciarSessao(){
+  const user = JSON.parse(localStorage.getItem("usuarioLogado"));
+  if(!user) return;
+
+  document.getElementById("loginTela").style.display="none";
+  document.getElementById("userFotoBtn").style.display="block";
+  document.getElementById("userFoto").src = user.foto;
+}
+
+iniciarSessao();
+
+/* ===========================================
+   POPUP PERFIL
+=========================================== */
+function abrirPerfil(){
+  const u = JSON.parse(localStorage.getItem("usuarioLogado"));
+  document.getElementById("perfilFoto").src = u.foto;
+  document.getElementById("perfilNome").textContent = u.nome;
+  document.getElementById("perfilCargo").textContent = u.cargo;
+  document.getElementById("popupPerfil").style.display="flex";
+}
+
+document.getElementById("perfilFechar").onclick = () => {
+  document.getElementById("popupPerfil").style.display="none";
+};
+
+document.getElementById("sairBtn").onclick = () => {
+  registrarHistorico("Usuário saiu");
+  localStorage.removeItem("usuarioLogado");
+  location.reload();
+};
+
+/* ===========================================
+   HISTÓRICO NO GAS
+=========================================== */
+const ENDPOINT = "SEU_ENDPOINT_AQUI";
+
+function registrarHistorico(acao){
+  const u = JSON.parse(localStorage.getItem("usuarioLogado"));
+  if(!u) return;
+
+  fetch(ENDPOINT,{
+    method:"POST",
+    body:JSON.stringify({
+      acao:"registrarHistorico",
+      usuario:u.nome,
+      cargo:u.cargo,
+      descricao:acao
+    })
+  });
+}
+
+/* ===========================================
+   CONTADORES DE TAREFAS
+=========================================== */
+async function carregar(setor, idElemento){
+  try{
+    const r = await fetch(`${ENDPOINT}?acao=contarPendentesIndex&setor=${setor}`);
+    const json = await r.json();
+    const qtd = json.pendentes ?? 0;
+
+    document.getElementById(idElemento).textContent =
+      qtd > 0 ? `${qtd} tarefas hoje` : "Nenhuma tarefa";
+  }catch{
+    document.getElementById(idElemento).textContent="Erro";
+  }
+}
+
 carregar("Cozinha","cozinhaCount");
 carregar("Salão","salaoCount");
 carregar("Financeiro","financeiroCount");
 
-function openPage(page){window.location.href=page;}
-function openSetor(p){window.location.href=p;}
-
-if("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+function openSetor(p){ 
+  registrarHistorico(`Entrou no setor ${p}`);
+  window.location.href=p;
+}
 </script>
 
 </body>
