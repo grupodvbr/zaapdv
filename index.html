@@ -2,7 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- ZOOM BLOQUEADO -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
 <title>Grupo DV</title>
 
 <link rel="manifest" href="manifest.json">
@@ -20,10 +23,12 @@
   font-family:-apple-system, BlinkMacSystemFont,sans-serif;
 }
 
-body{
+/* Bloqueio total de zoom / gestos */
+html, body{
   background:#ffffff;
   height:100vh;
   overflow:hidden;
+  touch-action: pan-y !important; /* impede pinch-zoom */
 }
 
 /* ===========================================
@@ -182,9 +187,8 @@ body{
 
 
 /* ===========================================
-   MENU SUPERIOR DE FILTROS
+   FILTROS SUPERIORES
 =========================================== */
-
 .tabs-row{
     display:flex;
     padding:6px 12px;
@@ -206,7 +210,7 @@ body{
     font-weight:600;
 }
 
-/* bolinha verde */
+/* Bolinha verde */
 .badge{
     position:absolute;
     top:-6px;
@@ -307,6 +311,7 @@ body{
   </div>
 </div>
 
+
 <!-- ================= INTERFACE PRINCIPAL ================= -->
 <header class="topbar">
   <span class="title">Grupo DV</span>
@@ -371,17 +376,25 @@ body{
 
 
 <script>
-/* ============================
-   USUÁRIOS
-============================ */
+/* ===========================================
+   BLOQUEIO DE ZOOM VIA JS
+=========================================== */
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("gesturechange", e => e.preventDefault());
+document.addEventListener("gestureend", e => e.preventDefault());
+document.addEventListener("dblclick", e => e.preventDefault());
+
+/* ===========================================
+   USUÁRIOS CADASTRADOS
+=========================================== */
 const usuarios = [
   { id:1, nome:"Dheure", cargo:"Gerente geral", senha:"8486", foto:"icons/dheure.png" },
   { id:2, nome:"Maria Santos", cargo:"Supervisor", senha:"2025", foto:"icons/user2.png" },
 ];
 
-/* ============================
+/* ===========================================
    LOGIN
-============================ */
+=========================================== */
 function fazerLogin(){
   const nome = document.getElementById("loginNome").value.trim();
   const senha = document.getElementById("loginSenha").value.trim();
@@ -412,9 +425,9 @@ function iniciarSessao(){
 
 iniciarSessao();
 
-/* ============================
-   PERFIL
-============================ */
+/* ===========================================
+   POPUP PERFIL
+=========================================== */
 function abrirPerfil(){
   const u = JSON.parse(localStorage.getItem("usuarioLogado"));
   document.getElementById("perfilFoto").src = u.foto;
@@ -433,9 +446,9 @@ document.getElementById("sairBtn").onclick = () => {
   location.reload();
 };
 
-/* ============================
-   HISTÓRICO NO GAS
-============================ */
+/* ===========================================
+   HISTÓRICO
+=========================================== */
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbwFqMdyDMkDc4qXaGzdLZ5F5EdGvSaU1kBU9BfI3n0Xn9N03V_hj4f-64gOzsyAZ2pTgg/exec";
 
 function registrarHistorico(acao){
@@ -453,9 +466,9 @@ function registrarHistorico(acao){
   });
 }
 
-/* ============================
-   CONTAR TAREFAS
-============================ */
+/* ===========================================
+   CONTADORES DE TAREFAS
+=========================================== */
 const setores = {
   "Cozinha": "cozinhaCount",
   "Salão": "salaoCount",
@@ -488,9 +501,9 @@ async function carregarContadores(){
 
 carregarContadores();
 
-/* ============================
-   BOLINHA DO MENU / FILTRO
-============================ */
+/* ===========================================
+   MENU / FILTRO
+=========================================== */
 function atualizarBadgePendentes(){
   const total = Object.values(pendentesPorSetor).filter(v=>v>0).length;
 
@@ -524,7 +537,7 @@ function filtro(tipo){
       el.style.display = qtd > 0 ? "flex" : "none";
     }
     else{
-      el.style.display = "none"; // recorrentes e urgentes (a configurar)
+      el.style.display = "none"; // futura ativação de urgentes/recorrentes
     }
   });
 }
