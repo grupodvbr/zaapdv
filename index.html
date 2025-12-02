@@ -87,7 +87,7 @@ body{
 
 
 /* ===========================================
-   TOPO (foto do usuário)
+   TOPO
 =========================================== */
 .topbar{
   width:100%;
@@ -122,6 +122,7 @@ body{
   height:100%;
   object-fit:cover;
 }
+
 
 /* ===========================================
    POPUP PERFIL
@@ -181,19 +182,51 @@ body{
 
 
 /* ===========================================
-   ÁREA PRINCIPAL (seus cards)
+   MENU SUPERIOR DE FILTROS
+=========================================== */
+
+.tabs-row{
+    display:flex;
+    padding:6px 12px;
+    gap:12px;
+}
+
+.tab-btn{
+    padding:6px 14px;
+    background:#f2f2f7;
+    border:none;
+    border-radius:20px;
+    font-size:14px;
+    position:relative;
+}
+
+.tab-btn.active{
+    background:#d7f8d1;
+    color:#1d9c4d;
+    font-weight:600;
+}
+
+/* bolinha verde */
+.badge{
+    position:absolute;
+    top:-6px;
+    right:-6px;
+    background:#25d366;
+    color:white;
+    font-size:11px;
+    padding:2px 6px;
+    border-radius:20px;
+    font-weight:600;
+}
+
+
+/* ===========================================
+   SETORES
 =========================================== */
 .page{
   height:calc(100vh - (75px + env(safe-area-inset-bottom)));
   overflow-y:auto;
   padding-top:10px;
-}
-
-.search-box{ padding:10px 14px; }
-.search-box input{
-  width:100%; padding:12px 14px;
-  background:#f2f2f7;
-  border:none; border-radius:14px;
 }
 
 .section-title{
@@ -274,7 +307,6 @@ body{
   </div>
 </div>
 
-
 <!-- ================= INTERFACE PRINCIPAL ================= -->
 <header class="topbar">
   <span class="title">Grupo DV</span>
@@ -286,42 +318,46 @@ body{
 
 <div class="page">
 
-  <div class="search-box">
-    <input type="text" placeholder="Pesquise setores ou tarefas">
-  </div>
+    <!-- MENU SUPERIOR -->
+    <div class="tabs-row">
+        <button id="tabTodas" class="tab-btn active" onclick="filtro('todas')">Todas</button>
+        <button id="tabPendentes" class="tab-btn" onclick="filtro('pendentes')">
+            Pendentes
+            <span id="badgePendentes" class="badge" style="display:none"></span>
+        </button>
+        <button id="tabRecorrentes" class="tab-btn" onclick="filtro('recorrentes')">Recorrentes</button>
+        <button id="tabUrgentes" class="tab-btn" onclick="filtro('urgentes')">Urgentes</button>
+    </div>
 
-  <div class="section-title">Setores com tarefas hoje</div>
+    <div class="section-title">Setores com tarefas hoje</div>
 
-  <div class="chat-list">
+    <div id="listaSetores">
 
-      <div class="chat-item" onclick="openSetor('cozinha.html')">
-          <img src="icons/cozinha.png" class="avatar">
-          <div class="chat-info">
-              <div class="chat-title">Cozinha</div>
-              <div id="cozinhaCount" class="chat-msg">Carregando...</div>
-          </div>
-          <div class="chat-time">Hoje</div>
-      </div>
+        <div class="chat-item setor" data-setor="Cozinha" onclick="openSetor('cozinha.html')">
+            <img src="icons/cozinha.png" class="avatar">
+            <div class="chat-info">
+                <div class="chat-title">Cozinha</div>
+                <div id="cozinhaCount" class="chat-msg">Carregando...</div>
+            </div>
+        </div>
 
-      <div class="chat-item" onclick="openSetor('salao.html')">
-          <img src="icons/salao.png" class="avatar">
-          <div class="chat-info">
-              <div class="chat-title">Salão</div>
-              <div id="salaoCount" class="chat-msg">Carregando...</div>
-          </div>
-          <div class="chat-time">Hoje</div>
-      </div>
+        <div class="chat-item setor" data-setor="Salão" onclick="openSetor('salao.html')">
+            <img src="icons/salao.png" class="avatar">
+            <div class="chat-info">
+                <div class="chat-title">Salão</div>
+                <div id="salaoCount" class="chat-msg">Carregando...</div>
+            </div>
+        </div>
 
-      <div class="chat-item" onclick="openSetor('financeiro.html')">
-          <img src="icons/financeiro.png" class="avatar">
-          <div class="chat-info">
-              <div class="chat-title">Financeiro</div>
-              <div id="financeiroCount" class="chat-msg">Carregando...</div>
-          </div>
-          <div class="chat-time">Hoje</div>
-      </div>
+        <div class="chat-item setor" data-setor="Financeiro" onclick="openSetor('financeiro.html')">
+            <img src="icons/financeiro.png" class="avatar">
+            <div class="chat-info">
+                <div class="chat-title">Financeiro</div>
+                <div id="financeiroCount" class="chat-msg">Carregando...</div>
+            </div>
+        </div>
 
-  </div>
+    </div>
 </div>
 
 <!-- MENU -->
@@ -335,17 +371,17 @@ body{
 
 
 <script>
-/* ===========================================
-   USUÁRIOS CADASTRADOS NO INDEX
-=========================================== */
+/* ============================
+   USUÁRIOS
+============================ */
 const usuarios = [
   { id:1, nome:"Dheure", cargo:"Gerente geral", senha:"8486", foto:"icons/dheure.png" },
   { id:2, nome:"Maria Santos", cargo:"Supervisor", senha:"2025", foto:"icons/user2.png" },
 ];
 
-/* ===========================================
+/* ============================
    LOGIN
-=========================================== */
+============================ */
 function fazerLogin(){
   const nome = document.getElementById("loginNome").value.trim();
   const senha = document.getElementById("loginSenha").value.trim();
@@ -365,9 +401,6 @@ function fazerLogin(){
   iniciarSessao();
 }
 
-/* ===========================================
-   INICIAR SESSÃO
-=========================================== */
 function iniciarSessao(){
   const user = JSON.parse(localStorage.getItem("usuarioLogado"));
   if(!user) return;
@@ -379,9 +412,9 @@ function iniciarSessao(){
 
 iniciarSessao();
 
-/* ===========================================
-   POPUP PERFIL
-=========================================== */
+/* ============================
+   PERFIL
+============================ */
 function abrirPerfil(){
   const u = JSON.parse(localStorage.getItem("usuarioLogado"));
   document.getElementById("perfilFoto").src = u.foto;
@@ -400,9 +433,9 @@ document.getElementById("sairBtn").onclick = () => {
   location.reload();
 };
 
-/* ===========================================
+/* ============================
    HISTÓRICO NO GAS
-=========================================== */
+============================ */
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbwFqMdyDMkDc4qXaGzdLZ5F5EdGvSaU1kBU9BfI3n0Xn9N03V_hj4f-64gOzsyAZ2pTgg/exec";
 
 function registrarHistorico(acao){
@@ -420,29 +453,85 @@ function registrarHistorico(acao){
   });
 }
 
-/* ===========================================
-   CONTADORES DE TAREFAS
-=========================================== */
-async function carregar(setor, idElemento){
-  try{
-    const r = await fetch(`${ENDPOINT}?acao=contarPendentesIndex&setor=${setor}`);
-    const json = await r.json();
-    const qtd = json.pendentes ?? 0;
+/* ============================
+   CONTAR TAREFAS
+============================ */
+const setores = {
+  "Cozinha": "cozinhaCount",
+  "Salão": "salaoCount",
+  "Financeiro": "financeiroCount"
+};
 
-    document.getElementById(idElemento).textContent =
-      qtd > 0 ? `${qtd} tarefas hoje` : "Nenhuma tarefa";
-  }catch{
-    document.getElementById(idElemento).textContent="Erro";
+const pendentesPorSetor = {};
+
+async function carregarContadores(){
+  for(let setor in setores){
+    const id = setores[setor];
+
+    try{
+      const r = await fetch(`${ENDPOINT}?acao=contarPendentesIndex&setor=${setor}`);
+      const json = await r.json();
+      const qtd = json.pendentes ?? 0;
+
+      pendentesPorSetor[setor] = qtd;
+
+      document.getElementById(id).textContent =
+        qtd > 0 ? `${qtd} tarefas hoje` : "Nenhuma tarefa";
+
+    }catch{
+      document.getElementById(id).textContent = "Erro";
+    }
+  }
+
+  atualizarBadgePendentes();
+}
+
+carregarContadores();
+
+/* ============================
+   BOLINHA DO MENU / FILTRO
+============================ */
+function atualizarBadgePendentes(){
+  const total = Object.values(pendentesPorSetor).filter(v=>v>0).length;
+
+  const badge = document.getElementById("badgePendentes");
+  if(total > 0){
+    badge.style.display = "inline-block";
+    badge.textContent = total;
+  } else {
+    badge.style.display = "none";
   }
 }
 
-carregar("Cozinha","cozinhaCount");
-carregar("Salão","salaoCount");
-carregar("Financeiro","financeiroCount");
+function filtro(tipo){
+  document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.remove("active"));
+  
+  if(tipo === "todas") document.getElementById("tabTodas").classList.add("active");
+  if(tipo === "pendentes") document.getElementById("tabPendentes").classList.add("active");
+  if(tipo === "recorrentes") document.getElementById("tabRecorrentes").classList.add("active");
+  if(tipo === "urgentes") document.getElementById("tabUrgentes").classList.add("active");
 
-function openSetor(p){ 
+  const setoresDOM = document.querySelectorAll(".setor");
+
+  setoresDOM.forEach(el=>{
+    const setor = el.dataset.setor;
+    const qtd = pendentesPorSetor[setor] ?? 0;
+
+    if(tipo === "todas"){
+      el.style.display = "flex";
+    }
+    else if(tipo === "pendentes"){
+      el.style.display = qtd > 0 ? "flex" : "none";
+    }
+    else{
+      el.style.display = "none"; // recorrentes e urgentes (a configurar)
+    }
+  });
+}
+
+function openSetor(p){
   registrarHistorico(`Entrou no setor ${p}`);
-  window.location.href=p;
+  window.location.href = p;
 }
 </script>
 
