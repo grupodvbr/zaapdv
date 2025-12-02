@@ -2,8 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+
 <title>Tarefas – Cozinha</title>
 
 <style>
@@ -14,7 +16,8 @@ body{
     overscroll-behavior-y: contain;
 }
 
-/* ---------------- HEADER ---------------- */
+/* ========================= HEADER ========================== */
+
 .header{
     height:calc(65px + env(safe-area-inset-top));
     padding-top:calc(10px + env(safe-area-inset-top));
@@ -53,17 +56,18 @@ body{
     color:#007aff;
 }
 
-/* ---------------- AREA CHAT ---------------- */
+/* ========================= CHAT ========================== */
+
 .chat-area{
     padding:16px;
-    padding-bottom:180px;
+    padding-bottom:190px;
     overflow-y:auto;
-    height:calc(100vh - 90px);
+    height:calc(100vh - 100px);
 }
 
 .date-badge{
     width:fit-content;
-    margin:12px auto 22px;
+    margin:20px auto;
     background:#d9d9d9;
     padding:6px 14px;
     border-radius:8px;
@@ -72,7 +76,7 @@ body{
     font-weight:500;
 }
 
-/* Mensagem normal */
+/* Mensagem da tarefa */
 .msg-box{
     background:#fff;
     border-radius:10px;
@@ -82,17 +86,12 @@ body{
     margin-bottom:6px;
 }
 
-/* Mensagem enviada pelo usuário (foto ou comentário) */
-.msg-user{
-    margin-left:auto;
-    background:#dcf8c6;
-}
-
 /* Foto enviada */
 .msg-photo{
     width:75%;
     border-radius:12px;
-    margin-bottom:5px;
+    margin:8px 0;
+    margin-left:auto;
     display:block;
 }
 
@@ -107,7 +106,8 @@ body{
     margin-bottom:6px;
 }
 
-/* Bloco de opções */
+/* SIM / NÃO */
+
 .options-box{
     background:#fff;
     border-radius:10px;
@@ -131,9 +131,7 @@ body{
     font-size:16px;
     text-align:center;
     cursor:pointer;
-    position:relative;
     user-select:none;
-    overflow:hidden;
 }
 
 .option-btn.green{
@@ -141,23 +139,14 @@ body{
     color:#0a8f47 !important;
     font-weight:600;
 }
+
 .option-btn.red{
     background:#f7c8c8 !important;
     color:#c62828 !important;
     font-weight:600;
 }
 
-.progress-bar{
-    position:absolute;
-    bottom:0;
-    left:0;
-    height:4px;
-    background:#007aff;
-    width:0%;
-    transition:width 0.4s linear;
-}
-
-/* puxar */
+/* PULL REFRESH */
 #pullIcon{
     width:26px;
     height:26px;
@@ -170,7 +159,7 @@ body{
     transition:opacity .2s, transform .2s;
 }
 
-/* ---------------- área de envio ---------------- */
+/* CAMERA */
 #cameraBox{
     position:fixed;
     bottom:0;
@@ -178,48 +167,53 @@ body{
     width:100%;
     background:white;
     border-top:1px solid #ccc;
-    padding:10px;
+    padding:12px;
     display:none;
     z-index:20;
 }
 
 #previewFoto{
     width:70%;
-    margin:auto;
     display:block;
+    margin:auto;
     border-radius:14px;
-    margin-bottom:10px;
-}
-
-.enviarBtn, .retirarBtn{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    border:none;
-    margin-top:8px;
-    font-size:16px;
-    cursor:pointer;
+    margin-bottom:12px;
 }
 
 .enviarBtn{
+    width:100%;
+    padding:12px;
     background:#007aff;
     color:white;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    margin-bottom:10px;
 }
 
-.retirarBtn{
+.cancelarBtn{
+    width:100%;
+    padding:12px;
     background:#ddd;
     color:#222;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+}
+
+#cameraInput{
+    display:none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
+<!-- ==================== HEADER ==================== -->
 <div class="header">
     <img src="icons/cozinha.png">
     <div>
-        <div id="nomeSetor" class="header-name">Cozinha</div>
+        <div class="header-name">Cozinha</div>
         <div id="statusSetor" class="status-line">Carregando…</div>
     </div>
 </div>
@@ -228,61 +222,56 @@ body{
 
 <div class="chat-area" id="tarefasBox"></div>
 
-<!-- BOX DE CÂMERA -->
+<!-- CAMERA -->
 <div id="cameraBox">
     <img id="previewFoto">
-    <button class="enviarBtn" onclick="enviarFoto()">Enviar Foto</button>
-    <button class="retirarBtn" onclick="fecharCamera()">Cancelar</button>
+    <button class="enviarBtn" onclick="enviarFoto()">Enviar foto</button>
+    <button class="cancelarBtn" onclick="cancelarFoto()">Cancelar</button>
 </div>
 
-<!-- INPUT CAMERA ESCONDIDO -->
-<input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
+<input type="file" accept="image/*" capture="environment" id="cameraInput">
 
 <script>
-/* --------------------------------------------
-   CONFIG
---------------------------------------------- */
+/* ========================= CONFIG ========================== */
+
 const SETOR = "Cozinha";
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbwezFnjYc_SQJouB0n-_lG98AOjfQOIH5JSUGALYIYeYwYPtiVmvWswrGc9fCWGXQvdUQ/exec";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbywI9acyp91LGCVY-YExnt3pYgZf_PiwAPlnA8SJUww1ZoqXJS9NmDRetooD9uBAR-mSQ/exec"; // <<<<<< COLOQUE AQUI
 
-let fotoParaEnviar = null;
-let tarefaAtual = null;
+let fotoArquivo = null;
+let tarefaFoto = null;
 
-/* --------------------------------------------
-   COMPONENTE HTML
---------------------------------------------- */
-function gerarHTML(t){
-    let fotosHTML = "";
+/* ========================= GERAR HTML ========================== */
+
+function htmlTarefa(t){
+
+    let fotos = "";
     t.fotos.forEach(f=>{
-        fotosHTML += `<img src="${f}" class="msg-photo msg-user">`;
+        fotos += `<img src="${f}" class="msg-photo">`;
     });
 
-    let comentariosHTML = "";
+    let comentarios = "";
     t.comentarios.forEach(c=>{
-        comentariosHTML += `<div class="msg-comment">${c}</div>`;
+        comentarios += `<div class="msg-comment">${c}</div>`;
     });
 
     return `
-        <div class="msg-box">
-            <div>${t.tarefa}</div>
-            <div class="msg-time">
-            ${t.conclusao ? "🕘 "+t.conclusao : ""}
-            </div>
+        <div class="msg-box">${t.tarefa}<br>
+            <span style="font-size:13px;color:#666">🕘 ${t.conclusao||""}</span>
         </div>
 
-        ${fotosHTML}
-        ${comentariosHTML}
+        ${fotos}
+        ${comentarios}
 
         <div class="options-box">
             <div class="btn-row">
 
                 <div class="option-btn ${t.status==="sim"?"green":""}"
-                     onclick="responder(${t.id},'sim',${t.fotoObrigatoria})">
+                     onclick="btnSim(${t.id},${t.fotoObrigatoria})">
                     Sim
                 </div>
 
                 <div class="option-btn ${t.status==="nao"?"red":""}"
-                     onclick="responder(${t.id},'nao',false)">
+                     onclick="btnNao(${t.id})">
                     Não
                 </div>
 
@@ -291,168 +280,158 @@ function gerarHTML(t){
     `;
 }
 
-/* --------------------------------------------
-   CARREGAR HOJE / AMANHÃ
---------------------------------------------- */
-async function carregarHojeAmanha(){
-    const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
-    const dados = await req.json();
+/* ========================= CARREGAR ========================== */
 
+async function carregarHojeAmanha(){
+    const dados = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
     box.innerHTML += `<div class="date-badge" id="hojeAnchor">Hoje</div>`;
-    dados.hoje.forEach(t => box.innerHTML += gerarHTML(t));
+    dados.hoje.forEach(t=> box.innerHTML += htmlTarefa(t));
 
     box.innerHTML += `<div class="date-badge">Amanhã</div>`;
-    dados.amanha.forEach(t => box.innerHTML += gerarHTML(t));
+    dados.amanha.forEach(t=> box.innerHTML += htmlTarefa(t));
 
     return dados;
 }
 
-/* --------------------------------------------
-   HISTÓRICO
---------------------------------------------- */
-function carregarAnteriores(dados){
-    const box = document.getElementById("tarefasBox");
-    const hojeNode = document.getElementById("hojeAnchor");
+function carregarAnteriores(d){
+    const anchor = document.getElementById("hojeAnchor");
 
-    // Ontem
-    dados.ontem.reverse().forEach(t=>{
-        hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
+    d.ontem.forEach(t=>{
+        anchor.insertAdjacentHTML("beforebegin", htmlTarefa(t));
     });
 
-    // Anteriores
-    const datas = Object.keys(dados.anteriores).sort();
-    datas.forEach(d=>{
-        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">${d}</div>`);
-        dados.anteriores[d].reverse().forEach(t=>{
-            hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
+    Object.keys(d.anteriores).forEach(data=>{
+        anchor.insertAdjacentHTML("beforebegin", `<div class="date-badge">${data}</div>`);
+        d.anteriores[data].forEach(t=>{
+            anchor.insertAdjacentHTML("beforebegin", htmlTarefa(t));
         });
     });
 }
 
-/* --------------------------------------------
-   BOTÃO SIM/NÃO
---------------------------------------------- */
-async function responder(id, tipo, precisaFoto){
+/* ========================= BOTÕES ========================== */
 
-    if(tipo === "sim" && precisaFoto){
-        tarefaAtual = id;
-        abrirCamera();
-        return;
-    }
-
-    await fetch(ENDPOINT,{
+function btnNao(id){
+    fetch(ENDPOINT,{
         method:"POST",
-        body:JSON.stringify({acao:"responder", id, resposta:tipo})
+        body:JSON.stringify({acao:"responder", id, resposta:"nao"})
     });
-
     carregarHojeAmanha();
 }
 
-/* --------------------------------------------
-   CAMERA
---------------------------------------------- */
-function abrirCamera(){
-    document.getElementById("cameraBox").style.display="block";
-    document.getElementById("cameraInput").click();
+function btnSim(id, precisaFoto){
+    if(precisaFoto){
+        tarefaFoto = id;
+        document.getElementById("cameraBox").style.display = "block";
+        document.getElementById("cameraInput").click();
+    } else {
+        fetch(ENDPOINT,{
+            method:"POST",
+            body:JSON.stringify({acao:"responder", id, resposta:"sim"})
+        });
+        carregarHojeAmanha();
+    }
 }
 
-function fecharCamera(){
-    fotoParaEnviar = null;
-    document.getElementById("cameraBox").style.display="none";
-}
+/* ========================= FOTO ========================== */
 
 document.getElementById("cameraInput").onchange = e=>{
     const file = e.target.files[0];
-    if(!file) return;
-
-    fotoParaEnviar = file;
+    fotoArquivo = file;
 
     const reader = new FileReader();
-    reader.onload = evt=>{
-        document.getElementById("previewFoto").src = evt.target.result;
+    reader.onload = ev=>{
+        document.getElementById("previewFoto").src = ev.target.result;
     };
     reader.readAsDataURL(file);
 };
 
+function cancelarFoto(){
+    fotoArquivo = null;
+    tarefaFoto = null;
+    document.getElementById("cameraBox").style.display = "none";
+}
+
 async function enviarFoto(){
-    if(!fotoParaEnviar) return;
+    if(!fotoArquivo) return;
 
-    const form = new FormData();
-    form.append("id", tarefaAtual);
-    form.append("setor", SETOR);
-    form.append("file", fotoParaEnviar);
+    let fd = new FormData();
+    fd.append("id", tarefaFoto);
+    fd.append("setor", SETOR);
+    fd.append("file", fotoArquivo);
 
-    await fetch(ENDPOINT+"?id="+tarefaAtual+"&setor="+SETOR, {
+    await fetch(ENDPOINT+"?id="+tarefaFoto+"&setor="+SETOR,{
         method:"POST",
-        body: fotoParaEnviar
+        body: fotoArquivo
     });
 
-    // marcar como respondido
     await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             acao:"responder",
-            id:tarefaAtual,
+            id:tarefaFoto,
             resposta:"sim"
         })
     });
 
-    fecharCamera();
+    cancelarFoto();
     carregarHojeAmanha();
 }
 
-/* --------------------------------------------
-   PULL TO REFRESH
---------------------------------------------- */
+/* ========================= PULL TO REFRESH ========================== */
+
 let startY = 0;
 let pulling = false;
+
 const pullIcon = document.getElementById("pullIcon");
 const chat = document.getElementById("tarefasBox");
 
-chat.addEventListener("touchstart", e=>{
-    if(chat.scrollTop === 0){
-        startY = e.touches[0].clientY;
+chat.addEventListener("touchstart",e=>{
+    if(chat.scrollTop===0){
         pulling = true;
+        startY = e.touches[0].clientY;
     }
 });
-chat.addEventListener("touchmove", e=>{
+
+chat.addEventListener("touchmove",e=>{
     if(!pulling) return;
     let dist = e.touches[0].clientY - startY;
-    if(dist > 0 && dist < 80){
+    if(dist>0 && dist<80){
         pullIcon.style.opacity = 1;
         pullIcon.style.transform = `rotate(${dist*4}deg)`;
     }
 });
-chat.addEventListener("touchend", async e=>{
+
+chat.addEventListener("touchend",async e=>{
     pullIcon.style.opacity = 0;
     if(!pulling) return;
-
-    let dist = e.changedTouches[0].clientY - startY;
     pulling = false;
 
-    if(dist > 80){
-        const dados = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
-        carregarAnteriores(dados);
+    let dist = e.changedTouches[0].clientY - startY;
+
+    if(dist>70){
+        const d = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
+        carregarAnteriores(d);
     }
 });
 
-/* --------------------------------------------
-   INICIAR
---------------------------------------------- */
-(async ()=>{
-    const s = document.getElementById("statusSetor");
-    s.textContent = "Carregando…";
+/* ========================= START ========================== */
 
-    const dados = await carregarHojeAmanha();
+(async ()=>{
+    const st = document.getElementById("statusSetor");
+    st.textContent = "Carregando…";
+
+    await carregarHojeAmanha();
 
     setTimeout(()=>{
-        s.textContent = "Online";
-        s.classList.add("status-online");
+        st.textContent = "Online";
+        st.classList.add("status-online");
     },300);
+
 })();
 </script>
+
 </body>
 </html>
