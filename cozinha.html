@@ -6,130 +6,216 @@
 <title>Tarefas – Cozinha</title>
 
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #efeae2; /* fundo real do WhatsApp */
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }
+/* ========================================== */
+/*  ESTILO GERAL - TEMA WHATSAPP BUSINESS     */
+/* ========================================== */
+body {
+    margin: 0;
+    padding: 0;
+    background: #efeae2;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
-    /* HEADER */
-    .header {
-        height: calc(60px + env(safe-area-inset-top));
-        padding-top: calc(10px + env(safe-area-inset-top));
-        padding-left: 16px;
-        padding-right: 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 18px;
-        font-weight: 600;
-        background: #ffffff;
-        border-bottom: 1px solid #ddd;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
+/* ========================================== */
+/*   TOPO (FOTO + NOME DO SETOR)              */
+/* ========================================== */
+.header {
+    background: #ffffff;
+    height: calc(70px + env(safe-area-inset-top));
+    padding-top: calc(10px + env(safe-area-inset-top));
+    padding-left: 16px;
+    padding-right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
 
-    .chat-area {
-        padding: 16px;
-        padding-bottom: 100px;
-    }
+.header img {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+}
 
-    /* BOLHA DA TAREFA */
-    .msg-box {
-        background: #ffffff;
-        padding: 16px;
-        border-radius: 16px;
-        width: 88%;
-        margin-bottom: 14px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-    }
+.header-name {
+    font-size: 18px;
+    font-weight: 700;
+}
 
-    .msg-box p {
-        font-size: 16px;
-        line-height: 22px;
-        margin: 0;
-    }
+/* ========================================== */
+/*   ÁREA DAS MENSAGENS                       */
+/* ========================================== */
+.chat-area {
+    padding: 18px;
+    padding-bottom: 120px;
+}
 
-    .msg-time {
-        text-align: right;
-        font-size: 12px;
-        color: #777;
-        margin-top: 6px;
-    }
+/* BOLHA DA TAREFA */
+.task-box {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 18px;
+    max-width: 88%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+    margin-bottom: 10px;
+}
 
-    /* CAIXA DOS BOTÕES – IGUAL WHATSAPP */
-    .options-box {
-        background: #ffffff;
-        padding: 16px;
-        border-radius: 16px;
-        width: 88%;
-        margin-bottom: 22px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-    }
+.task-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
 
-    .opt {
-        display: flex;
-        align-items: center;
-        font-size: 17px;
-        padding: 10px 0;
-        cursor: pointer;
-    }
+.task-obs {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
 
-    .opt img {
-        width: 22px;
-        margin-right: 10px;
-    }
+/* HORA */
+.task-time {
+    text-align: right;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #777;
+}
 
-    .opt.sim {
-        color: #555;
-    }
+/* ========================================== */
+/*   BOTÕES (Sim / Não) - BOLHA SEPARADA      */
+/* ========================================== */
+.options-box {
+    background: #ffffff;
+    padding: 14px 16px;
+    border-radius: 18px;
+    max-width: 88%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+    margin-bottom: 22px;
+}
 
-    .opt.nao {
-        color: #0a8f47;
-        font-weight: 600;
-    }
+.opt {
+    display: flex;
+    align-items: center;
+    font-size: 17px;
+    padding: 12px 0;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.opt img {
+    width: 22px;
+    margin-right: 10px;
+}
+
+/* cinza default */
+.opt {
+    color: #666;
+}
+
+/* ativados */
+.opt.active-sim {
+    color: #0a8f47 !important;
+    font-weight: 600;
+}
+
+.opt.active-nao {
+    color: #c62828 !important;
+    font-weight: 600;
+}
+
+.separator {
+    height: 1px;
+    background: #ececec;
+}
 </style>
 </head>
 
 <body>
 
+<!-- TOPO -->
 <div class="header">
-    Cozinha
+    <img id="fotoSetor" src="FOTO-COZINHA-AQUI">
+    <div class="header-name" id="nomeSetor">Cozinha</div>
 </div>
 
-<div class="chat-area">
-
-    <!-- BOLHA DA TAREFA -->
-    <div class="msg-box">
-        <p>Limpar bancada, repor materiais e organizar a área de preparo.</p>
-        <div class="msg-time">21:21</div>
-    </div>
-
-    <!-- BOLHA DOS BOTÕES -->
-    <div class="options-box">
-        <div class="opt sim" onclick="marcarSim()">
-            <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png">
-            Sim
-        </div>
-
-        <div class="opt nao" onclick="marcarNao()">
-            <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png">
-            Não
-        </div>
-    </div>
-
+<!-- MENSAGENS -->
+<div class="chat-area" id="tarefasBox">
+    <p style="opacity:.4">Carregando...</p>
 </div>
 
 <script>
-function marcarSim() {
-    alert("Marcado como feito.");
+/* CONFIGURAÇÃO DO SETOR */
+const SETOR = "Cozinha";
+
+/* CARREGAR DO GAS */
+async function carregarTarefas() {
+    const url = "https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec?acao=listar&setor=" + SETOR;
+
+    const req = await fetch(url);
+    const lista = await req.json();
+
+    const box = document.getElementById("tarefasBox");
+    box.innerHTML = "";
+
+    lista.forEach(tarefa => {
+        box.innerHTML += criarTarefaHTML(tarefa);
+    });
 }
 
-function marcarNao() {
-    alert("Marcado como não feito.");
+/* CRIA O HTML DE CADA TAREFA */
+function criarTarefaHTML(t) {
+    return `
+        <div class="task-box">
+            <div class="task-title">${t.tarefa}</div>
+            <textarea class="task-obs" id="obs-${t.id}" placeholder="Observações (opcional)">${t.observacao || ""}</textarea>
+            <div class="task-time">${t.hora}</div>
+        </div>
+
+        <div class="options-box">
+            <div class="opt ${t.status === 'sim' ? 'active-sim' : ''}" onclick="marcarSim(${t.id})">
+                <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png"> Sim
+            </div>
+
+            <div class="separator"></div>
+
+            <div class="opt ${t.status === 'nao' ? 'active-nao' : ''}" onclick="marcarNao(${t.id})">
+                <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png"> Não
+            </div>
+        </div>
+    `;
 }
+
+/* FUNÇÕES DE SALVAR NO GAS */
+async function marcarSim(id) {
+    const obs = document.getElementById("obs-" + id).value;
+
+    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec", {
+        method: "POST",
+        body: JSON.stringify({ acao: "responder", id: id, resposta: "sim", observacao: obs })
+    });
+
+    carregarTarefas();
+}
+
+async function marcarNao(id) {
+    const obs = document.getElementById("obs-" + id).value;
+
+    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec", {
+        method: "POST",
+        body: JSON.stringify({ acao: "responder", id: id, resposta: "nao", observacao: obs })
+    });
+
+    carregarTarefas();
+}
+
+/* INICIAR */
+carregarTarefas();
 </script>
 
 </body>
