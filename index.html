@@ -11,6 +11,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="white">
 <meta name="theme-color" content="#ffffff">
 
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
 <style>
 /* ===========================================
    FONTS iOS
@@ -256,16 +258,10 @@ button, input {
 
 <body>
 
-<!-- ===========================================
-     TOPO
-=========================================== -->
 <header class="topbar">
     <span class="title">Conversas</span>
 </header>
 
-<!-- ===========================================
-     PÁGINA PRINCIPAL
-=========================================== -->
 <div id="mainPage" class="page">
 
     <div class="search-box">
@@ -314,9 +310,7 @@ button, input {
 </div>
 
 
-<!-- ===========================================
-     MODAL FULLSCREEN
-=========================================== -->
+<!-- MODAL -->
 <div id="modal" class="modal">
     <div class="modal-header">
         <button class="close-btn" onclick="closeModal()">‹</button>
@@ -326,66 +320,59 @@ button, input {
 </div>
 
 
-
-<!-- ===========================================
-     NAVBAR INFERIOR
-=========================================== -->
+<!-- NAVBAR -->
 <nav class="bottombar">
     <button class="nav-btn" onclick="openTab('Atualizações')">
-        <img src="https://cdn-icons-png.flaticon.com/512/709/709790.png">
+        <img src="icons/update.svg">
         <span>Atualizações</span>
     </button>
 
     <button class="nav-btn" onclick="openTab('Ligações')">
-        <img src="https://cdn-icons-png.flaticon.com/512/5978/5978297.png">
+        <img src="icons/call.svg">
         <span>Ligações</span>
     </button>
 
     <button class="nav-btn" onclick="openTab('Comunidades')">
-        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828859.png">
+        <img src="icons/community.svg">
         <span>Comunidades</span>
     </button>
 
     <button class="nav-btn active">
-        <img src="https://cdn-icons-png.flaticon.com/512/134/134914.png">
+        <img src="icons/chat.svg">
         <span>Conversas</span>
     </button>
 
     <button class="nav-btn" onclick="openTab('Ajustes')">
-        <img src="https://cdn-icons-png.flaticon.com/512/3524/3524636.png">
+        <img src="icons/settings.svg">
         <span>Ajustes</span>
     </button>
 </nav>
 
 
 <script>
-/* ===========================================
-   ABRIR ABA (MODAL)
-=========================================== */
 function openTab(nome) {
     document.getElementById("modalTitle").innerText = nome;
     document.getElementById("modalContent").innerHTML =
         `<p style='color:#888; font-size:16px;'>${nome} (em construção)</p>`;
-
     document.getElementById("modal").classList.add("show");
 }
 
-/* ===========================================
-   ABRIR CHAT
-=========================================== */
 function openChat(nome) {
     document.getElementById("modalTitle").innerText = nome;
     document.getElementById("modalContent").innerHTML =
         `<p style='color:#888; font-size:16px;'>Tarefa / Conversa com <b>${nome}</b></p>`;
-
     document.getElementById("modal").classList.add("show");
 }
 
-/* ===========================================
-   FECHAR MODAL
-=========================================== */
 function closeModal() {
     document.getElementById("modal").classList.remove("show");
+}
+
+/* ========= REGISTRAR PWA ========= */
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("PWA ativo"))
+        .catch(err => console.error("Erro SW:", err));
 }
 </script>
 
