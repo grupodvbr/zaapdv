@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>Tarefas – Cozinha</title>
 
 <style>
@@ -13,7 +14,7 @@ body{
     overscroll-behavior-y: contain;
 }
 
-/* HEADER */
+/* ---------------- HEADER ---------------- */
 .header{
     height:calc(65px + env(safe-area-inset-top));
     padding-top:calc(10px + env(safe-area-inset-top));
@@ -50,13 +51,12 @@ body{
 
 .status-online{
     color:#007aff;
-    transition:opacity .3s;
 }
 
-/* LISTA */
+/* ---------------- AREA CHAT ---------------- */
 .chat-area{
     padding:16px;
-    padding-bottom:140px;
+    padding-bottom:180px;
     overflow-y:auto;
     height:calc(100vh - 90px);
 }
@@ -72,23 +72,42 @@ body{
     font-weight:500;
 }
 
+/* Mensagem normal */
 .msg-box{
     background:#fff;
     border-radius:10px;
     padding:12px 16px;
     max-width:78%;
     box-shadow:0 1px 1px rgba(0,0,0,0.15);
-    margin-bottom:4px;
+    margin-bottom:6px;
 }
 
-.msg-time{
-    font-size:11px;
-    color:#777;
-    text-align:right;
-    margin-top:6px;
-    line-height:16px;
+/* Mensagem enviada pelo usuário (foto ou comentário) */
+.msg-user{
+    margin-left:auto;
+    background:#dcf8c6;
 }
 
+/* Foto enviada */
+.msg-photo{
+    width:75%;
+    border-radius:12px;
+    margin-bottom:5px;
+    display:block;
+}
+
+/* Comentário enviado */
+.msg-comment{
+    font-size:16px;
+    padding:10px 14px;
+    background:#dcf8c6;
+    border-radius:12px;
+    margin-left:auto;
+    max-width:78%;
+    margin-bottom:6px;
+}
+
+/* Bloco de opções */
 .options-box{
     background:#fff;
     border-radius:10px;
@@ -138,7 +157,7 @@ body{
     transition:width 0.4s linear;
 }
 
-/* Pull refresh */
+/* puxar */
 #pullIcon{
     width:26px;
     height:26px;
@@ -150,13 +169,55 @@ body{
     opacity:0;
     transition:opacity .2s, transform .2s;
 }
+
+/* ---------------- área de envio ---------------- */
+#cameraBox{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:white;
+    border-top:1px solid #ccc;
+    padding:10px;
+    display:none;
+    z-index:20;
+}
+
+#previewFoto{
+    width:70%;
+    margin:auto;
+    display:block;
+    border-radius:14px;
+    margin-bottom:10px;
+}
+
+.enviarBtn, .retirarBtn{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:none;
+    margin-top:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.enviarBtn{
+    background:#007aff;
+    color:white;
+}
+
+.retirarBtn{
+    background:#ddd;
+    color:#222;
+}
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-    <img id="fotoSetor" src="icons/cozinha.png">
+    <img src="icons/cozinha.png">
     <div>
         <div id="nomeSetor" class="header-name">Cozinha</div>
         <div id="statusSetor" class="status-line">Carregando…</div>
@@ -167,130 +228,187 @@ body{
 
 <div class="chat-area" id="tarefasBox"></div>
 
-<script>
-/* ===============================
-   CONFIG
-================================ */
-const SETOR = "Cozinha";
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbyC6u_ojnVamyZJL3q_NaBA9X1XsAvNUuc2bARqLFkzkCeufGMEs6AEb3bS8IU9A33ScA/exec";
+<!-- BOX DE CÂMERA -->
+<div id="cameraBox">
+    <img id="previewFoto">
+    <button class="enviarBtn" onclick="enviarFoto()">Enviar Foto</button>
+    <button class="retirarBtn" onclick="fecharCamera()">Cancelar</button>
+</div>
 
-/* ===============================
-   COMPONENTE HTML DA TAREFA
-================================ */
+<!-- INPUT CAMERA ESCONDIDO -->
+<input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
+
+<script>
+/* --------------------------------------------
+   CONFIG
+--------------------------------------------- */
+const SETOR = "Cozinha";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbwezFnjYc_SQJouB0n-_lG98AOjfQOIH5JSUGALYIYeYwYPtiVmvWswrGc9fCWGXQvdUQ/exec";
+
+let fotoParaEnviar = null;
+let tarefaAtual = null;
+
+/* --------------------------------------------
+   COMPONENTE HTML
+--------------------------------------------- */
 function gerarHTML(t){
+    let fotosHTML = "";
+    t.fotos.forEach(f=>{
+        fotosHTML += `<img src="${f}" class="msg-photo msg-user">`;
+    });
+
+    let comentariosHTML = "";
+    t.comentarios.forEach(c=>{
+        comentariosHTML += `<div class="msg-comment">${c}</div>`;
+    });
+
     return `
         <div class="msg-box">
             <div>${t.tarefa}</div>
             <div class="msg-time">
-                ${t.conclusao ? `🕘 ${t.conclusao}` : ""}
+            ${t.conclusao ? "🕘 "+t.conclusao : ""}
             </div>
         </div>
+
+        ${fotosHTML}
+        ${comentariosHTML}
 
         <div class="options-box">
             <div class="btn-row">
 
-                <div class="option-btn ${t.status === "sim" ? "green" : ""}"
-                     id="sim-${t.id}" onclick="resposta(${t.id},'sim')">
+                <div class="option-btn ${t.status==="sim"?"green":""}"
+                     onclick="responder(${t.id},'sim',${t.fotoObrigatoria})">
                     Sim
-                    <div class="progress-bar" id="pb-sim-${t.id}"></div>
                 </div>
 
-                <div class="option-btn ${t.status === "nao" ? "red" : ""}"
-                     id="nao-${t.id}" onclick="resposta(${t.id},'nao')">
+                <div class="option-btn ${t.status==="nao"?"red":""}"
+                     onclick="responder(${t.id},'nao',false)">
                     Não
-                    <div class="progress-bar" id="pb-nao-${t.id}"></div>
                 </div>
 
             </div>
-        </div>`;
+        </div>
+    `;
 }
 
-/* ===============================
-   CARREGAR RAPIDAMENTE (HOJE + AMANHÃ)
-================================ */
+/* --------------------------------------------
+   CARREGAR HOJE / AMANHÃ
+--------------------------------------------- */
 async function carregarHojeAmanha(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
 
-    const hoje = dados.hoje || [];
-    const amanha = dados.amanha || [];
-
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    box.insertAdjacentHTML("beforeend", `<div class="date-badge" id="hojeAnchor">Hoje</div>`);
-    hoje.forEach(t => box.insertAdjacentHTML("beforeend", gerarHTML(t)));
+    box.innerHTML += `<div class="date-badge" id="hojeAnchor">Hoje</div>`;
+    dados.hoje.forEach(t => box.innerHTML += gerarHTML(t));
 
-    box.insertAdjacentHTML("beforeend", `<div class="date-badge">Amanhã</div>`);
-    amanha.forEach(t => box.insertAdjacentHTML("beforeend", gerarHTML(t)));
+    box.innerHTML += `<div class="date-badge">Amanhã</div>`;
+    dados.amanha.forEach(t => box.innerHTML += gerarHTML(t));
 
     return dados;
 }
 
-/* ===============================
-   CARREGAR (HISTÓRICO)
-================================ */
+/* --------------------------------------------
+   HISTÓRICO
+--------------------------------------------- */
 function carregarAnteriores(dados){
-    const ontem = dados.ontem || [];
-    const anteriores = dados.anteriores || {};
+    const box = document.getElementById("tarefasBox");
     const hojeNode = document.getElementById("hojeAnchor");
 
     // Ontem
-    if(ontem.length){
-        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">Ontem</div>`);
-        ontem.reverse().forEach(t=> hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t)));
-    }
-
-    // Anteriores
-    const datas = Object.keys(anteriores).sort((a,b)=>{
-        const pa = a.split("/").reverse().join("-");
-        const pb = b.split("/").reverse().join("-");
-        return pa > pb ? 1 : -1;
+    dados.ontem.reverse().forEach(t=>{
+        hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
     });
 
-    datas.forEach(label=>{
-        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">${label}</div>`);
-        anteriores[label].reverse().forEach(t=>{
+    // Anteriores
+    const datas = Object.keys(dados.anteriores).sort();
+    datas.forEach(d=>{
+        hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">${d}</div>`);
+        dados.anteriores[d].reverse().forEach(t=>{
             hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
         });
     });
 }
 
-/* ===============================
-   BOTÕES SIM / NÃO
-================================ */
-async function resposta(id,tipo){
-    let btnSim = document.getElementById(`sim-${id}`);
-    let btnNao = document.getElementById(`nao-${id}`);
-    let pb = document.getElementById(`pb-${tipo}-${id}`);
+/* --------------------------------------------
+   BOTÃO SIM/NÃO
+--------------------------------------------- */
+async function responder(id, tipo, precisaFoto){
 
-    btnSim.classList.remove("green","red");
-    btnNao.classList.remove("green","red");
+    if(tipo === "sim" && precisaFoto){
+        tarefaAtual = id;
+        abrirCamera();
+        return;
+    }
 
-    pb.style.width = "40%";
-    setTimeout(()=> pb.style.width = "100%",170);
+    await fetch(ENDPOINT,{
+        method:"POST",
+        body:JSON.stringify({acao:"responder", id, resposta:tipo})
+    });
 
+    carregarHojeAmanha();
+}
+
+/* --------------------------------------------
+   CAMERA
+--------------------------------------------- */
+function abrirCamera(){
+    document.getElementById("cameraBox").style.display="block";
+    document.getElementById("cameraInput").click();
+}
+
+function fecharCamera(){
+    fotoParaEnviar = null;
+    document.getElementById("cameraBox").style.display="none";
+}
+
+document.getElementById("cameraInput").onchange = e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+
+    fotoParaEnviar = file;
+
+    const reader = new FileReader();
+    reader.onload = evt=>{
+        document.getElementById("previewFoto").src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+async function enviarFoto(){
+    if(!fotoParaEnviar) return;
+
+    const form = new FormData();
+    form.append("id", tarefaAtual);
+    form.append("setor", SETOR);
+    form.append("file", fotoParaEnviar);
+
+    await fetch(ENDPOINT+"?id="+tarefaAtual+"&setor="+SETOR, {
+        method:"POST",
+        body: fotoParaEnviar
+    });
+
+    // marcar como respondido
     await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             acao:"responder",
-            id:id,
-            resposta:tipo
+            id:tarefaAtual,
+            resposta:"sim"
         })
     });
 
-    setTimeout(()=>{
-        if(tipo==="sim") btnSim.classList.add("green");
-        else btnNao.classList.add("red");
-    },350);
+    fecharCamera();
+    carregarHojeAmanha();
 }
 
-/* ===============================
-   PULL-TO-REFRESH
-================================ */
+/* --------------------------------------------
+   PULL TO REFRESH
+--------------------------------------------- */
 let startY = 0;
 let pulling = false;
-
 const pullIcon = document.getElementById("pullIcon");
 const chat = document.getElementById("tarefasBox");
 
@@ -303,41 +421,37 @@ chat.addEventListener("touchstart", e=>{
 chat.addEventListener("touchmove", e=>{
     if(!pulling) return;
     let dist = e.touches[0].clientY - startY;
-    if(dist > 0 && dist < 90){
+    if(dist > 0 && dist < 80){
         pullIcon.style.opacity = 1;
         pullIcon.style.transform = `rotate(${dist*4}deg)`;
-    }
-    if(dist >= 90){
-        pullIcon.style.borderTopColor = "#007aff";
     }
 });
 chat.addEventListener("touchend", async e=>{
     pullIcon.style.opacity = 0;
+    if(!pulling) return;
 
     let dist = e.changedTouches[0].clientY - startY;
     pulling = false;
 
-    if(dist >= 90){
+    if(dist > 80){
         const dados = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
         carregarAnteriores(dados);
     }
 });
 
-/* ===============================
+/* --------------------------------------------
    INICIAR
-================================ */
+--------------------------------------------- */
 (async ()=>{
-    document.getElementById("statusSetor").textContent = "Carregando…";
+    const s = document.getElementById("statusSetor");
+    s.textContent = "Carregando…";
 
     const dados = await carregarHojeAmanha();
 
-    // aguarda 300 ms para suavizar
     setTimeout(()=>{
-        const status = document.getElementById("statusSetor");
-        status.textContent = "Online";
-        status.classList.add("status-online");
+        s.textContent = "Online";
+        s.classList.add("status-online");
     },300);
-
 })();
 </script>
 </body>
