@@ -31,7 +31,7 @@ body {
 }
 
 /* ================================
-   TOPBAR iOS REAL
+   TOPBAR
 ================================ */
 .topbar {
     width: 100%;
@@ -50,20 +50,15 @@ body {
     margin-bottom: 6px;
 }
 
-
 /* ================================
-   LISTA AJUSTADA – NÍVEL 5 (200px)
-   ** TOTALMENTE LIVRE DA BARRA **
+   ÁREA PRINCIPAL
 ================================ */
 .page {
     height: calc(100vh - (60px + env(safe-area-inset-bottom)));
     overflow-y: auto;
-
-    /* AQUI SOBE BASTANTE */
     padding-bottom: calc(200px + env(safe-area-inset-bottom));
     padding-top: 10px;
 }
-
 
 /* Busca */
 .search-box {
@@ -78,7 +73,7 @@ body {
     font-size: 16px;
 }
 
-/* Tabs */
+/* Tabs (STATUS) */
 .tabs-row {
     display: flex;
     padding: 6px 12px;
@@ -104,13 +99,8 @@ body {
     font-size: 14px;
     font-weight: 600;
 }
-.section-title span {
-    float: right;
-}
 
-/* ================================
-   LISTA DE CONVERSAS WHATSAPP
-================================ */
+/* Lista de Setores */
 .chat-item {
     display: flex;
     gap: 14px;
@@ -120,7 +110,6 @@ body {
     border-bottom: 1px solid #ededed;
 }
 
-/* FOTO IGUAL WHATSAPP */
 .avatar {
     width: 64px;
     height: 64px;
@@ -129,30 +118,28 @@ body {
     background: #ccc;
 }
 
-.avatar.group {
-    background: linear-gradient(135deg, #4c8aff, #0050d4);
-}
-
-/* Texto */
 .chat-info {
     flex: 1;
 }
+
 .chat-title {
     font-size: 18px;
     font-weight: 600;
 }
+
 .chat-msg {
     font-size: 14px;
     color: #777;
     margin-top: 2px;
 }
+
 .chat-time {
     font-size: 12px;
     color: #888;
 }
 
 /* ================================
-   NAVBAR iOS WHATSAPP
+   NAVBAR
 ================================ */
 .bottombar {
     height: calc(60px + env(safe-area-inset-bottom));
@@ -174,59 +161,15 @@ body {
     margin-top: 6px;
     color: #737373;
 }
+
 .nav-btn.active {
     color: #007aff;
 }
+
 .nav-btn img {
     width: 24px;
     height: 24px;
     margin-bottom: 2px;
-}
-
-/* ================================
-   MODAL FULLSCREEN WHATSAPP
-================================ */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #fff;
-    z-index: 999;
-    transform: translateX(100%);
-    transition: 0.35s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal.show {
-    transform: translateX(0);
-}
-
-.modal-header {
-    height: calc(60px + env(safe-area-inset-top));
-    padding-top: calc(10px + env(safe-area-inset-top));
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-left: 14px;
-    border-bottom: 1px solid #ddd;
-}
-.close-btn {
-    font-size: 26px;
-    background: none;
-    border: none;
-    line-height: 0;
-}
-.modal-title {
-    font-size: 20px;
-    font-weight: 600;
-}
-.modal-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
 }
 </style>
 </head>
@@ -240,9 +183,10 @@ body {
 <div id="mainPage" class="page">
 
     <div class="search-box">
-        <input type="text" placeholder="Pesquise ou comece uma nova tarefa">
+        <input type="text" placeholder="Pesquise setores ou tarefas">
     </div>
 
+    <!-- STATUS (apenas index agora) -->
     <div class="tabs-row">
         <button class="tab-btn active">Todas</button>
         <button class="tab-btn">Pendentes</button>
@@ -250,87 +194,82 @@ body {
         <button class="tab-btn">Urgentes</button>
     </div>
 
-    <div class="section-title">Arquivadas <span>4</span></div>
+    <div class="section-title">Setores com tarefas hoje</div>
 
     <div class="chat-list">
 
-        <div class="chat-item" onclick="openChat('Luan')">
-            <img src="FOTO-LUAN" class="avatar">
+        <!-- COZINHA -->
+        <div class="chat-item" onclick="openSetor('cozinha.html')">
+            <img src="icons/cozinha.png" class="avatar">
             <div class="chat-info">
-                <div class="chat-title">Luan</div>
-                <div class="chat-msg">Figurinha</div>
+                <div class="chat-title">Cozinha</div>
+                <div class="chat-msg">3 tarefas hoje</div>
             </div>
-            <div class="chat-time">23:12</div>
+            <div class="chat-time">Hoje</div>
         </div>
 
-        <div class="chat-item" onclick="openChat('Manual Operacional')">
-            <img src="FOTO-MANUAL" class="avatar group">
+        <!-- SALÃO -->
+        <div class="chat-item" onclick="openSetor('salao.html')">
+            <img src="icons/salao.png" class="avatar">
             <div class="chat-info">
-                <div class="chat-title">MANUAL OPERACIONAL</div>
-                <div class="chat-msg">Você: Antes de implantar tudo isso...</div>
+                <div class="chat-title">Salão</div>
+                <div class="chat-msg">2 tarefas hoje</div>
             </div>
-            <div class="chat-time">22:14</div>
+            <div class="chat-time">Hoje</div>
         </div>
 
-        <div class="chat-item" onclick="openChat('Izau')">
-            <img src="FOTO-IZAU" class="avatar">
+        <!-- FINANCEIRO -->
+        <div class="chat-item" onclick="openSetor('financeiro.html')">
+            <img src="icons/financeiro.png" class="avatar">
             <div class="chat-info">
-                <div class="chat-title">Izau</div>
-                <div class="chat-msg">Pois é</div>
+                <div class="chat-title">Financeiro</div>
+                <div class="chat-msg">1 tarefa hoje</div>
             </div>
-            <div class="chat-time">22:11</div>
+            <div class="chat-time">Hoje</div>
         </div>
 
     </div>
-</div>
-
-<!-- MODAL -->
-<div id="modal" class="modal">
-    <div class="modal-header">
-        <button class="close-btn" onclick="closeModal()">‹</button>
-        <span class="modal-title" id="modalTitle"></span>
-    </div>
-    <div class="modal-content" id="modalContent"></div>
 </div>
 
 <!-- NAVBAR -->
 <nav class="bottombar">
-    <button class="nav-btn" onclick="openTab('Atualizações')">
+    <button class="nav-btn" onclick="openPage('atualizacoes.html')">
         <img src="icons/update.svg">
         <span>Atualizações</span>
     </button>
-    <button class="nav-btn" onclick="openTab('Ligações')">
+
+    <button class="nav-btn" onclick="openPage('ligacoes.html')">
         <img src="icons/call.svg">
         <span>Ligações</span>
     </button>
-    <button class="nav-btn" onclick="openTab('Comunidades')">
+
+    <button class="nav-btn" onclick="openPage('comunidades.html')">
         <img src="icons/community.svg">
         <span>Comunidades</span>
     </button>
+
     <button class="nav-btn active">
         <img src="icons/chat.svg">
         <span>Tarefas</span>
     </button>
-    <button class="nav-btn" onclick="openTab('Ajustes')">
+
+    <button class="nav-btn" onclick="openPage('ajustes.html')">
         <img src="icons/settings.svg">
         <span>Ajustes</span>
     </button>
 </nav>
 
 <script>
-function openTab(nome) {
-    modalTitle.innerText = nome;
-    modalContent.innerHTML = `<p style='color:#888;'>${nome} (em construção)</p>`;
-    modal.classList.add("show");
+/* Abre páginas da navbar */
+function openPage(page) {
+    window.location.href = page;
 }
-function openChat(nome) {
-    modalTitle.innerText = nome;
-    modalContent.innerHTML = `<p>Conversa / Tarefa: <b>${nome}</b></p>`;
-    modal.classList.add("show");
+
+/* Abre página do setor */
+function openSetor(arquivo) {
+    window.location.href = arquivo;
 }
-function closeModal() {
-    modal.classList.remove("show");
-}
+
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
 </script>
 
