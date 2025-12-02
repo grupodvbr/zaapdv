@@ -69,6 +69,7 @@ body{
     color:#777;
     text-align:right;
     margin-top:6px;
+    line-height: 1.4;
 }
 
 .options-box{
@@ -133,12 +134,29 @@ body{
 <div class="chat-area" id="tarefasBox"></div>
 
 <script>
-
-// CONFIG
+/* CONFIG */
 const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbySFOZ8dKep7OsQVVxmrV97LK-ZeEHelPAkah5p4v1huGcwl4WMebyMBmD5EY4bNj4PIQ/exec";
 
-// INÍCIO
+/* FORMATAR A DATA DA TAREFA (A DE CIMA) — dd/mm/yyyy - hh:mm */
+function formatarDataTarefa(dataISO, hora){
+    if(!dataISO) return "";
+    const [y,m,d] = dataISO.split("-");
+    return `${d}/${m}/${y} - ${hora}`;
+}
+
+/* FORMATAR DATA DE CONCLUSÃO (A DE BAIXO) — dd/mm - hh:mm */
+function formatarConclusao(iso){
+    if(!iso) return "";
+    const dt = new Date(iso);
+    const dd = String(dt.getDate()).padStart(2,"0");
+    const mm = String(dt.getMonth()+1).padStart(2,"0");
+    const hh = String(dt.getHours()).padStart(2,"0");
+    const min = String(dt.getMinutes()).padStart(2,"0");
+    return `${dd}/${mm} - ${hh}:${min}`;
+}
+
+/* INÍCIO */
 async function carregarTarefas(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
@@ -158,15 +176,19 @@ async function carregarTarefas(){
                   : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
 }
 
-// HTML
+/* HTML */
 function gerarHTML(t){
+
+    let dataTarefa = formatarDataTarefa(t.data, t.hora);
+    let conclusao  = t.conclusao ? formatarConclusao(t.conclusao) : "";
 
     return `
         <div class="msg-box">
             <div>${t.tarefa}</div>
+
             <div class="msg-time">
-                ${t.hora || ""}
-                ${t.conclusao ? "<br><b>"+t.conclusao+"</b>" : ""}
+                ${dataTarefa}
+                ${ conclusao ? `<br><b>${conclusao}</b>` : "" }
             </div>
         </div>
 
@@ -190,11 +212,12 @@ function gerarHTML(t){
     `;
 }
 
-// SALVAR + ANIMAR
+/* SALVAR + ANIMAR */
 async function resposta(id,tipo){
 
-    let btn = document.getElementById(`${tipo}-${id}`);
-    let pb  = document.getElementById(`pb-${tipo}-${id}`);
+    let btnSim = document.getElementById(`sim-${id}`);
+    let btnNao = document.getElementById(`nao-${id}`);
+    let pb = document.getElementById(`pb-${tipo}-${id}`);
 
     pb.style.width = "40%";
     setTimeout(()=> pb.style.width = "100%",170);
@@ -208,9 +231,14 @@ async function resposta(id,tipo){
         })
     });
 
-    setTimeout(()=>{
-        btn.classList.add(tipo === "sim" ? "green" : "red");
-    },350);
+    /* somente um pode ficar marcado */
+    if(tipo === "sim"){
+        btnSim.classList.add("green");
+        btnNao.classList.remove("red");
+    } else {
+        btnNao.classList.add("red");
+        btnSim.classList.remove("green");
+    }
 }
 
 carregarTarefas();
