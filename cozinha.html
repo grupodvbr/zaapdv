@@ -339,14 +339,18 @@ function btnSim(id, precisaFoto){
 
 document.getElementById("cameraInput").onchange = e=>{
     const file = e.target.files[0];
+    if(!file) return;
+
     fotoArquivo = file;
 
     const reader = new FileReader();
     reader.onload = ev=>{
         document.getElementById("previewFoto").src = ev.target.result;
+        document.getElementById("previewFoto").style.display = "block";
     };
     reader.readAsDataURL(file);
 };
+
 
 function cancelarFoto(){
     fotoArquivo = null;
@@ -355,30 +359,58 @@ function cancelarFoto(){
 }
 
 async function enviarFoto(){
-    if(!fotoArquivo) return;
+    if(!fotoArquivo || !tarefaFoto) return;
 
-    let fd = new FormData();
-    fd.append("id", tarefaFoto);
-    fd.append("setor", SETOR);
-    fd.append("file", fotoArquivo);
+    const cameraBox = document.getElementById("cameraBox");
+    const preview = document.getElementById("previewFoto");
 
-    await fetch(ENDPOINT+"?id="+tarefaFoto+"&setor="+SETOR,{
-        method:"POST",
-        body: fotoArquivo
-    });
+    // mostrar carregando
+    cameraBox.style.opacity = "0.6";
+    cameraBox.style.pointerEvents = "none";
+    preview.style.filter = "grayscale(1)";
 
-    await fetch(ENDPOINT,{
-        method:"POST",
-        body:JSON.stringify({
-            acao:"responder",
-            id:tarefaFoto,
-            resposta:"sim"
-        })
-    });
+    try {
+        // FORM DATA REAL
+        let fd = new FormData();
+        fd.append("acao", "uploadFoto");
+        fd.append("id", tarefaFoto);
+        fd.append("setor", SETOR);
+        fd.append("file", fotoArquivo, fotoArquivo.name);
 
-    cancelarFoto();
-    carregarHojeAmanha();
+        // PRIMEIRO ENVIA A FOTO
+        const up = await fetch(ENDPOINT, {
+            method: "POST",
+            body: fd
+        }).then(r => r.json());
+
+        if(!up.ok){
+            alert("Erro ao enviar foto: " + up.msg);
+            cameraBox.style.opacity = "1";
+            cameraBox.style.pointerEvents = "auto";
+            preview.style.filter = "none";
+            return;
+        }
+
+        // SALVAR STATUS SIM (após foto OK)
+        await fetch(ENDPOINT, {
+            method: "POST",
+            body: JSON.stringify({
+                acao: "responder",
+                id: tarefaFoto,
+                resposta: "sim"
+            })
+        });
+
+        // fechar e recarregar tela
+        cancelarFoto();
+        carregarHojeAmanha();
+
+    } catch(e){
+        alert("Falha no envio da foto.");
+        console.log(e);
+    }
 }
+
 
 /* ========================= PULL TO REFRESH ========================== */
 
