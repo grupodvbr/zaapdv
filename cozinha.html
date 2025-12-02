@@ -125,7 +125,7 @@ body{
     height:4px;
     background:#007aff;
     width:0%;
-    transition:width 0.4s linear;
+    transition:width 0.45s linear;
 }
 </style>
 </head>
@@ -152,28 +152,36 @@ const ENDPOINT = "https://script.google.com/macros/s/AKfycbxDEzFcjgWvowSFOUXSqfk
 
 /* BUSCAR TAREFAS */
 async function carregarTarefas(){
-    const req = await fetch(ENDPOINT + "?acao=listarTudo&setor=" + SETOR);
-    const dados = await req.json();
+    try {
+        const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
+        const dados = await req.json();
 
-    const hoje = dados.hoje || [];
-    const amanha = dados.amanha || [];
+        const hoje = dados.hoje || [];
+        const amanha = dados.amanha || [];
 
-    const box = document.getElementById("tarefasBox");
+        const box = document.getElementById("tarefasBox");
 
-    box.innerHTML = `<div class="date-badge">Hoje</div>`;
+        box.innerHTML = `<div class="date-badge">Hoje</div>`;
 
-    if (hoje.length === 0) {
-        box.innerHTML += `<p style="text-align:center;color:#666;margin-bottom:20px;">Nenhuma tarefa para hoje.</p>`;
-    } else {
-        hoje.forEach(t => box.innerHTML += gerarHTML(t));
-    }
+        /* HOJE */
+        if (hoje.length === 0) {
+            box.innerHTML += `<p style="text-align:center;color:#666;margin-bottom:20px;">Nenhuma tarefa para hoje.</p>`;
+        } else {
+            hoje.forEach(t => box.innerHTML += gerarHTML(t));
+        }
 
-    box.innerHTML += `<div class="date-badge">Amanhã</div>`;
+        /* AMANHÃ */
+        box.innerHTML += `<div class="date-badge">Amanhã</div>`;
 
-    if (amanha.length === 0) {
-        box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
-    } else {
-        amanha.forEach(t => box.innerHTML += gerarHTML(t));
+        if (amanha.length === 0) {
+            box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
+        } else {
+            amanha.forEach(t => box.innerHTML += gerarHTML(t));
+        }
+
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao carregar tarefas.");
     }
 }
 
@@ -206,11 +214,11 @@ function gerarHTML(t){
 /* ANIMAÇÃO + SALVAR */
 async function resposta(id,tipo){
 
-    let btn = document.getElementById(tipo+"-"+id);
-    let pb  = document.getElementById("pb-"+tipo+"-"+id);
+    let btn = document.getElementById(`${tipo}-${id}`);
+    let pb  = document.getElementById(`pb-${tipo}-${id}`);
 
     pb.style.width = "40%";
-    setTimeout(()=> pb.style.width = "100%",150);
+    setTimeout(()=> pb.style.width = "100%",100);
 
     await fetch(ENDPOINT, {
         method:"POST",
@@ -227,7 +235,7 @@ async function resposta(id,tipo){
         } else {
             btn.classList.add("red");
         }
-    },400);
+    },350);
 }
 
 /* INICIAR */
