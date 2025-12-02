@@ -3,135 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tarefas – Cozinha</title>
+<title>Cozinha – Tarefas</title>
 
 <style>
-/* ========================================== */
-/*  ESTILO GERAL - TEMA WHATSAPP BUSINESS     */
-/* ========================================== */
-body {
-    margin: 0;
-    padding: 0;
-    background: #efeae2;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+body{
+    margin:0;
+    background:#efeae2; /* fundo WhatsApp */
+    font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ========================================== */
-/*   TOPO (FOTO + NOME DO SETOR)              */
-/* ========================================== */
-.header {
-    background: #ffffff;
-    height: calc(70px + env(safe-area-inset-top));
-    padding-top: calc(10px + env(safe-area-inset-top));
-    padding-left: 16px;
-    padding-right: 16px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border-bottom: 1px solid #ddd;
-    position: sticky;
-    top: 0;
-    z-index: 20;
+/* HEADER */
+.header{
+    height:calc(65px + env(safe-area-inset-top));
+    padding-top:calc(10px + env(safe-area-inset-top));
+    padding-left:16px;
+    padding-right:16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:10;
 }
 
-.header img {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    object-fit: cover;
+.header img{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    object-fit:cover;
 }
 
-.header-name {
-    font-size: 18px;
-    font-weight: 700;
+.header-name{
+    font-size:18px;
+    font-weight:700;
 }
 
-/* ========================================== */
-/*   ÁREA DAS MENSAGENS                       */
-/* ========================================== */
-.chat-area {
-    padding: 18px;
-    padding-bottom: 120px;
+/* ÁREA DO CHAT */
+.chat-area{
+    padding:16px;
+    padding-bottom:120px;
 }
 
-/* BOLHA DA TAREFA */
-.task-box {
-    background: #ffffff;
-    padding: 16px;
-    border-radius: 18px;
-    max-width: 88%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.18);
-    margin-bottom: 10px;
+/* DATA CENTRAL */
+.date-badge{
+    width:fit-content;
+    margin:10px auto 20px;
+    background:#d9d9d9;
+    padding:6px 14px;
+    border-radius:8px;
+    font-size:13px;
+    color:#444;
+    font-weight:500;
 }
 
-.task-title {
-    font-size: 17px;
-    font-weight: 600;
-    margin-bottom: 6px;
+/* BOLHA DA MENSAGEM (WhatsApp real) */
+.msg-box{
+    background:#fff;
+    border-radius:10px;
+    padding:12px 16px;
+    max-width:78%;
+    box-shadow:0 1px 1px rgba(0,0,0,0.15);
+    margin-bottom:4px;
+    position:relative;
 }
 
-.task-obs {
-    margin-top: 10px;
-    padding: 10px;
-    width: 100%;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-    font-size: 15px;
+/* Hora da mensagem */
+.msg-time{
+    font-size:11px;
+    color:#777;
+    text-align:right;
+    margin-top:6px;
 }
 
-/* HORA */
-.task-time {
-    text-align: right;
-    margin-top: 6px;
-    font-size: 12px;
-    color: #777;
+/* BOLHA DOS BOTÕES */
+.options-box{
+    background:#fff;
+    border-radius:10px;
+    padding:10px 16px;
+    max-width:78%;
+    box-shadow:0 1px 1px rgba(0,0,0,0.15);
+    margin-bottom:14px;
 }
 
-/* ========================================== */
-/*   BOTÕES (Sim / Não) - BOLHA SEPARADA      */
-/* ========================================== */
-.options-box {
-    background: #ffffff;
-    padding: 14px 16px;
-    border-radius: 18px;
-    max-width: 88%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.18);
-    margin-bottom: 22px;
+.opt{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    cursor:pointer;
+    font-size:16px;
+    color:#555;
 }
 
-.opt {
-    display: flex;
-    align-items: center;
-    font-size: 17px;
-    padding: 12px 0;
-    cursor: pointer;
-    transition: 0.2s;
+.opt img{
+    width:20px;
 }
 
-.opt img {
-    width: 22px;
-    margin-right: 10px;
+.opt.green{
+    color:#0a8f47 !important;
+    font-weight:600;
 }
 
-/* cinza default */
-.opt {
-    color: #666;
+.opt.red{
+    color:#c62828 !important;
+    font-weight:600;
 }
 
-/* ativados */
-.opt.active-sim {
-    color: #0a8f47 !important;
-    font-weight: 600;
-}
-
-.opt.active-nao {
-    color: #c62828 !important;
-    font-weight: 600;
-}
-
-.separator {
-    height: 1px;
-    background: #ececec;
+.separator{
+    height:1px;
+    background:#e8e8e8;
 }
 </style>
 </head>
@@ -140,78 +122,78 @@ body {
 
 <!-- TOPO -->
 <div class="header">
-    <img id="fotoSetor" src="FOTO-COZINHA-AQUI">
+    <img id="fotoSetor" src="FOTO-DO-SETOR">
     <div class="header-name" id="nomeSetor">Cozinha</div>
 </div>
 
-<!-- MENSAGENS -->
+<!-- CONTAINER DE TAREFAS -->
 <div class="chat-area" id="tarefasBox">
-    <p style="opacity:.4">Carregando...</p>
+
+    <!-- DATA -->
+    <div class="date-badge" id="dataHoje">Hoje</div>
+
+    <!-- AS TAREFAS VIRÃO DO GAS AQUI -->
 </div>
 
 <script>
-/* CONFIGURAÇÃO DO SETOR */
+/* SETOR ATUAL */
 const SETOR = "Cozinha";
 
-/* CARREGAR DO GAS */
-async function carregarTarefas() {
-    const url = "https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec?acao=listar&setor=" + SETOR;
+/* CARREGAR TAREFAS DO GAS */
+async function carregarTarefas(){
+    const url = "https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec?acao=listar&setor="+SETOR;
 
     const req = await fetch(url);
     const lista = await req.json();
 
     const box = document.getElementById("tarefasBox");
-    box.innerHTML = "";
 
-    lista.forEach(tarefa => {
-        box.innerHTML += criarTarefaHTML(tarefa);
+    lista.forEach(t => {
+        box.innerHTML += criarHTML(t);
     });
 }
 
-/* CRIA O HTML DE CADA TAREFA */
-function criarTarefaHTML(t) {
+/* MODELO WHATSAPP REAL */
+function criarHTML(t){
+
     return `
-        <div class="task-box">
-            <div class="task-title">${t.tarefa}</div>
-            <textarea class="task-obs" id="obs-${t.id}" placeholder="Observações (opcional)">${t.observacao || ""}</textarea>
-            <div class="task-time">${t.hora}</div>
+        <div class="msg-box">
+            <div>${t.tarefa}</div>
+            <div class="msg-time">${t.hora}</div>
         </div>
 
         <div class="options-box">
-            <div class="opt ${t.status === 'sim' ? 'active-sim' : ''}" onclick="marcarSim(${t.id})">
-                <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png"> Sim
+            <div class="opt ${t.status==='sim'?'green':''}" onclick="marcarSim(${t.id})">
+                <img src='https://cdn-icons-png.flaticon.com/512/545/545682.png'>
+                Sim
             </div>
 
             <div class="separator"></div>
 
-            <div class="opt ${t.status === 'nao' ? 'active-nao' : ''}" onclick="marcarNao(${t.id})">
-                <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png"> Não
+            <div class="opt ${t.status==='nao'?'red':''}" onclick="marcarNao(${t.id})">
+                <img src='https://cdn-icons-png.flaticon.com/512/545/545682.png'>
+                Não
             </div>
         </div>
     `;
 }
 
-/* FUNÇÕES DE SALVAR NO GAS */
-async function marcarSim(id) {
-    const obs = document.getElementById("obs-" + id).value;
-
-    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec", {
-        method: "POST",
-        body: JSON.stringify({ acao: "responder", id: id, resposta: "sim", observacao: obs })
+/* BOTÃO SIM */
+async function marcarSim(id){
+    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec",{
+        method:"POST",
+        body:JSON.stringify({acao:"responder", id:id, resposta:"sim"})
     });
-
-    carregarTarefas();
+    location.reload();
 }
 
-async function marcarNao(id) {
-    const obs = document.getElementById("obs-" + id).value;
-
-    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec", {
-        method: "POST",
-        body: JSON.stringify({ acao: "responder", id: id, resposta: "nao", observacao: obs })
+/* BOTÃO NÃO */
+async function marcarNao(id){
+    await fetch("https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec",{
+        method:"POST",
+        body:JSON.stringify({acao:"responder", id:id, resposta:"nao"})
     });
-
-    carregarTarefas();
+    location.reload();
 }
 
 /* INICIAR */
