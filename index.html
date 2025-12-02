@@ -10,248 +10,219 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="white">
 <meta name="theme-color" content="#ffffff">
-
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <style>
-/* ===========================================
-   FONTS iOS
-=========================================== */
-@font-face {
-  font-family: -apple-system;
-  src: local(".SFUIText");
-}
-
-/* ===========================================
-   RESET
-=========================================== */
+/* ================================
+   iOS FONT
+================================ */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-  background: #ffffff;
-  color: #000;
-  height: 100vh;
-  overflow: hidden;
+    background: #ffffff;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* ===========================================
-   TOP BAR (IDÊNTICA AO iOS)
-=========================================== */
+/* ================================
+   TOPBAR iOS (WhatsApp real)
+================================ */
 .topbar {
-  width: 100%;
-  height: 55px;
-  background: #fff;
-  padding: 0 20px;
-  display: flex;
-  align-items: flex-end;
-  border-bottom: 1px solid #d9d9d9;
+    width: 100%;
+    height: 66px;
+    padding: 0 20px;
+    padding-top: env(safe-area-inset-top);
+    display: flex;
+    align-items: flex-end;
+    border-bottom: 1px solid #e6e6e6;
+    background: #ffffff;
 }
 
 .topbar .title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 6px;
+    font-size: 27px;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
-/* ===========================================
-   ÁREA PRINCIPAL SCROLL
-=========================================== */
+/* ================================
+   PÁGINA PRINCIPAL
+================================ */
 .page {
-  height: calc(100vh - 100px);
-  overflow-y: auto;
-  padding-bottom: 80px;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding-bottom: 90px;
 }
 
+/* Busca */
 .search-box {
-  padding: 10px 15px;
+    padding: 10px 14px;
 }
-
 .search-box input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: none;
-  background: #f2f2f7;
-  font-size: 16px;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f2f2f7;
+    border: none;
+    font-size: 16px;
 }
 
-/* ===========================================
-   FILTROS (TODAS / NÃO LIDAS / ETC)
-=========================================== */
+/* Tabs */
 .tabs-row {
-  display: flex;
-  padding: 5px 10px 10px;
-  gap: 8px;
+    display: flex;
+    padding: 6px 12px;
+    gap: 8px;
 }
-
 .tab-btn {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  background: #f2f2f7;
-  border: none;
+    padding: 6px 12px;
+    background: #f2f2f7;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
 }
-
 .tab-btn.active {
-  background: #daf7d8;
-  color: #219653;
-  font-weight: 600;
+    background: #d7f8d1;
+    font-weight: 600;
+    color: #1d9c4d;
 }
 
-/* ===========================================
-   ARQUIVADAS
-=========================================== */
+/* Arquivadas */
 .section-title {
-  padding: 12px 18px;
-  color: #6e6e73;
-  font-size: 14px;
-  font-weight: 600;
+    padding: 12px 16px;
+    color: #6e6e73;
+    font-size: 14px;
+    font-weight: 600;
 }
-
 .section-title span {
-  float: right;
-  color: #242426;
+    float: right;
 }
 
-/* ===========================================
-   LISTA DE CONVERSAS
-=========================================== */
-.chat-list {
-  padding-bottom: 50px;
-}
+/* ================================
+   LISTA DE CONVERSAS (WHATSAPP REAL)
+================================ */
+.chat-list {}
 
 .chat-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 18px;
-  align-items: center;
-  cursor: pointer;
-  border-bottom: 1px solid #e9e9e9;
+    display: flex;
+    gap: 14px;
+    padding: 12px 16px;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid #ededed;
 }
 
+/* FOTO MAIOR — agora igual ao WhatsApp */
 .avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #ccc;
-  object-fit: cover;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ccc;
 }
 
 .avatar.group {
-  background: #ff6699;
+    background: linear-gradient(135deg, #4c8aff, #0050d4);
 }
 
+/* Texto */
 .chat-info {
-  flex: 1;
+    flex: 1;
 }
-
 .chat-title {
-  font-size: 17px;
-  font-weight: 600;
+    font-size: 18px;
+    font-weight: 600;
 }
-
 .chat-msg {
-  font-size: 14px;
-  color: #666;
-  margin-top: 2px;
+    font-size: 14px;
+    color: #777;
+    margin-top: 2px;
 }
-
 .chat-time {
-  font-size: 12px;
-  color: #777;
+    font-size: 12px;
+    color: #888;
 }
 
-/* ===========================================
-   NAVBAR INFERIOR iOS
-=========================================== */
+/* ================================
+   NAVBAR iOS
+================================ */
 .bottombar {
-  height: 55px;
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  background: #fff;
-  border-top: 1px solid #d9d9d9;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+    height: 60px;
+    padding-bottom: env(safe-area-inset-bottom);
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    background: #fff;
+    border-top: 1px solid #d9d9d9;
 }
 
 .nav-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 10px;
-  color: #777;
-  margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+    margin-top: 6px;
+    color: #737373;
 }
-
 .nav-btn.active {
-  color: #007aff;
+    color: #007aff;
 }
-
 .nav-btn img {
-  width: 22px;
-  height: 22px;
-  margin-bottom: 2px;
+    width: 24px;
+    height: 24px;
+    margin-bottom: 2px;
 }
 
-/* ===========================================
-   MODAL FULLSCREEN INTERNO (ABAS E CHAT)
-=========================================== */
+/* ================================
+   MODAL FULLSCREEN WHATSAPP
+================================ */
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: 0.35s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    z-index: 999;
+    transform: translateX(100%);
+    transition: 0.35s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal.show {
-  transform: translateX(0%);
+    transform: translateX(0);
 }
 
 .modal-header {
-  height: 55px;
-  background: #fff;
-  border-bottom: 1px solid #dcdcdc;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-  gap: 10px;
+    height: 60px;
+    padding-top: env(safe-area-inset-top);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 14px;
+    border-bottom: 1px solid #ddd;
 }
-
 .close-btn {
-  font-size: 22px;
-  background: none;
-  border: none;
+    font-size: 26px;
+    background: none;
+    border: none;
+    line-height: 0;
 }
-
 .modal-title {
-  font-size: 20px;
-  font-weight: 600;
+    font-size: 20px;
+    font-weight: 600;
 }
-
 .modal-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-/* Remove highlight em iPhone */
-button, input {
-  -webkit-tap-highlight-color: transparent;
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
 }
 </style>
 </head>
@@ -265,22 +236,23 @@ button, input {
 <div id="mainPage" class="page">
 
     <div class="search-box">
-        <input type="text" placeholder="Pergunte à Meta AI ou pesquise">
+        <input type="text" placeholder="Pesquise ou comece uma nova conversa">
     </div>
 
     <div class="tabs-row">
         <button class="tab-btn active">Todas</button>
-        <button class="tab-btn">Não lidas 144</button>
+        <button class="tab-btn">Não lidas</button>
         <button class="tab-btn">Favoritos</button>
-        <button class="tab-btn">Grupos 12</button>
+        <button class="tab-btn">Grupos</button>
     </div>
 
     <div class="section-title">Arquivadas <span>4</span></div>
 
     <div class="chat-list">
 
+        <!-- COLOQUE O LINK REAL DA FOTO AQUI -->
         <div class="chat-item" onclick="openChat('Luan')">
-            <img src="https://via.placeholder.com/60" class="avatar">
+            <img src="AQUI-LINK-FOTO-LUAN" class="avatar">
             <div class="chat-info">
                 <div class="chat-title">Luan</div>
                 <div class="chat-msg">Figurinha</div>
@@ -289,7 +261,7 @@ button, input {
         </div>
 
         <div class="chat-item" onclick="openChat('Manual Operacional')">
-            <div class="avatar group"></div>
+            <img src="AQUI-FOTO-MANUAL" class="avatar group">
             <div class="chat-info">
                 <div class="chat-title">MANUAL OPERACIONAL</div>
                 <div class="chat-msg">Você: Antes de implantar tudo isso...</div>
@@ -298,7 +270,7 @@ button, input {
         </div>
 
         <div class="chat-item" onclick="openChat('Izau')">
-            <img src="https://via.placeholder.com/60" class="avatar">
+            <img src="AQUI-FOTO-IZAU" class="avatar">
             <div class="chat-info">
                 <div class="chat-title">Izau</div>
                 <div class="chat-msg">Pois é</div>
@@ -309,7 +281,6 @@ button, input {
     </div>
 </div>
 
-
 <!-- MODAL -->
 <div id="modal" class="modal">
     <div class="modal-header">
@@ -319,61 +290,45 @@ button, input {
     <div class="modal-content" id="modalContent"></div>
 </div>
 
-
 <!-- NAVBAR -->
 <nav class="bottombar">
     <button class="nav-btn" onclick="openTab('Atualizações')">
         <img src="icons/update.svg">
         <span>Atualizações</span>
     </button>
-
     <button class="nav-btn" onclick="openTab('Ligações')">
         <img src="icons/call.svg">
         <span>Ligações</span>
     </button>
-
     <button class="nav-btn" onclick="openTab('Comunidades')">
         <img src="icons/community.svg">
         <span>Comunidades</span>
     </button>
-
     <button class="nav-btn active">
         <img src="icons/chat.svg">
         <span>Conversas</span>
     </button>
-
     <button class="nav-btn" onclick="openTab('Ajustes')">
         <img src="icons/settings.svg">
         <span>Ajustes</span>
     </button>
 </nav>
 
-
 <script>
 function openTab(nome) {
-    document.getElementById("modalTitle").innerText = nome;
-    document.getElementById("modalContent").innerHTML =
-        `<p style='color:#888; font-size:16px;'>${nome} (em construção)</p>`;
-    document.getElementById("modal").classList.add("show");
+    modalTitle.innerText = nome;
+    modalContent.innerHTML = `<p style='color:#888;'>${nome} (em construção)</p>`;
+    modal.classList.add("show");
 }
-
 function openChat(nome) {
-    document.getElementById("modalTitle").innerText = nome;
-    document.getElementById("modalContent").innerHTML =
-        `<p style='color:#888; font-size:16px;'>Tarefa / Conversa com <b>${nome}</b></p>`;
-    document.getElementById("modal").classList.add("show");
+    modalTitle.innerText = nome;
+    modalContent.innerHTML = `<p>Conversa / Tarefa: <b>${nome}</b></p>`;
+    modal.classList.add("show");
 }
-
 function closeModal() {
-    document.getElementById("modal").classList.remove("show");
+    modal.classList.remove("show");
 }
-
-/* ========= REGISTRAR PWA ========= */
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("PWA ativo"))
-        .catch(err => console.error("Erro SW:", err));
-}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
 </script>
 
 </body>
