@@ -31,13 +31,13 @@ body {
 }
 
 /* ================================
-   TOPBAR iOS (WhatsApp real)
+   TOPBAR iOS REAL
 ================================ */
 .topbar {
     width: 100%;
-    height: 66px;
+    height: calc(58px + env(safe-area-inset-top));
     padding: 0 20px;
-    padding-top: env(safe-area-inset-top);
+    padding-top: calc(10px + env(safe-area-inset-top));
     display: flex;
     align-items: flex-end;
     border-bottom: 1px solid #e6e6e6;
@@ -45,20 +45,24 @@ body {
 }
 
 .topbar .title {
-    font-size: 27px;
+    font-size: 28px;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
+
+
 /* ================================
-   PÁGINA PRINCIPAL
+   ÁREA PRINCIPAL AJUSTADA
+   (AGORA FICA PERFEITAMENTE ACIMA DA BARRA)
 ================================ */
 .page {
-    height: calc(100vh - 130px);
+    height: calc(100vh - (70px + env(safe-area-inset-bottom)));
     overflow-y: auto;
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
-    padding-top: 6px;
+    padding-bottom: 20px;
+    padding-top: 8px;
 }
+
 
 
 /* Busca */
@@ -67,7 +71,7 @@ body {
 }
 .search-box input {
     width: 100%;
-    padding: 10px 12px;
+    padding: 11px 12px;
     border-radius: 12px;
     background: #f2f2f7;
     border: none;
@@ -118,10 +122,10 @@ body {
     border-bottom: 1px solid #ededed;
 }
 
-/* FOTO MAIOR — agora igual ao WhatsApp */
+/* FOTO IGUAL AO WHATSAPP (MAIOR) */
 .avatar {
-    width: 68px;
-    height: 68px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
     background: #ccc;
@@ -150,7 +154,7 @@ body {
 }
 
 /* ================================
-   NAVBAR iOS
+   NAVBAR iOS WHATSAPP
 ================================ */
 .bottombar {
     height: calc(60px + env(safe-area-inset-bottom));
@@ -203,8 +207,8 @@ body {
 }
 
 .modal-header {
-    height: 60px;
-    padding-top: env(safe-area-inset-top);
+    height: calc(60px + env(safe-area-inset-top));
+    padding-top: calc(10px + env(safe-area-inset-top));
     display: flex;
     align-items: center;
     gap: 12px;
@@ -252,7 +256,7 @@ body {
 
     <div class="chat-list">
 
-        <!-- COLOQUE O LINK REAL DA FOTO AQUI -->
+        <!-- FOTO 1 -->
         <div class="chat-item" onclick="openChat('Luan')">
             <img src="AQUI-LINK-FOTO-LUAN" class="avatar">
             <div class="chat-info">
@@ -262,8 +266,9 @@ body {
             <div class="chat-time">23:12</div>
         </div>
 
+        <!-- FOTO 2 -->
         <div class="chat-item" onclick="openChat('Manual Operacional')">
-            <img src="AQUI-FOTO-MANUAL" class="avatar group">
+            <img src="AQUI-LINK-FOTO-MANUAL" class="avatar group">
             <div class="chat-info">
                 <div class="chat-title">MANUAL OPERACIONAL</div>
                 <div class="chat-msg">Você: Antes de implantar tudo isso...</div>
@@ -271,8 +276,9 @@ body {
             <div class="chat-time">22:14</div>
         </div>
 
+        <!-- FOTO 3 -->
         <div class="chat-item" onclick="openChat('Izau')">
-            <img src="AQUI-FOTO-IZAU" class="avatar">
+            <img src="AQUI-LINK-FOTO-IZAU" class="avatar">
             <div class="chat-info">
                 <div class="chat-title">Izau</div>
                 <div class="chat-msg">Pois é</div>
