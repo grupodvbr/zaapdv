@@ -3,203 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cozinha – Tarefas</title>
+<title>Tarefas – Cozinha</title>
 
 <style>
-body {
-    margin: 0;
-    background: #e5ddd5;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
-}
+    body {
+        margin: 0;
+        padding: 0;
+        background: #efeae2; /* fundo real do WhatsApp */
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-/* TOPO */
-.header {
-    height: calc(60px + env(safe-area-inset-top));
-    padding-top: calc(10px + env(safe-area-inset-top));
-    padding-left: 18px;
-    display: flex;
-    align-items: center;
-    font-size: 20px;
-    font-weight: 700;
-    background: #ffffff;
-    border-bottom: 1px solid #ddd;
-}
+    /* HEADER */
+    .header {
+        height: calc(60px + env(safe-area-inset-top));
+        padding-top: calc(10px + env(safe-area-inset-top));
+        padding-left: 16px;
+        padding-right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 600;
+        background: #ffffff;
+        border-bottom: 1px solid #ddd;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
 
-/* ÁREA DAS MENSAGENS */
-.chat-area {
-    padding: 18px;
-}
+    .chat-area {
+        padding: 16px;
+        padding-bottom: 100px;
+    }
 
-/* BOLHA DO SISTEMA (tarefa) */
-.msg {
-    background: #ffffff;
-    padding: 14px 16px;
-    border-radius: 12px;
-    max-width: 85%;
-    margin-bottom: 25px;
-    font-size: 16px;
-    line-height: 22px;
-    position: relative;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+    /* BOLHA DA TAREFA */
+    .msg-box {
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 16px;
+        width: 88%;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
 
-/* SETA DA BOLHA */
-.msg:after {
-    content: "";
-    position: absolute;
-    left: -8px;
-    top: 12px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid transparent;
-    border-right: 10px solid #ffffff;
-    border-bottom: 8px solid transparent;
-}
+    .msg-box p {
+        font-size: 16px;
+        line-height: 22px;
+        margin: 0;
+    }
 
-/* Título da tarefa */
-.msg-title {
-    font-weight: 700;
-    margin-bottom: 10px;
-}
+    .msg-time {
+        text-align: right;
+        font-size: 12px;
+        color: #777;
+        margin-top: 6px;
+    }
 
-/* BOTÕES IGUAL WHATSAPP */
-.btn-row {
-    display: flex;
-    flex-direction: column;
-    margin-top: 12px;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #dcdcdc;
-}
+    /* CAIXA DOS BOTÕES – IGUAL WHATSAPP */
+    .options-box {
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 16px;
+        width: 88%;
+        margin-bottom: 22px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
 
-.btn-option {
-    width: 100%;
-    padding: 14px;
-    font-size: 17px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid #dcdcdc;
-    background: #fff;
-    cursor: pointer;
-}
+    .opt {
+        display: flex;
+        align-items: center;
+        font-size: 17px;
+        padding: 10px 0;
+        cursor: pointer;
+    }
 
-.btn-option:last-child {
-    border-bottom: none;
-}
+    .opt img {
+        width: 22px;
+        margin-right: 10px;
+    }
 
-/* Ícones setas */
-.icon {
-    width: 22px;
-    opacity: 0.6;
-}
+    .opt.sim {
+        color: #555;
+    }
 
-.btn-option.green {
-    color: #0a7c2f;
-}
-
-/* OBSERVAÇÃO */
-.obs-box {
-    width: 100%;
-    margin-top: 12px;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 15px;
-    border: 1px solid #ccc;
-}
-
-/* STATUS CHECKS */
-.status {
-    font-size: 12px;
-    text-align: right;
-    margin-top: 6px;
-    opacity: 0.6;
-}
-
-.check-grey {
-    color: #999;
-}
-
-.check-green {
-    color: #0a7c2f;
-}
+    .opt.nao {
+        color: #0a8f47;
+        font-weight: 600;
+    }
 </style>
 </head>
 
 <body>
 
-<div class="header">Cozinha</div>
+<div class="header">
+    Cozinha
+</div>
 
-<div class="chat-area" id="tarefasBox"></div>
+<div class="chat-area">
+
+    <!-- BOLHA DA TAREFA -->
+    <div class="msg-box">
+        <p>Limpar bancada, repor materiais e organizar a área de preparo.</p>
+        <div class="msg-time">21:21</div>
+    </div>
+
+    <!-- BOLHA DOS BOTÕES -->
+    <div class="options-box">
+        <div class="opt sim" onclick="marcarSim()">
+            <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png">
+            Sim
+        </div>
+
+        <div class="opt nao" onclick="marcarNao()">
+            <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png">
+            Não
+        </div>
+    </div>
+
+</div>
 
 <script>
-const SETOR_ATUAL = "Cozinha";
-const API = "https://script.google.com/macros/s/AKfycbxWIbVy4Q6z36M4Y-wgegjzBjl2GkfORPehRPjFYCFVCPFirpl8OH73CLHZ85RCXQxvNg/exec";
-
-/* BUSCAR TAREFAS */
-async function carregarTarefas() {
-    const resp = await fetch(`${API}?acao=listar&setor=${SETOR_ATUAL}`);
-    const dados = await resp.json();
-    const box = document.getElementById("tarefasBox");
-
-    box.innerHTML = ""; // limpa sem piscar nada
-
-    dados.forEach(t => {
-        const chk = t.status === "Feita"
-            ? `<div class="status check-green">✔✔ concluída</div>`
-            : `<div class="status check-grey">✔✔ pendente</div>`;
-
-        const item = document.createElement("div");
-        item.className = "msg";
-
-        item.innerHTML = `
-            <div class="msg-title">${t.tarefa}</div>
-
-            <textarea class="obs-box" id="obs-${t.id}" placeholder="Observações...">${t.observacao || ""}</textarea>
-
-            <div class="btn-row">
-
-                <div class="btn-option" onclick="marcar(${t.id})">
-                    <img src="icons/arrow-grey.png" class="icon">
-                    Sim
-                </div>
-
-                <div class="btn-option green" onclick="naoFazer()">
-                    <img src="icons/arrow-green.png" class="icon">
-                    Não
-                </div>
-
-            </div>
-
-            ${chk}
-        `;
-
-        box.appendChild(item);
-    });
+function marcarSim() {
+    alert("Marcado como feito.");
 }
 
-/* MARCAR COMO FEITA */
-async function marcar(id) {
-    const obs = document.getElementById("obs-" + id).value;
-
-    await fetch(API, {
-        method: "POST",
-        body: JSON.stringify({
-            acao: "finalizar",
-            id: id,
-            observacao: obs
-        })
-    });
-
-    carregarTarefas();
+function marcarNao() {
+    alert("Marcado como não feito.");
 }
-
-function naoFazer() {
-    alert("Ok! Nada alterado.");
-}
-
-carregarTarefas();
 </script>
 
 </body>
