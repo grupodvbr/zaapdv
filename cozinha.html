@@ -10,6 +10,7 @@ body{
     margin:0;
     background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+    overscroll-behavior-y: contain;
 }
 
 .header{
@@ -123,6 +124,19 @@ body{
     width:0%;
     transition:width 0.4s linear;
 }
+
+/* Ícone de pull-to-refresh */
+#pullIcon{
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:3px solid #999;
+    border-top-color:transparent;
+    margin:0 auto;
+    margin-top:-40px;
+    opacity:0;
+    transition:opacity .2s, transform .2s;
+}
 </style>
 </head>
 
@@ -133,14 +147,17 @@ body{
     <div id="nomeSetor" class="header-name">Cozinha</div>
 </div>
 
+<div id="pullIcon"></div>
+
 <div class="chat-area" id="tarefasBox"></div>
 
 <script>
+
 // CONFIG
 const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw5WEC9e-icOWelS0T7bksyDBw4EML9DzYCtsUajZ3hqujGVariFgNAEbv_CB7y_8Ljgg/exec";
 
-// BOLHA HTML
+// HTML DAS MENSAGENS
 function gerarHTML(t){
     return `
         <div class="msg-box">
@@ -166,11 +183,10 @@ function gerarHTML(t){
                 </div>
 
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-// CARREGAR APENAS HOJE E AMANHÃ (instantâneo)
+// CARREGA SOMENTE HOJE / AMANHÃ — RÁPIDO
 async function carregarHojeAmanha(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
@@ -181,60 +197,44 @@ async function carregarHojeAmanha(){
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    // HOJE
     box.innerHTML += `<div class="date-badge" id="hojeAnchor">Hoje</div>`;
-    hoje.length ? hoje.forEach(t=> box.innerHTML += gerarHTML(t))
-                : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para hoje.</p>`;
+    hoje.forEach(t => box.innerHTML += gerarHTML(t));
 
-    // AMANHÃ
     box.innerHTML += `<div class="date-badge">Amanhã</div>`;
-    amanha.length ? amanha.forEach(t=> box.innerHTML += gerarHTML(t))
-                  : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
+    amanha.forEach(t => box.innerHTML += gerarHTML(t));
 
-    // Scroll direto no HOJE
-    setTimeout(()=>{
-        const anchor = document.getElementById("hojeAnchor");
-        if(anchor){
-            anchor.scrollIntoView({ behavior:"instant", block:"start" });
-        }
-    },50);
-
-    return dados; // devolve para reutilizar
+    return dados;
 }
 
-// CARREGAR ONTEM E ANTERIORES depois (background)
+// CARREGA HISTÓRICO SOMENTE SE PUXAR PRA BAIXO
 function carregarAnteriores(dados){
     const ontem = dados.ontem || [];
-    const anterioresObj = dados.anteriores || {};
+    const anteriores = dados.anteriores || {};
     const box = document.getElementById("tarefasBox");
-
-    // INSERIR ANTES DO HOJE
     const hojeNode = document.getElementById("hojeAnchor");
 
     // ONTEM
     if(ontem.length){
         hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">Ontem</div>`);
-        ontem.reverse().forEach(t=>{
-            hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
-        });
+        ontem.reverse().forEach(t=> hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t)));
     }
 
-    // ANTERIORES
-    const keys = Object.keys(anterioresObj).sort((a,b)=>{
+    // OUTROS DIAS
+    const datas = Object.keys(anteriores).sort((a,b)=>{
         const pa = a.split("/").reverse().join("-");
         const pb = b.split("/").reverse().join("-");
         return pa > pb ? 1 : -1;
     });
 
-    keys.forEach(label=>{
+    datas.forEach(label=>{
         hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">${label}</div>`);
-        anterioresObj[label].reverse().forEach(t=>{
+        anteriores[label].reverse().forEach(t=>{
             hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t));
         });
     });
 }
 
-// SALVAR RESPOSTA
+// BOTÕES
 async function resposta(id,tipo){
 
     let btnSim = document.getElementById(`sim-${id}`);
@@ -262,12 +262,48 @@ async function resposta(id,tipo){
     },350);
 }
 
+// SISTEMA DE PULL-TO-REFRESH IGUAL INSTAGRAM
+let startY = 0;
+let pulling = false;
+
+const pullIcon = document.getElementById("pullIcon");
+const chat = document.getElementById("tarefasBox");
+
+chat.addEventListener("touchstart", e=>{
+    if(chat.scrollTop === 0){
+        startY = e.touches[0].clientY;
+        pulling = true;
+    }
+});
+
+chat.addEventListener("touchmove", e=>{
+    if(!pulling) return;
+    let dist = e.touches[0].clientY - startY;
+    if(dist > 0 && dist < 90){
+        pullIcon.style.opacity = 1;
+        pullIcon.style.transform = `rotate(${dist*4}deg)`;
+    }
+    if(dist >= 90){
+        pullIcon.style.borderTopColor = "#007aff";
+    }
+});
+
+chat.addEventListener("touchend", async e=>{
+    pullIcon.style.opacity = 0;
+
+    let dist = e.changedTouches[0].clientY - startY;
+    pulling = false;
+
+    if(dist >= 90){
+        const dados = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
+        carregarAnteriores(dados);
+    }
+});
+
 // INICIAR
 (async ()=>{
-    const dados = await carregarHojeAmanha(); // carrega rápido
-    setTimeout(()=> carregarAnteriores(dados), 250); // carrega depois
+    await carregarHojeAmanha();
 })();
 </script>
-
 </body>
 </html>
