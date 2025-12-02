@@ -72,7 +72,6 @@ body{
     line-height:16px;
 }
 
-/* ───────── Botões ───────── */
 .options-box{
     background:#fff;
     border-radius:10px;
@@ -140,7 +139,7 @@ body{
 const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw5WEC9e-icOWelS0T7bksyDBw4EML9DzYCtsUajZ3hqujGVariFgNAEbv_CB7y_8Ljgg/exec";
 
-// --------------- FORMATADORES ---------------
+// FORMATADORES
 function formatarDataCompleta(iso){
     if(!iso) return "";
     const d = new Date(iso);
@@ -153,11 +152,8 @@ function formatarConclusao(txt){
     return txt ? txt : "";
 }
 
-// --------------- GERAR HTML ---------------
+// HTML DA TAREFA
 function gerarHTML(t){
-
-    const dataTarefaFormat = formatarDataCompleta(t.data + "T" + t.hora);
-    const dataConclusao = formatarConclusao(t.conclusao);
 
     return `
         <div class="msg-box">
@@ -188,36 +184,51 @@ function gerarHTML(t){
     `;
 }
 
-// --------------- CARREGAR TAREFAS ---------------
+// CARREGAR TAREFAS
 async function carregarTarefas(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
 
     const hoje = dados.hoje || [];
     const amanha = dados.amanha || [];
-    const anteriores = dados.anteriores || [];
+    const ontem = dados.ontem || [];
+    const anterioresObj = dados.anteriores || {};
+
+    // transformar objeto em array ordenado
+    const anterioresKeys = Object.keys(anterioresObj).sort((a,b)=>{
+        // ordenar datas dd/mm/yyyy
+        const pa = a.split("/").reverse().join("-");
+        const pb = b.split("/").reverse().join("-");
+        return pa < pb ? 1 : -1; // mais recente primeiro
+    });
 
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    // Hoje
+    // HOJE
     box.innerHTML += `<div class="date-badge">Hoje</div>`;
     hoje.length ? hoje.forEach(t => box.innerHTML += gerarHTML(t))
                 : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para hoje.</p>`;
 
-    // Amanhã
+    // AMANHÃ
     box.innerHTML += `<div class="date-badge">Amanhã</div>`;
     amanha.length ? amanha.forEach(t => box.innerHTML += gerarHTML(t))
                   : box.innerHTML += `<p style="text-align:center;color:#666;">Nenhuma tarefa para amanhã.</p>`;
 
-    // Dias anteriores
-    anteriores.forEach(grupo=>{
-        box.innerHTML += `<div class="date-badge">${grupo.label}</div>`;
-        grupo.itens.forEach(t => box.innerHTML += gerarHTML(t));
+    // ONTEM
+    if(ontem.length){
+        box.innerHTML += `<div class="date-badge">Ontem</div>`;
+        ontem.forEach(t => box.innerHTML += gerarHTML(t));
+    }
+
+    // ANTERIORES (organizados)
+    anterioresKeys.forEach(dataLabel => {
+        box.innerHTML += `<div class="date-badge">${dataLabel}</div>`;
+        anterioresObj[dataLabel].forEach(t => box.innerHTML += gerarHTML(t));
     });
 }
 
-// --------------- SALVAR RESPOSTA ---------------
+// SALVAR RESPOSTA
 async function resposta(id,tipo){
 
     let btnSim = document.getElementById(`sim-${id}`);
@@ -226,7 +237,7 @@ async function resposta(id,tipo){
     let btn = document.getElementById(`${tipo}-${id}`);
     let pb  = document.getElementById(`pb-${tipo}-${id}`);
 
-    // Reset antes de aplicar
+    // reset
     btnSim.classList.remove("green","red");
     btnNao.classList.remove("green","red");
 
