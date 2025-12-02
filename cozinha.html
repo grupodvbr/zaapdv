@@ -13,6 +13,7 @@ body{
     overscroll-behavior-y: contain;
 }
 
+/* HEADER */
 .header{
     height:calc(65px + env(safe-area-inset-top));
     padding-top:calc(10px + env(safe-area-inset-top));
@@ -40,6 +41,19 @@ body{
     font-weight:700;
 }
 
+.status-line{
+    font-size:13px;
+    margin-top:2px;
+    font-weight:500;
+    color:#999;
+}
+
+.status-online{
+    color:#007aff;
+    transition:opacity .3s;
+}
+
+/* LISTA */
 .chat-area{
     padding:16px;
     padding-bottom:140px;
@@ -108,7 +122,6 @@ body{
     color:#0a8f47 !important;
     font-weight:600;
 }
-
 .option-btn.red{
     background:#f7c8c8 !important;
     color:#c62828 !important;
@@ -125,7 +138,7 @@ body{
     transition:width 0.4s linear;
 }
 
-/* Ícone de pull-to-refresh */
+/* Pull refresh */
 #pullIcon{
     width:26px;
     height:26px;
@@ -144,7 +157,10 @@ body{
 
 <div class="header">
     <img id="fotoSetor" src="icons/cozinha.png">
-    <div id="nomeSetor" class="header-name">Cozinha</div>
+    <div>
+        <div id="nomeSetor" class="header-name">Cozinha</div>
+        <div id="statusSetor" class="status-line">Carregando…</div>
+    </div>
 </div>
 
 <div id="pullIcon"></div>
@@ -152,12 +168,15 @@ body{
 <div class="chat-area" id="tarefasBox"></div>
 
 <script>
-
-// CONFIG
+/* ===============================
+   CONFIG
+================================ */
 const SETOR = "Cozinha";
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbw5WEC9e-icOWelS0T7bksyDBw4EML9DzYCtsUajZ3hqujGVariFgNAEbv_CB7y_8Ljgg/exec";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbyC6u_ojnVamyZJL3q_NaBA9X1XsAvNUuc2bARqLFkzkCeufGMEs6AEb3bS8IU9A33ScA/exec";
 
-// HTML DAS MENSAGENS
+/* ===============================
+   COMPONENTE HTML DA TAREFA
+================================ */
 function gerarHTML(t){
     return `
         <div class="msg-box">
@@ -186,7 +205,9 @@ function gerarHTML(t){
         </div>`;
 }
 
-// CARREGA SOMENTE HOJE / AMANHÃ — RÁPIDO
+/* ===============================
+   CARREGAR RAPIDAMENTE (HOJE + AMANHÃ)
+================================ */
 async function carregarHojeAmanha(){
     const req = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
     const dados = await req.json();
@@ -197,29 +218,30 @@ async function carregarHojeAmanha(){
     const box = document.getElementById("tarefasBox");
     box.innerHTML = "";
 
-    box.innerHTML += `<div class="date-badge" id="hojeAnchor">Hoje</div>`;
-    hoje.forEach(t => box.innerHTML += gerarHTML(t));
+    box.insertAdjacentHTML("beforeend", `<div class="date-badge" id="hojeAnchor">Hoje</div>`);
+    hoje.forEach(t => box.insertAdjacentHTML("beforeend", gerarHTML(t)));
 
-    box.innerHTML += `<div class="date-badge">Amanhã</div>`;
-    amanha.forEach(t => box.innerHTML += gerarHTML(t));
+    box.insertAdjacentHTML("beforeend", `<div class="date-badge">Amanhã</div>`);
+    amanha.forEach(t => box.insertAdjacentHTML("beforeend", gerarHTML(t)));
 
     return dados;
 }
 
-// CARREGA HISTÓRICO SOMENTE SE PUXAR PRA BAIXO
+/* ===============================
+   CARREGAR (HISTÓRICO)
+================================ */
 function carregarAnteriores(dados){
     const ontem = dados.ontem || [];
     const anteriores = dados.anteriores || {};
-    const box = document.getElementById("tarefasBox");
     const hojeNode = document.getElementById("hojeAnchor");
 
-    // ONTEM
+    // Ontem
     if(ontem.length){
         hojeNode.insertAdjacentHTML("beforebegin", `<div class="date-badge">Ontem</div>`);
         ontem.reverse().forEach(t=> hojeNode.insertAdjacentHTML("beforebegin", gerarHTML(t)));
     }
 
-    // OUTROS DIAS
+    // Anteriores
     const datas = Object.keys(anteriores).sort((a,b)=>{
         const pa = a.split("/").reverse().join("-");
         const pb = b.split("/").reverse().join("-");
@@ -234,9 +256,10 @@ function carregarAnteriores(dados){
     });
 }
 
-// BOTÕES
+/* ===============================
+   BOTÕES SIM / NÃO
+================================ */
 async function resposta(id,tipo){
-
     let btnSim = document.getElementById(`sim-${id}`);
     let btnNao = document.getElementById(`nao-${id}`);
     let pb = document.getElementById(`pb-${tipo}-${id}`);
@@ -262,7 +285,9 @@ async function resposta(id,tipo){
     },350);
 }
 
-// SISTEMA DE PULL-TO-REFRESH IGUAL INSTAGRAM
+/* ===============================
+   PULL-TO-REFRESH
+================================ */
 let startY = 0;
 let pulling = false;
 
@@ -275,7 +300,6 @@ chat.addEventListener("touchstart", e=>{
         pulling = true;
     }
 });
-
 chat.addEventListener("touchmove", e=>{
     if(!pulling) return;
     let dist = e.touches[0].clientY - startY;
@@ -287,7 +311,6 @@ chat.addEventListener("touchmove", e=>{
         pullIcon.style.borderTopColor = "#007aff";
     }
 });
-
 chat.addEventListener("touchend", async e=>{
     pullIcon.style.opacity = 0;
 
@@ -300,9 +323,21 @@ chat.addEventListener("touchend", async e=>{
     }
 });
 
-// INICIAR
+/* ===============================
+   INICIAR
+================================ */
 (async ()=>{
-    await carregarHojeAmanha();
+    document.getElementById("statusSetor").textContent = "Carregando…";
+
+    const dados = await carregarHojeAmanha();
+
+    // aguarda 300 ms para suavizar
+    setTimeout(()=>{
+        const status = document.getElementById("statusSetor");
+        status.textContent = "Online";
+        status.classList.add("status-online");
+    },300);
+
 })();
 </script>
 </body>
