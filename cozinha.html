@@ -5,6 +5,7 @@
 
 <!-- BLOQUEAR ZOOM -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+
 <title>Tarefas – Cozinha</title>
 
 <style>
@@ -30,36 +31,21 @@ body{
     top:0;
     z-index:20;
 }
-
 .header img{
-    width:46px;
-    height:46px;
-    border-radius:50%;
-    object-fit:cover;
+    width:46px;height:46px;border-radius:50%;object-fit:cover;
 }
-
-.header-name{ font-size:18px; font-weight:700; }
-
-.status-line{
-    font-size:13px;
-    margin-top:2px;
-    font-weight:500;
-    color:#999;
-}
-
-.status-online{
-    color:#007aff;
-}
+.header-name{font-size:18px;font-weight:700;}
+.status-line{font-size:13px;color:#999;margin-top:2px;}
+.status-online{color:#007aff;}
 
 /* LISTA */
 .chat-area{
     padding:16px;
-    padding-bottom:200px;
+    padding-bottom:250px;
     overflow-y:auto;
     height:calc(100vh - 90px);
     position:relative;
 }
-
 .date-badge{
     width:fit-content;
     margin:12px auto;
@@ -71,12 +57,13 @@ body{
     font-weight:500;
 }
 
+/* MENSAGENS */
 .msg-box{
     background:#fff;
     border-radius:10px;
     padding:12px 16px;
     max-width:78%;
-    box-shadow:0 1px 1px rgba(0,0,0,0.15);
+    box-shadow:0 1px 1px rgba(0,0,0,.15);
     margin-bottom:10px;
     position:relative;
     transition:transform .2s;
@@ -94,7 +81,6 @@ body{
     padding-left:6px;
     margin-bottom:6px;
 }
-
 .msg-img{
     width:100%;
     border-radius:10px;
@@ -107,82 +93,54 @@ body{
     border-radius:10px;
     padding:10px 16px;
     max-width:78%;
-    box-shadow:0 1px 1px rgba(0,0,0,0.15);
-    margin-bottom:20px;
+    box-shadow:0 1px 1px rgba(0,0,0,.15);
+    margin-bottom:22px;
 }
-
-.btn-row{ display:flex; gap:10px; }
-
+.btn-row{display:flex;gap:10px;}
 .option-btn{
     flex:1;
     background:#f0f0f0;
     color:#555;
     border-radius:10px;
     padding:12px;
-    font-size:16px;
     text-align:center;
     cursor:pointer;
-    position:relative;
     user-select:none;
+    position:relative;
 }
+.option-btn.green{background:#c8f7d4;color:#0a8f47;font-weight:600;}
+.option-btn.red{background:#f7c8c8;color:#c62828;font-weight:600;}
 
-.option-btn.green{ background:#c8f7d4 !important; color:#0a8f47 !important; }
-.option-btn.red{   background:#f7c8c8 !important; color:#c62828 !important; }
-
-.progress-bar{
-    position:absolute;
-    bottom:0;
-    left:0;
-    height:4px;
-    background:#007aff;
-    width:0%;
-}
-
-/* SWIPE REPLY */
+/* SWIPE */
 .reply-hint{
     position:absolute;
-    left:-45px;
+    left:-40px;
     top:50%;
     transform:translateY(-50%);
     opacity:0;
     transition:.2s;
     font-size:20px;
     color:#007aff;
-    pointer-events:none;
 }
 
-/* BARRA DE RESPOSTA */
+/* CAIXA RESPOSTA */
 #responderBox{
     position:fixed;
-    bottom:0;
-    left:0;
+    bottom:0;left:0;
     width:100%;
     padding:12px;
-    background:#fff;
+    background:white;
     display:none;
     border-top:1px solid #ccc;
     z-index:50;
 }
-
 #responderTopo{
     display:flex;
     justify-content:space-between;
-    align-items:center;
     margin-bottom:6px;
 }
-
-#citacaoTexto{
-    font-size:13px;
-    font-weight:600;
-    color:#007aff;
-}
-
-#cancelarResp{
-    font-size:14px;
-    color:#ff3b30;
-    cursor:pointer;
-}
-
+#citacaoTexto{font-size:13px;font-weight:600;color:#007aff;}
+#cancelarResp{color:#ff3b30;font-size:15px;cursor:pointer;}
 #responderInput{
     width:100%;
     padding:12px;
@@ -190,50 +148,48 @@ body{
     border:1px solid #ccc;
     font-size:15px;
 }
-
 #responderSend{
     margin-top:8px;
     background:#007aff;
     color:white;
-    padding:10px;
+    padding:12px;
     border-radius:10px;
     text-align:center;
+    font-size:16px;
 }
 
-/* FOTO OBRIGATÓRIA */
+/* FOTO */
 #fotoBox{
-    padding:10px;
+    position:fixed;
+    bottom:0;left:0;
+    width:100%;
     background:white;
     border-top:1px solid #ccc;
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
+    padding:15px;
     display:none;
     z-index:60;
 }
-
 #btnFoto{
     background:#007aff;
-    color:white;
-    padding:12px;
-    text-align:center;
+    padding:14px;
     border-radius:10px;
+    text-align:center;
+    color:white;
     cursor:pointer;
+    font-size:16px;
 }
-
 #previewFoto{
     width:160px;
-    margin-top:10px;
-    display:none;
     border-radius:12px;
+    margin-top:12px;
+    display:none;
 }
 
 </style>
 </head>
+
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <img src="icons/cozinha.png">
     <div>
@@ -250,166 +206,124 @@ body{
         <div id="citacaoTexto"></div>
         <div id="cancelarResp">✕</div>
     </div>
-
     <input id="responderInput" placeholder="Digite sua resposta…">
     <div id="responderSend">Enviar</div>
 </div>
 
 <!-- FOTO -->
 <div id="fotoBox">
-    <div id="fotoMsg" style="font-size:14px;margin-bottom:8px;"></div>
+    <div id="fotoMsg" style="margin-bottom:8px;">Esta tarefa exige foto obrigatória.</div>
     <div id="btnFoto">📷 Tirar Foto</div>
     <img id="previewFoto">
 </div>
 
 <script>
-/* =============================== */
+/* CONFIG */
 const SETOR = "Cozinha";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbx7MG7s-SxFqbg8sTouCfd3kUxxv8D2ADOrkLUaFQgpOi1OERzb9H4BysGiTkPp6U26hw/exec";
 const usuario = JSON.parse(localStorage.getItem("usuarioLogado")||"{}").nome || "Usuário";
 
-let tarefaRespondendo = null;
-let textoCitacao = "";
+let tarefaAtual = null;
+let citacaoAtual = "";
 
-/* =============================== */
-/* Renderiza mensagens */
+/* ========== GERAR HTML ========== */
 function gerarHTML(t){
     let html = "";
 
-    // Comentários salvos no campo Comentários
+    // Comentários existentes
     if(t.comentarios){
         t.comentarios.split("\n").forEach(c=>{
             html += `
-                <div class="msg-box msg-user">
-                    <div class="msg-citacao">${c}</div>
-                </div>
-            `;
+            <div class="msg-box msg-user">
+                <div class="msg-citacao">${c}</div>
+            </div>`;
         });
     }
 
-    // Foto enviada
+    // Foto existente
     if(t.fotoURL){
         html += `
-            <div class="msg-box msg-user">
-                <img src="${t.fotoURL}" class="msg-img">
-            </div>
+        <div class="msg-box msg-user">
+            <img src="${t.fotoURL}" class="msg-img">
+        </div>
         `;
     }
 
-    // Mensagem da tarefa
+    // Mensagem original
     html += `
-        <div class="msg-box" data-id="${t.id}">
-            <div class="reply-hint">↩</div>
-            <div>${t.tarefa}</div>
-            <div class="msg-time">${t.conclusao ? `🕘 ${t.conclusao}` : ""}</div>
+    <div class="msg-box" data-id="${t.id}">
+        <div class="reply-hint">↩</div>
+        <div>${t.tarefa}</div>
+        <div class="msg-time">${t.conclusao ? "🕘 "+t.conclusao : ""}</div>
+    </div>
+
+    <div class="options-box">
+        <div class="btn-row">
+            <div class="option-btn ${t.status==="sim"?"green":""}" onclick="marcarSim(${t.id},'${t.fotoObrigatoria}')">Sim</div>
+            <div class="option-btn ${t.status==="nao"?"red":""}" onclick="marcarNao(${t.id})">Não</div>
         </div>
-
-        <div class="options-box">
-            <div class="btn-row">
-
-                <div class="option-btn ${t.status==="sim"?"green":""}"
-                     onclick="responderSim(${t.id},'${t.fotoObrigatoria}')">
-                    Sim
-                </div>
-
-                <div class="option-btn ${t.status==="nao"?"red":""}"
-                     onclick="responderNao(${t.id})">
-                    Não
-                </div>
-
-            </div>
-        </div>
+    </div>
     `;
 
     return html;
 }
 
-/* =============================== */
-/* Carrega hoje + amanhã */
-async function carregarHojeAmanha(){
-    const r = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`);
-    const dados = await r.json();
+/* ========== SWIPE ========== */
+function ativarSwipe(){
+    document.querySelectorAll(".msg-box").forEach(msg=>{
+        let startX=0,drag=false;
 
-    const box = document.getElementById("tarefasBox");
-    box.innerHTML = "";
-
-    box.insertAdjacentHTML("beforeend", `<div class='date-badge' id='hojeMark'>Hoje</div>`);
-    (dados.hoje||[]).forEach(t=>box.insertAdjacentHTML("beforeend", gerarHTML(t)));
-
-    box.insertAdjacentHTML("beforeend", `<div class='date-badge'>Amanhã</div>`);
-    (dados.amanha||[]).forEach(t=>box.insertAdjacentHTML("beforeend", gerarHTML(t)));
-
-    aplicarSwipe();
-
-    return dados;
-}
-
-/* =============================== */
-/* Swipe WhatsApp */
-function aplicarSwipe(){
-    const msgs = document.querySelectorAll(".msg-box");
-
-    msgs.forEach(msg=>{
-        let startX = 0;
-        let dragging = false;
-
-        msg.addEventListener("touchstart", e=>{
-            startX = e.touches[0].clientX;
-            dragging = false;
+        msg.addEventListener("touchstart",e=>{
+            startX=e.touches[0].clientX; drag=false;
         });
 
-        msg.addEventListener("touchmove", e=>{
-            let diff = e.touches[0].clientX - startX;
-
-            if(diff > 0){
-                dragging = true;
-                msg.style.transform = `translateX(${diff}px)`;
-                msg.querySelector(".reply-hint").style.opacity = diff > 40 ? 1 : 0;
+        msg.addEventListener("touchmove",e=>{
+            let d=e.touches[0].clientX-startX;
+            if(d>0){
+                drag=true;
+                msg.style.transform=`translateX(${d}px)`;
+                msg.querySelector(".reply-hint").style.opacity=d>40?1:0;
             }
         });
 
-        msg.addEventListener("touchend", ()=>{
-            msg.style.transform = "";
-            msg.querySelector(".reply-hint").style.opacity = 0;
+        msg.addEventListener("touchend",()=>{
+            msg.style.transform="";
+            msg.querySelector(".reply-hint").style.opacity=0;
 
-            if(dragging){
+            if(drag){
                 abrirResposta(msg);
             }
         });
     });
 }
 
-/* =============================== */
-/* Abrir caixa de resposta */
+/* ========== ABRIR RESPOSTA ========== */
 function abrirResposta(msg){
-    tarefaRespondendo = msg.dataset.id;
-    textoCitacao = msg.textContent.trim();
+    tarefaAtual = msg.dataset.id;
+    citacaoAtual = msg.innerText.trim().split("\n")[0];
 
-    document.getElementById("citacaoTexto").textContent = `Responder: "${textoCitacao}"`;
+    document.getElementById("citacaoTexto").textContent = `Responder: "${citacaoAtual}"`;
 
     document.getElementById("responderBox").style.display = "block";
     document.getElementById("fotoBox").style.display = "none";
     document.getElementById("responderInput").focus();
 }
 
-/* Cancelar resposta */
 document.getElementById("cancelarResp").onclick = ()=>{
-    tarefaRespondendo = null;
-    textoCitacao = "";
-    document.getElementById("responderBox").style.display = "none";
+    tarefaAtual=null;
+    document.getElementById("responderBox").style.display="none";
 };
 
-/* =============================== */
-/* Enviar comentário */
+/* ========== ENVIAR COMENTÁRIO ========== */
 document.getElementById("responderSend").onclick = async ()=>{
     const texto = document.getElementById("responderInput").value.trim();
-    if(!texto || !tarefaRespondendo) return;
+    if(!texto || !tarefaAtual) return;
 
     await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             acao:"registrarComentario",
-            id:tarefaRespondendo,
+            id:tarefaAtual,
             comentario:`${usuario}: ${texto}`
         })
     });
@@ -417,25 +331,22 @@ document.getElementById("responderSend").onclick = async ()=>{
     location.reload();
 };
 
-/* =============================== */
-/* SIM / NÃO */
-async function responderSim(id,fotoObg){
+/* ========== SIM / NAO ========== */
+async function marcarSim(id,fotoObg){
     await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({acao:"responder",id:id,resposta:"sim"})
     });
 
     if(fotoObg==="sim"){
-        tarefaRespondendo = id;
-        document.getElementById("fotoMsg").textContent = "Esta tarefa exige foto obrigatória.";
-        document.getElementById("fotoBox").style.display = "block";
-        document.getElementById("responderBox").style.display = "none";
+        tarefaAtual = id;
+        document.getElementById("fotoBox").style.display="block";
+        document.getElementById("responderBox").style.display="none";
     }else{
         location.reload();
     }
 }
-
-async function responderNao(id){
+async function marcarNao(id){
     await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({acao:"responder",id:id,resposta:"nao"})
@@ -443,29 +354,28 @@ async function responderNao(id){
     location.reload();
 }
 
-/* =============================== */
-/* Foto obrigatória */
-document.getElementById("btnFoto").onclick = ()=>{
-    const input = document.createElement("input");
+/* ========== FOTO OBRIGATÓRIA ========== */
+document.getElementById("btnFoto").onclick=()=>{
+    const input=document.createElement("input");
     input.type="file";
     input.accept="image/*";
     input.capture="environment";
 
-    input.onchange = async (e)=>{
-        const file = e.target.files[0];
-        const reader = new FileReader();
+    input.onchange=e=>{
+        const file=e.target.files[0];
+        const reader=new FileReader();
 
-        reader.onload = async ()=>{
-            const base64 = reader.result.split(",")[1];
+        reader.onload=async ()=>{
+            const base64=reader.result.split(",")[1];
 
-            document.getElementById("previewFoto").src = reader.result;
+            document.getElementById("previewFoto").src=reader.result;
             document.getElementById("previewFoto").style.display="block";
 
             await fetch(ENDPOINT,{
                 method:"POST",
                 body:JSON.stringify({
                     acao:"registrarFoto",
-                    id:tarefaRespondendo,
+                    id:tarefaAtual,
                     base64:base64
                 })
             });
@@ -479,17 +389,25 @@ document.getElementById("btnFoto").onclick = ()=>{
     input.click();
 };
 
-/* =============================== */
-/* Início */
+/* ========== CARREGAR INICIAL ========== */
 (async ()=>{
-    const st = document.getElementById("statusSetor");
-    st.textContent = "Carregando…";
+    document.getElementById("statusSetor").textContent="Carregando…";
 
-    await carregarHojeAmanha();
+    const resp = await fetch(`${ENDPOINT}?acao=listarTudo&setor=${SETOR}`).then(r=>r.json());
+    const box=document.getElementById("tarefasBox");
+
+    box.innerHTML="";
+    box.insertAdjacentHTML("beforeend","<div class='date-badge'>Hoje</div>");
+    (resp.hoje||[]).forEach(t=>box.insertAdjacentHTML("beforeend",gerarHTML(t)));
+
+    box.insertAdjacentHTML("beforeend","<div class='date-badge'>Amanhã</div>");
+    (resp.amanha||[]).forEach(t=>box.insertAdjacentHTML("beforeend",gerarHTML(t)));
+
+    ativarSwipe();
 
     setTimeout(()=>{
-        st.textContent = "Online";
-        st.classList.add("status-online");
+        document.getElementById("statusSetor").textContent="Online";
+        document.getElementById("statusSetor").classList.add("status-online");
     },300);
 })();
 </script>
