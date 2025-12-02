@@ -369,31 +369,36 @@ async function enviarFoto(){
     const cameraBox = document.getElementById("cameraBox");
     const preview = document.getElementById("previewFoto");
 
+    // animação carregando
     cameraBox.style.opacity = "0.6";
     cameraBox.style.pointerEvents = "none";
     preview.style.filter = "grayscale(1)";
 
     try {
-        // AQUI AGORA ESTÁ 100% COMPATÍVEL COM O GAS
+
+        // FORM DATA CORRETO (SEM "acao")
         let fd = new FormData();
         fd.append("id", tarefaFoto);
         fd.append("setor", SETOR);
-        fd.append("imagem", fotoArquivo);  // nome do campo não importa
+        fd.append("file", fotoArquivo);  // <-- ESSENCIAL
 
-        const up = await fetch(ENDPOINT, {
+        // -------- ENVIA A FOTO ---------
+        const resp = await fetch(ENDPOINT, {
             method: "POST",
             body: fd
-        }).then(r => r.json());
+        });
 
-        if(!up.ok){
-            alert("Erro ao enviar foto");
+        const result = await resp.json();
+
+        if (!result.ok) {
+            alert("Falha ao enviar foto.");
             cameraBox.style.opacity = "1";
             cameraBox.style.pointerEvents = "auto";
             preview.style.filter = "none";
             return;
         }
 
-        // Só depois marca como SIM
+        // -------- DEPOIS MARCA COMO SIM ---------
         await fetch(ENDPOINT, {
             method: "POST",
             body: JSON.stringify({
@@ -406,8 +411,8 @@ async function enviarFoto(){
         cancelarFoto();
         carregarHojeAmanha();
 
-    } catch(e){
-        alert("Falha ao enviar foto");
+    } catch (e) {
+        alert("Falha ao enviar foto.");
         console.log(e);
     }
 }
