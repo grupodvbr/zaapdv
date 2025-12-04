@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,6 +20,9 @@ body{
     font-size:22px;
     font-weight:700;
     border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:5;
 }
 
 /* CALENDÁRIO */
@@ -38,13 +40,14 @@ body{
 .month-btn{
     background:none;
     border:none;
-    font-size:22px;
+    font-size:26px;
     cursor:pointer;
 }
 
 .month-name{
     font-size:20px;
     font-weight:700;
+    text-transform:capitalize;
 }
 
 .week{
@@ -65,7 +68,7 @@ body{
     background:white;
     padding:12px;
     border-radius:10px;
-    min-height:60px;
+    min-height:62px;
     cursor:pointer;
     box-shadow:0 1px 2px rgba(0,0,0,.1);
     display:flex;
@@ -83,7 +86,7 @@ body{
     font-weight:700;
 }
 
-/* Badges */
+/* BADGES */
 .badge{
     margin-top:6px;
     font-size:12px;
@@ -95,7 +98,7 @@ body{
 
 .badge-pago{ background:#28a745; }
 .badge-pendente{ background:#dc3545; }
-.badge-andamento{ background:#ffc107; }
+.badge-andamento{ background:#ffc107; color:#000; }
 
 /* RESUMO FINANCEIRO */
 .resumo{
@@ -120,6 +123,7 @@ body{
 
 .valor{
     font-weight:700;
+    font-size:16px;
 }
 
 .v-green{ color:#28a745; }
@@ -168,18 +172,21 @@ body{
 </div>
 
 <script>
-/* ================================
-   CONFIGURAÇÕES
-================================ */
+/* ==============================
+   ENDPOINT — MESMO DO SEU SISTEMA
+============================== */
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbwE-0oOl4wGHz7gFXHIgYHNihCTW4-uzUjGv_iLvPSWX1sma8pi9eJIwx1K4grFOILj/exec";
 
+/* ==============================
+   VARIÁVEIS DO CALENDÁRIO
+============================== */
 let hoje = new Date();
 let mesAtual = hoje.getMonth();
 let anoAtual = hoje.getFullYear();
 
-/* ================================
+/* ==============================
    MONTAR CALENDÁRIO
-================================ */
+============================== */
 function montarCalendario(){
 
     document.getElementById("mesAno").textContent =
@@ -207,11 +214,12 @@ function montarCalendario(){
     carregarContadoresDoMes();
 }
 
-/* ================================
+/* ==============================
    MUDAR MÊS
-================================ */
+============================== */
 function mudarMes(delta){
     mesAtual += delta;
+
     if(mesAtual < 0){ mesAtual = 11; anoAtual--; }
     if(mesAtual > 11){ mesAtual = 0; anoAtual++; }
 
@@ -219,20 +227,20 @@ function mudarMes(delta){
     montarCalendario();
 }
 
-/* ================================
-   ABRIR CADASTRO EXTERNO
-================================ */
+/* ==============================
+   ABRIR CADASTRO DE RESERVA
+============================== */
 function abrirDia(dia){
     const data = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
     window.location.href = `cadastro.html?data=${data}`;
 }
 
-/* ================================
-   BUSCAR RESUMO FINANCEIRO + BADGES
-================================ */
+/* ==============================
+   CARREGAR RESUMO FINANCEIRO
+============================== */
 async function carregarContadoresDoMes(){
-    const r = await fetch(`${ENDPOINT}?acao=resumoMes&mes=${mesAtual+1}&ano=${anoAtual}`);
-    const dados = await r.json();
+    const req = await fetch(`${ENDPOINT}?acao=resumoMes&mes=${mesAtual+1}&ano=${anoAtual}`);
+    const dados = await req.json();
 
     document.getElementById("rRecebido").textContent = "R$ " + dados.recebido;
     document.getElementById("rPendente").textContent = "R$ " + dados.pendente;
@@ -240,8 +248,6 @@ async function carregarContadoresDoMes(){
 
     dados.dias.forEach(d=>{
         const badge = document.getElementById("badge_"+d.dia);
-
-        if(!badge) return;
 
         if(d.pendente>0){
             badge.innerHTML += `<div class="badge badge-pendente">${d.pendente}</div>`;
@@ -255,6 +261,7 @@ async function carregarContadoresDoMes(){
     });
 }
 
+/* Iniciar */
 montarCalendario();
 </script>
 
