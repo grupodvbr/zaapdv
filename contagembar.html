@@ -13,7 +13,6 @@ body{
     margin:0;
     background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-    overscroll-behavior-y: contain;
 }
 
 /* HEADER */
@@ -54,29 +53,13 @@ body{
     color:#007aff;
 }
 
-/* ÁREA */
+/* AREA */
 .area{
     padding:16px;
-    padding-bottom:140px;
+    padding-bottom:160px;
 }
 
-/* Seleção de data */
-.dataBox{
-    margin-bottom:18px;
-}
-.dataLabel{
-    font-weight:700;
-    margin-bottom:8px;
-}
-.dataInput{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:1px solid #bbb;
-    font-size:16px;
-}
-
-/* TÍTULO CATEGORIA */
+/* TITULO CATEGORIA */
 .cat-title{
     font-size:18px;
     font-weight:700;
@@ -125,6 +108,69 @@ body{
     border-radius:0;
     z-index:20;
 }
+
+/* POPUP RESUMO */
+#popupResumo{
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,.35);
+    display:none;
+    justify-content:center;
+    align-items:flex-end;
+    padding-bottom:40px;
+    z-index:50;
+}
+
+.resumo-box{
+    width:92%;
+    max-width:420px;
+    background:white;
+    padding:18px;
+    border-radius:16px;
+    max-height:70%;
+    overflow-y:auto;
+}
+
+.resumo-titulo{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:12px;
+    text-align:center;
+}
+
+.resumo-cat{
+    font-size:17px;
+    font-weight:700;
+    margin-top:14px;
+    margin-bottom:6px;
+}
+
+.res-item{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    border-bottom:1px solid #eee;
+}
+
+.resumo-btn{
+    width:100%;
+    padding:12px;
+    font-size:17px;
+    text-align:center;
+    border-radius:10px;
+    margin-top:14px;
+    cursor:pointer;
+}
+
+.btn-confirmar{
+    background:#28a745;
+    color:white;
+}
+
+.btn-fechar{
+    background:#ddd;
+}
 </style>
 </head>
 
@@ -139,25 +185,28 @@ body{
     </div>
 </div>
 
-<div class="area" id="conteudo">
+<div class="area" id="conteudo"></div>
 
-    <!-- Seleção de data -->
-    <div class="dataBox">
-        <div class="dataLabel">Selecione o dia da contagem</div>
-        <input type="date" id="dataContagem" class="dataInput">
+<button class="btnSalvar" onclick="abrirResumo()">Salvar Contagem</button>
+
+<!-- ==================== POPUP RESUMO ==================== -->
+<div id="popupResumo">
+    <div class="resumo-box">
+        <div class="resumo-titulo">Resumo da Contagem</div>
+        <div id="resumoLista"></div>
+
+        <div class="resumo-btn btn-confirmar" onclick="confirmarEnvio()">Confirmar</div>
+        <div class="resumo-btn btn-fechar" onclick="fecharResumo()">Fechar</div>
     </div>
-
 </div>
 
-<button class="btnSalvar" onclick="salvarContagem()">Salvar Contagem</button>
-
 <script>
-/* ========================= CONFIG ========================== */
+/* ============================ CONFIG ============================ */
 
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbz0y5kM1wao0R3LMaJJqSStSS89CUE1LKmMXWVxyeQDGjo_fsQHav93ZXb-vfaYPqMc/exec";  
-let usuario = "Usuário"; 
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbz0y5kM1wao0R3LMaJJqSStSS89CUE1LKmMXWVxyeQDGjo_fsQHav93ZXb-vfaYPqMc/exec";
+const usuario = JSON.parse(localStorage.getItem("usuarioLogado"))?.nome || "Usuário";
 
-/* ========================= CARREGAR ITENS ========================== */
+/* ==================== CARREGAR ITENS ==================== */
 
 async function carregarItens(){
     const box = document.getElementById("conteudo");
@@ -191,31 +240,76 @@ async function carregarItens(){
 
 carregarItens();
 
-/* ========================= SALVAR CONTAGEM ========================== */
+/* ==================== GERAR RESUMO ==================== */
 
-async function salvarContagem(){
+function abrirResumo(){
+    const lista = document.getElementById("resumoLista");
+    lista.innerHTML = "";
 
-    const data = document.getElementById("dataContagem").value;
-    if(!data){
-        alert("Selecione a data antes de salvar.");
-        return;
-    }
+    const inputs = document.querySelectorAll(".inputQtd");
+    const categorias = {};
 
-    const todosInputs = document.querySelectorAll(".inputQtd");
-
-    const registros = [];
-
-    todosInputs.forEach(inp=>{
+    inputs.forEach(inp=>{
         const valor = Number(inp.value || 0);
         if(valor > 0){
             const item = inp.id.replace("qtd_","").replace(/_/g," ");
-            const categoria = pegarCategoriaDoItem(item);
+            const categoria = pegarCategoria(item);
 
-            registros.push({
-                categoria,
-                item,
-                quantidade: valor
-            });
+            if(!categorias[categoria]) categorias[categoria] = [];
+            categorias[categoria].push({ item, valor });
+        }
+    });
+
+    Object.keys(categorias).forEach(cat=>{
+        lista.innerHTML += `<div class='resumo-cat'>${cat}</div>`;
+        categorias[cat].forEach(obj=>{
+            lista.innerHTML += `
+                <div class="res-item">
+                    <span>${obj.item}</span>
+                    <span><b>${obj.valor}</b></span>
+                </div>`;
+        });
+    });
+
+    document.getElementById("popupResumo").style.display = "flex";
+}
+
+function fecharResumo(){
+    document.getElementById("popupResumo").style.display = "none";
+}
+
+/* ==================== DESCOBRIR CATEGORIA ==================== */
+
+function pegarCategoria(item){
+    const titulos = document.querySelectorAll(".cat-title");
+
+    for(let c of titulos){
+        let categoria = c.textContent;
+        let prox = c.nextElementSibling;
+
+        while(prox && prox.classList.contains("item-box")){
+            if(prox.querySelector(".item-label").textContent === item){
+                return categoria;
+            }
+            prox = prox.nextElementSibling;
+        }
+    }
+    return "Desconhecido";
+}
+
+/* ==================== SALVAR ==================== */
+
+async function confirmarEnvio(){
+
+    const registros = [];
+    const inputs = document.querySelectorAll(".inputQtd");
+
+    inputs.forEach(inp=>{
+        const valor = Number(inp.value || 0);
+        if(valor > 0){
+            const item = inp.id.replace("qtd_","").replace(/_/g," ");
+            const categoria = pegarCategoria(item);
+            registros.push({ categoria, item, quantidade:valor });
         }
     });
 
@@ -224,11 +318,24 @@ async function salvarContagem(){
         return;
     }
 
+    /* --- DATA AUTOMÁTICA --- */
+    const agora = new Date();
+    let dataReal = new Date();
+
+    if(agora.getHours() <= 5){
+        dataReal.setDate(dataReal.getDate() - 1);
+    }
+
+    const dia = dataReal.toISOString().split("T")[0];
+    const hora = agora.toTimeString().slice(0,5);
+
+    /* --- ENVIO --- */
     const req = await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             usuario,
-            data,
+            data: dia,
+            hora,
             registros
         })
     });
@@ -237,30 +344,13 @@ async function salvarContagem(){
 
     if(resp.ok){
         alert("Contagem registrada com sucesso!");
+        fecharResumo();
         document.querySelectorAll(".inputQtd").forEach(i=>i.value="");
     } else {
         alert("Erro: " + resp.erro);
     }
 }
 
-/* ========================= DESCOBRIR CATEGORIA ========================== */
-
-function pegarCategoriaDoItem(item){
-    const caixas = document.querySelectorAll(".cat-title");
-
-    for(let c of caixas){
-        let cat = c.textContent;
-        let prox = c.nextElementSibling;
-
-        while(prox && prox.classList.contains("item-box")){
-            if(prox.querySelector(".item-label").textContent === item){
-                return cat;
-            }
-            prox = prox.nextElementSibling;
-        }
-    }
-    return "Desconhecido";
-}
 </script>
 
 </body>
