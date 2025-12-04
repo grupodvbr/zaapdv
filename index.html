@@ -21,6 +21,7 @@ body{
 
 .container{ width:92%; max-width:380px; }
 .tela{ display:none; animation:fade .4s ease; }
+
 @keyframes fade{ from{opacity:0;} to{opacity:1;} }
 
 /* ===================== EMPRESAS ===================== */
@@ -57,12 +58,29 @@ body{
   transform:scale(1.25);
 }
 
+/* ===================== VOLTAR ===================== */
+.voltar-btn{
+  padding:10px 0;
+  text-align:center;
+  cursor:pointer;
+  color:#007aff;
+  font-size:16px;
+  margin-bottom:10px;
+  font-weight:600;
+  border-radius:12px;
+  transition:.2s;
+}
+
+.voltar-btn:hover{
+  background:#e8f0ff;
+}
+
 /* ===================== USUÁRIOS ===================== */
 .user-list{
   display:flex;
   flex-direction:column;
   gap:14px;
-  margin-top:20px;
+  margin-top:10px;
 }
 
 .user-item{
@@ -165,12 +183,18 @@ body{
 
   <!-- ===================== TELA 2 — USUÁRIOS ===================== -->
   <div id="telaUsuarios" class="tela">
+    <div class="voltar-btn" onclick="voltarEmpresas()">← Selecionar outra empresa</div>
+
     <h2 style="text-align:center">Selecione o Usuário</h2>
+
     <div id="listaUsuarios" class="user-list"></div>
   </div>
 
   <!-- ===================== TELA 3 — SENHA ===================== -->
   <div id="telaSenha" class="tela">
+
+      <div class="voltar-btn" onclick="voltarUsuarios()">← Selecionar outro usuário</div>
+
       <img id="fotoSelecionada" class="user-foto-big">
 
       <div id="bemvindo" class="bemvindo"></div>
@@ -185,14 +209,18 @@ body{
 </div>
 
 <script>
-/*
-==========================================================
-   DADOS REAIS (APENAS USUÁRIOS QUE EXISTEM NA VERCEL)
-==========================================================
-*/
+/* ==========================================================
+   DADOS REAIS
+========================================================== */
 const dados = {
   mercatto: [
-    { nome:"Dheure", cargo:"Gerente Geral", senha:"8486", foto:"icons/dheure.png", pagina:"dheure.html" }
+    {
+      nome:"Dheure",
+      cargo:"Gerente Geral",
+      senha:"8486",
+      foto:"icons/dheure.png",
+      pagina:"dheure.html"
+    }
   ]
 };
 
@@ -207,6 +235,12 @@ function selecionarEmpresa(emp){
   document.getElementById("telaUsuarios").style.display = "block";
 
   montarListaUsuarios();
+}
+
+/* VOLTAR PARA EMPRESAS */
+function voltarEmpresas(){
+  document.getElementById("telaUsuarios").style.display = "none";
+  document.getElementById("telaEmpresa").style.display = "block";
 }
 
 /* ===================== LISTA DE USUÁRIOS ===================== */
@@ -228,7 +262,7 @@ function montarListaUsuarios(){
   });
 }
 
-/* ===================== TELA DE SENHA ===================== */
+/* ===================== SENHA ===================== */
 function selecionarUsuario(u){
   usuarioSelecionado = u;
 
@@ -240,17 +274,18 @@ function selecionarUsuario(u){
   document.getElementById("cargoSelecionado").textContent = u.cargo;
 }
 
-/* ===================== LOGIN ===================== */
+/* VOLTAR PARA USUÁRIOS */
+function voltarUsuarios(){
+  document.getElementById("telaSenha").style.display = "none";
+  document.getElementById("telaUsuarios").style.display = "block";
+}
+
+/* ===================== ENTRAR ===================== */
 function entrar(){
   const senha = document.getElementById("senhaInput").value;
 
   if(senha !== usuarioSelecionado.senha){
     document.getElementById("erro").style.display="block";
-    return;
-  }
-
-  if(!usuarioSelecionado.pagina){
-    alert("⚠ ERRO: página HTML não encontrada para este usuário.");
     return;
   }
 
