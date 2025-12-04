@@ -19,16 +19,11 @@ body{
   overflow:hidden;
 }
 
-/* Containers */
 .container{ width:92%; max-width:380px; }
-
-/* Telas */
 .tela{ display:none; animation:fade .4s ease; }
 @keyframes fade{ from{opacity:0;} to{opacity:1;} }
 
-/* ===========================================
-   EMPRESAS
-=========================================== */
+/* ===================== EMPRESAS ===================== */
 .empresas{
   display:flex;
   flex-wrap:wrap;
@@ -41,7 +36,7 @@ body{
   width:90px;
   height:90px;
   border-radius:50%;
-  background:#fff;
+  background:white;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -62,9 +57,7 @@ body{
   transform:scale(1.25);
 }
 
-/* ===========================================
-   USUÁRIOS
-=========================================== */
+/* ===================== USUÁRIOS ===================== */
 .user-list{
   display:flex;
   flex-direction:column;
@@ -100,9 +93,7 @@ body{
   font-weight:600;
 }
 
-/* ===========================================
-   SENHA
-=========================================== */
+/* ===================== SENHA ===================== */
 .user-foto-big{
   width:120px;
   height:120px;
@@ -161,9 +152,7 @@ body{
 
 <div class="container">
 
-  <!-- ==============================
-       TELA 1 — SELEÇÃO DE EMPRESA
-  =============================== -->
+  <!-- ===================== TELA 1 — EMPRESAS ===================== -->
   <div id="telaEmpresa" class="tela" style="display:block;">
       <h2 style="text-align:center;margin-bottom:20px;">Selecione a Empresa</h2>
 
@@ -171,28 +160,16 @@ body{
           <div class="empresa-item" onclick="selecionarEmpresa('mercatto')">
             <img src="icons/logomercatto.png">
           </div>
-
-          <div class="empresa-item" onclick="selecionarEmpresa('villa')">
-            <img src="icons/logodelicia.png">
-          </div>
-
-          <div class="empresa-item" onclick="selecionarEmpresa('kids')">
-            <img src="icons/logomkids.png">
-          </div>
       </div>
   </div>
 
-  <!-- ==============================
-       TELA 2 — USUÁRIOS DA EMPRESA
-  =============================== -->
+  <!-- ===================== TELA 2 — USUÁRIOS ===================== -->
   <div id="telaUsuarios" class="tela">
     <h2 style="text-align:center">Selecione o Usuário</h2>
     <div id="listaUsuarios" class="user-list"></div>
   </div>
 
-  <!-- ==============================
-       TELA 3 — SENHA
-  =============================== -->
+  <!-- ===================== TELA 3 — SENHA ===================== -->
   <div id="telaSenha" class="tela">
       <img id="fotoSelecionada" class="user-foto-big">
 
@@ -208,25 +185,21 @@ body{
 </div>
 
 <script>
-/* ==========================================================
-   DADOS DAS EMPRESAS E USUÁRIOS
-========================================================== */
+/*
+==========================================================
+   DADOS REAIS (APENAS USUÁRIOS QUE EXISTEM NA VERCEL)
+==========================================================
+*/
 const dados = {
   mercatto: [
     { nome:"Dheure", cargo:"Gerente Geral", senha:"8486", foto:"icons/dheure.png", pagina:"dheure.html" }
-  ],
-
-  villa: [],
-
-  kids: []
+  ]
 };
 
 let empresaSelecionada = null;
 let usuarioSelecionado = null;
 
-/* ==========================================================
-   SELECIONAR EMPRESA
-========================================================== */
+/* ===================== EMPRESA ===================== */
 function selecionarEmpresa(emp){
   empresaSelecionada = emp;
 
@@ -236,9 +209,7 @@ function selecionarEmpresa(emp){
   montarListaUsuarios();
 }
 
-/* ==========================================================
-   LISTA DE USUÁRIOS DA EMPRESA
-========================================================== */
+/* ===================== LISTA DE USUÁRIOS ===================== */
 function montarListaUsuarios(){
   const lista = document.getElementById("listaUsuarios");
   lista.innerHTML = "";
@@ -257,12 +228,10 @@ function montarListaUsuarios(){
   });
 }
 
-/* ==========================================================
-   SELECIONAR USUÁRIO
-========================================================== */
+/* ===================== TELA DE SENHA ===================== */
 function selecionarUsuario(u){
   usuarioSelecionado = u;
-  
+
   document.getElementById("telaUsuarios").style.display = "none";
   document.getElementById("telaSenha").style.display = "block";
 
@@ -271,9 +240,7 @@ function selecionarUsuario(u){
   document.getElementById("cargoSelecionado").textContent = u.cargo;
 }
 
-/* ==========================================================
-   LOGIN
-========================================================== */
+/* ===================== LOGIN ===================== */
 function entrar(){
   const senha = document.getElementById("senhaInput").value;
 
@@ -282,18 +249,23 @@ function entrar(){
     return;
   }
 
+  if(!usuarioSelecionado.pagina){
+    alert("⚠ ERRO: página HTML não encontrada para este usuário.");
+    return;
+  }
+
   localStorage.setItem("usuarioLogado", JSON.stringify(usuarioSelecionado));
 
   window.location.href = usuarioSelecionado.pagina;
 }
 
-/* ==========================================================
-   LOGIN AUTOMÁTICO
-========================================================== */
+/* ===================== LOGIN AUTOMÁTICO ===================== */
 const salvo = localStorage.getItem("usuarioLogado");
 if(salvo){
   const u = JSON.parse(salvo);
-  window.location.href = u.pagina;
+  if(u.pagina){
+    window.location.href = u.pagina;
+  }
 }
 </script>
 
