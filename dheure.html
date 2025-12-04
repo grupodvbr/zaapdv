@@ -6,22 +6,15 @@
 <!-- ZOOM BLOQUEADO -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 
-<title>ZaapDV</title>
+<title>ZaapDV • Dheure</title>
 
 <!-- =============================== -->
 <!-- ICONES DO APP (TELA INICIAL) -->
 <!-- =============================== -->
 
-<!-- Ícone padrão Apple / iPhone -->
 <link rel="apple-touch-icon" href="icons/logo.png">
-
-<!-- Para iPhone com splash fullscreen -->
 <link rel="apple-touch-startup-image" href="icons/logo.png">
-
-<!-- Favicon padrão navegador -->
 <link rel="icon" type="image/png" href="icons/logo.png">
-
-<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -40,73 +33,12 @@
   font-family:-apple-system, BlinkMacSystemFont,sans-serif;
 }
 
-/* Bloqueio total de zoom / gestos */
 html, body{
   background:#ffffff;
   height:100vh;
   overflow:hidden;
   touch-action: pan-y !important;
 }
-
-/* ===========================================
-   LOGIN
-=========================================== */
-#loginTela{
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:white;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-  z-index:20;
-}
-
-.login-box{
-  width:100%;
-  max-width:340px;
-  background:#fff;
-  padding:25px;
-  border-radius:16px;
-  box-shadow:0 8px 28px rgba(0,0,0,0.15);
-}
-
-.login-box h2{
-  text-align:center;
-  margin-bottom:15px;
-  font-size:22px;
-}
-
-.input{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  margin-bottom:14px;
-  font-size:16px;
-}
-
-.btn{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#007aff;
-  color:white;
-  font-size:16px;
-  cursor:pointer;
-}
-
-#loginErro{
-  color:red;
-  font-size:14px;
-  margin-top:6px;
-  text-align:center;
-  display:none;
-}
-
 
 /* ===========================================
    TOPO
@@ -144,7 +76,6 @@ html, body{
   height:100%;
   object-fit:cover;
 }
-
 
 /* ===========================================
    POPUP PERFIL
@@ -202,7 +133,6 @@ html, body{
   color:white;
 }
 
-
 /* ===========================================
    FILTROS SUPERIORES
 =========================================== */
@@ -227,7 +157,6 @@ html, body{
     font-weight:600;
 }
 
-/* Bolinha verde */
 .badge{
     position:absolute;
     top:-6px;
@@ -239,7 +168,6 @@ html, body{
     border-radius:20px;
     font-weight:600;
 }
-
 
 /* ===========================================
    SETORES
@@ -273,7 +201,6 @@ html, body{
 .chat-title{ font-size:18px; font-weight:600; }
 .chat-msg{ font-size:14px; color:#777; }
 
-
 /* ===========================================
    MENU INFERIOR
 =========================================== */
@@ -303,18 +230,13 @@ html, body{
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
-<div id="loginTela">
-  <div class="login-box">
-    <h2>Entrar</h2>
-
-    <input id="loginNome" class="input" placeholder="Usuário">
-    <input id="loginSenha" class="input" placeholder="Senha" type="password">
-
-    <button class="btn" onclick="fazerLogin()">Acessar</button>
-    <div id="loginErro">Usuário ou senha incorretos</div>
-  </div>
-</div>
+<!-- 🔒 BLOQUEIO: NÃO PERMITE ACESSAR SEM LOGIN -->
+<script>
+const u = localStorage.getItem("usuarioLogado");
+if(!u){
+  window.location.href = "login.html";
+}
+</script>
 
 <!-- ================= POPUP PERFIL ================= -->
 <div id="popupPerfil">
@@ -328,19 +250,17 @@ html, body{
   </div>
 </div>
 
-
 <!-- ================= INTERFACE PRINCIPAL ================= -->
 <header class="topbar">
   <span class="title">ZaapDV</span>
 
-  <div id="userFotoBtn" onclick="abrirPerfil()" style="display:none">
+  <div id="userFotoBtn" onclick="abrirPerfil()">
     <img id="userFoto">
   </div>
 </header>
 
 <div class="page">
 
-    <!-- MENU SUPERIOR -->
     <div class="tabs-row">
         <button id="tabTodas" class="tab-btn active" onclick="filtro('todas')">Todas</button>
         <button id="tabPendentes" class="tab-btn" onclick="filtro('pendentes')">
@@ -382,7 +302,6 @@ html, body{
     </div>
 </div>
 
-<!-- MENU -->
 <nav class="bottombar">
   <button class="nav-btn"><img src="icons/agenda.png">Reuniões</button>
   <button class="nav-btn"><img src="icons/analise.png">Análise</button>
@@ -391,59 +310,18 @@ html, body{
   <button class="nav-btn"><img src="icons/ajustes.png">Ajustes</button>
 </nav>
 
-
 <script>
 /* ===========================================
-   BLOQUEIO DE ZOOM VIA JS
+   CARREGAR PERFIL DO LOGIN
 =========================================== */
-document.addEventListener("gesturestart", e => e.preventDefault());
-document.addEventListener("gesturechange", e => e.preventDefault());
-document.addEventListener("gestureend", e => e.preventDefault());
-document.addEventListener("dblclick", e => e.preventDefault());
-
-/* ===========================================
-   USUÁRIOS CADASTRADOS
-=========================================== */
-const usuarios = [
-  { id:1, nome:"Dheure", cargo:"Gerente geral", senha:"8486", foto:"icons/dheure.png" },
-  { id:2, nome:"Maria Santos", cargo:"Supervisor", senha:"2025", foto:"icons/user2.png" },
-];
-
-/* ===========================================
-   LOGIN
-=========================================== */
-function fazerLogin(){
-  const nome = document.getElementById("loginNome").value.trim();
-  const senha = document.getElementById("loginSenha").value.trim();
-
-  const user = usuarios.find(u => 
-     (u.nome.toLowerCase().includes(nome.toLowerCase())) &&
-      u.senha === senha
-  );
-
-  if(!user){
-    document.getElementById("loginErro").style.display="block";
-    return;
-  }
-
-  localStorage.setItem("usuarioLogado", JSON.stringify(user));
-  registrarHistorico(`${user.nome} fez login`);
-  iniciarSessao();
+function iniciar(){
+  const u = JSON.parse(localStorage.getItem("usuarioLogado"));
+  document.getElementById("userFoto").src = u.foto;
 }
-
-function iniciarSessao(){
-  const user = JSON.parse(localStorage.getItem("usuarioLogado"));
-  if(!user) return;
-
-  document.getElementById("loginTela").style.display="none";
-  document.getElementById("userFotoBtn").style.display="block";
-  document.getElementById("userFoto").src = user.foto;
-}
-
-iniciarSessao();
+iniciar();
 
 /* ===========================================
-   POPUP PERFIL
+   PERFIL POPUP
 =========================================== */
 function abrirPerfil(){
   const u = JSON.parse(localStorage.getItem("usuarioLogado"));
@@ -453,14 +331,13 @@ function abrirPerfil(){
   document.getElementById("popupPerfil").style.display="flex";
 }
 
-document.getElementById("perfilFechar").onclick = () => {
+document.getElementById("perfilFechar").onclick = () =>{
   document.getElementById("popupPerfil").style.display="none";
 };
 
-document.getElementById("sairBtn").onclick = () => {
-  registrarHistorico("Usuário saiu");
+document.getElementById("sairBtn").onclick = () =>{
   localStorage.removeItem("usuarioLogado");
-  location.reload();
+  window.location.href = "login.html";
 };
 
 /* ===========================================
@@ -468,10 +345,8 @@ document.getElementById("sairBtn").onclick = () => {
 =========================================== */
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbwFqMdyDMkDc4qXaGzdLZ5F5EdGvSaU1kBU9BfI3n0Xn9N03V_hj4f-64gOzsyAZ2pTgg/exec";
 
-function registrarHistorico(acao){
+function registrar(acao){
   const u = JSON.parse(localStorage.getItem("usuarioLogado"));
-  if(!u) return;
-
   fetch(ENDPOINT,{
     method:"POST",
     body:JSON.stringify({
@@ -512,34 +387,31 @@ async function carregarContadores(){
       document.getElementById(id).textContent = "Erro";
     }
   }
-
   atualizarBadgePendentes();
 }
-
 carregarContadores();
 
 /* ===========================================
-   MENU / FILTRO
+   FILTRO
 =========================================== */
 function atualizarBadgePendentes(){
   const total = Object.values(pendentesPorSetor).filter(v=>v>0).length;
-
   const badge = document.getElementById("badgePendentes");
+
   if(total > 0){
-    badge.style.display = "inline-block";
+    badge.style.display="inline-block";
     badge.textContent = total;
-  } else {
-    badge.style.display = "none";
   }
+  else badge.style.display="none";
 }
 
 function filtro(tipo){
   document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.remove("active"));
-  
-  if(tipo === "todas") document.getElementById("tabTodas").classList.add("active");
-  if(tipo === "pendentes") document.getElementById("tabPendentes").classList.add("active");
-  if(tipo === "recorrentes") document.getElementById("tabRecorrentes").classList.add("active");
-  if(tipo === "urgentes") document.getElementById("tabUrgentes").classList.add("active");
+
+  if(tipo==="todas") document.getElementById("tabTodas").classList.add("active");
+  if(tipo==="pendentes") document.getElementById("tabPendentes").classList.add("active");
+  if(tipo==="recorrentes") document.getElementById("tabRecorrentes").classList.add("active");
+  if(tipo==="urgentes") document.getElementById("tabUrgentes").classList.add("active");
 
   const setoresDOM = document.querySelectorAll(".setor");
 
@@ -548,19 +420,22 @@ function filtro(tipo){
     const qtd = pendentesPorSetor[setor] ?? 0;
 
     if(tipo === "todas"){
-      el.style.display = "flex";
+      el.style.display="flex";
     }
     else if(tipo === "pendentes"){
       el.style.display = qtd > 0 ? "flex" : "none";
     }
     else{
-      el.style.display = "none"; 
+      el.style.display="none";
     }
   });
 }
 
+/* ===========================================
+   ABRIR SETOR
+=========================================== */
 function openSetor(p){
-  registrarHistorico(`Entrou no setor ${p}`);
+  registrar(`Entrou no setor ${p}`);
   window.location.href = p;
 }
 </script>
