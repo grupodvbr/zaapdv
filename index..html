@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<title>Login • ZaapDV</title>
+
+<style>
+body{
+  margin:0;
+  padding:0;
+  background:#ffffff;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.container{
+  width:92%;
+  max-width:360px;
+}
+
+.card{
+  background:white;
+  padding:24px;
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.12);
+}
+
+h2{
+  text-align:center;
+  margin-bottom:20px;
+  font-size:22px;
+  font-weight:700;
+}
+
+/* Seleção de usuários */
+.user-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.user-item{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid #ddd;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.user-item:hover{
+  background:#f4f4f4;
+}
+
+.user-item img{
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #ddd;
+}
+
+.user-name{
+  font-size:17px;
+  font-weight:600;
+}
+
+/* Tela de senha */
+#senhaBox{
+  display:none;
+}
+
+.user-foto-big{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  display:block;
+  margin:0 auto 14px auto;
+  border:3px solid #007aff;
+}
+
+.bemvindo{
+  text-align:center;
+  font-size:20px;
+  margin-bottom:10px;
+  font-weight:600;
+}
+
+.input{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:12px;
+  font-size:16px;
+  margin-bottom:14px;
+}
+
+.btn{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  cursor:pointer;
+  background:#007aff;
+  color:white;
+  font-weight:600;
+}
+
+#erro{
+  text-align:center;
+  color:red;
+  margin-top:10px;
+  display:none;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Lista de usuários -->
+  <div id="loginBox" class="card">
+    <h2>Selecione o Usuário</h2>
+
+    <div class="user-list" id="listaUsuarios"></div>
+  </div>
+
+  <!-- Tela de senha -->
+  <div id="senhaBox" class="card">
+      <img id="fotoSelecionada" class="user-foto-big">
+      
+      <div id="textoBemVindo" class="bemvindo"></div>
+
+      <input id="senhaInput" class="input" type="password" placeholder="Digite sua senha">
+      <button class="btn" onclick="entrar()">Entrar</button>
+      <div id="erro">Senha incorreta</div>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================
+   USUÁRIOS CADASTRADOS
+========================================================== */
+const usuarios = [
+  { nome:"Dheure", senha:"8486", foto:"icons/dheure.png", pagina:"dheure.html" },
+  { nome:"Maria Santos", senha:"2025", foto:"icons/user2.png", pagina:"maria.html" },
+  { nome:"Pedro", senha:"1234", foto:"icons/user3.png", pagina:"pedro.html" }
+];
+
+/* ==========================================================
+   CARREGAR LISTA DE USUÁRIOS NA TELA
+========================================================== */
+function montarLista(){
+  const lista = document.getElementById("listaUsuarios");
+
+  usuarios.forEach(u => {
+    const div = document.createElement("div");
+    div.className = "user-item";
+    div.onclick = () => selecionarUsuario(u);
+
+    div.innerHTML = `
+      <img src="${u.foto}">
+      <div class="user-name">${u.nome}</div>
+    `;
+
+    lista.appendChild(div);
+  });
+}
+
+montarLista();
+
+let usuarioSelecionado = null;
+
+/* ==========================================================
+   SELECIONAR O USUÁRIO
+========================================================== */
+function selecionarUsuario(user){
+  usuarioSelecionado = user;
+
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("senhaBox").style.display = "block";
+  document.getElementById("fotoSelecionada").src = user.foto;
+  document.getElementById("textoBemVindo").textContent =
+    `Bem-vindo(a), ${user.nome}`;
+}
+
+/* ==========================================================
+   LOGIN → SALVAR SENHA E REDIRECIONAR
+========================================================== */
+function entrar(){
+  const senha = document.getElementById("senhaInput").value;
+
+  if(senha !== usuarioSelecionado.senha){
+    document.getElementById("erro").style.display = "block";
+    return;
+  }
+
+  // salvar sessão permanente
+  localStorage.setItem("usuarioLogado", JSON.stringify(usuarioSelecionado));
+
+  // redirecionar
+  window.location.href = usuarioSelecionado.pagina;
+}
+
+/* ==========================================================
+   LOGIN AUTOMÁTICO SE JÁ ESTIVER LOGADO
+========================================================== */
+const salvo = localStorage.getItem("usuarioLogado");
+if(salvo){
+  const u = JSON.parse(salvo);
+  window.location.href = u.pagina;
+}
+</script>
+
+</body>
+</html>
