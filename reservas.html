@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel de Reservas • Mercatto Delícia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    /* ============ Design base ============ */
+    :root{
+      --bg:#f3f5f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --line:#e5e7eb;
+      --brand:#2563eb; --brand-2:#1e40af; --ok:#16a34a; --warn:#b45309; --danger:#ef4444;
+      --accent:#f59e0b; --radius:16px;
+      --shadow: 0 12px 30px rgba(2,6,23,.06);
+      --glass: rgba(255,255,255,.6);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b0e14; --card:#0f131b; --text:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+        --shadow: 0 12px 30px rgba(0,0,0,.35); --glass: rgba(17,24,39,.5);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(1200px 800px at -10% -20%, rgba(37,99,235,.08), transparent 60%),
+        radial-gradient(900px 700px at 110% -10%, rgba(16,185,129,.08), transparent 60%),
+        var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{max-width:1180px; margin:auto; padding:28px 18px 40px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px}
+    .title{font-size:clamp(1.2rem,2.6vw,1.8rem); font-weight:900; letter-spacing:.2px; display:flex; align-items:center; gap:12px}
+    .badge{font-size:.82rem; background:linear-gradient(90deg,var(--brand),var(--brand-2)); color:#fff;
+      padding:6px 10px; border-radius:999px; box-shadow:var(--shadow)}
+
+    /* Cartão com “glass” leve */
+    .card{
+      background:linear-gradient(180deg,var(--card),var(--card)) padding-box,
+                 linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0)) border-box;
+      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px dashed var(--line); background:var(--glass); backdrop-filter: blur(6px)}
+    .card-head h2{margin:0; font-size:1.05rem}
+    .section{padding:18px}
+    .section + .section{border-top:1px dashed var(--line)}
+    .section h3{margin:0 0 10px; font-size:1rem; color:var(--muted); font-weight:700; letter-spacing:.3px}
+
+    /* Inputs */
+    label{font-weight:600; font-size:.94rem}
+    input, select, textarea, button{
+      width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--line);
+      background:transparent; color:inherit; font-size:16px; outline:none; transition:.15s;
+    }
+    input:focus, select:focus, textarea:focus{ border-color:var(--brand); box-shadow:0 0 0 3px rgba(37,99,235,.15) }
+    textarea{min-height:90px; resize:vertical}
+    .hint{font-size:.82rem; color:var(--muted)}
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{border:0; cursor:pointer; font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,var(--brand),var(--brand-2)); color:#fff}
+    .btn-ghost{background:#0000; border:1px dashed var(--line)}
+    .btn-danger{background:var(--danger); color:#fff}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    .row{display:flex; align-items:center; gap:10px}
+    .chip{border:1px solid var(--line); border-radius:999px; padding:6px 10px; font-size:.84rem; color:var(--muted); background:var(--glass); backdrop-filter: blur(6px)}
+    .file-box{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border:1px dashed var(--line); border-radius:12px}
+    .file-name{font-size:.9rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .spinner{display:none; margin-top:10px; color:var(--muted)}
+    .spinner.show{display:block}
+    .toast{position:fixed; inset:auto 16px 16px auto; background:#111827; color:#fff; padding:12px 14px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.3); display:none; z-index:50}
+    .toast.show{display:block}
+
+    /* ============ Calendário (maior, embaixo) ============ */
+    .cal{padding:16px}
+    .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+    .cal-title{font-weight:800; font-size:1.1rem}
+    .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
+    .cal-dow{font-size:.9rem; color:var(--muted); text-align:center; padding:6px 0}
+    .cal-day{
+      background:transparent; border:1px solid var(--line); border-radius:14px;
+      padding:12px; min-height:120px; position:relative; cursor:pointer;
+      transition:.12s transform ease, .12s box-shadow ease;
+    }
+    .cal-day:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(2,6,23,.06)}
+    .cal-day.out{opacity:.45}
+    .cal-day .num{
+  position:absolute;
+  top:8px;
+  right:10px;
+  font-weight:900;
+  font-size:1.05rem;
+}
+    .cal-day .tags{position:absolute; bottom:10px; left:10px; right:10px; display:flex; gap:6px; flex-wrap:wrap}
+    .tag{font-size:.78rem; padding:4px 8px; border-radius:999px; border:1px solid var(--line)}
+    .t-pend{background:#fef3c7; border-color:#fde68a}
+    .t-done{background:#dcfce7; border-color:#bbf7d0}
+    /* VIP (azul) x OUTROS (laranja) */
+    .t-vip{ background:#dbeafe; border-color:#93c5fd; color:#1e3a8a; }
+    .t-outros{ background:#ffedd5; border-color:#fed7aa; color:#9a3412; }
+
+    /* ============ Resumo ============ */
+    .summary{padding:16px; border-top:1px dashed var(--line); background:var(--glass)}
+    .summary-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    @media (max-width:720px){ .summary-grid{grid-template-columns:1fr} }
+    .kpi{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card)}
+    .kpi .label{font-size:.9rem; color:var(--muted)}
+    .kpi .value{font-size:1.4rem; font-weight:900}
+    .sum-note{font-size:.82rem; color:var(--muted); margin-top:6px}
+
+    footer{padding:16px 18px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+
+    /* ============ Modais ============ */
+    .modal{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:flex-end; z-index:60}
+    .modal.show{display:flex}
+    .sheet{background:var(--card); width:100%; max-height:82vh; border-radius:18px 18px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.25); overflow:auto}
+    .sheet h3{margin:14px 16px}
+    .sheet .list{padding:0 16px 16px}
+    .res-item{border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px; background:var(--glass)}
+    .res-item .top{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap}
+    .res-item .name{font-weight:800}
+    .res-item .meta{font-size:.9rem; color:var(--muted)}
+
+    /* Modal de Concluir (central) */
+    #finishModal{align-items:center; justify-content:center}
+    #finishModal .sheet{max-width:520px; border-radius:16px; overflow:hidden}
+
+    /* Modal de Edição (full sheet) — opcional (não usamos para editar os dados base) */
+    #editModal .sheet{border-radius:18px 18px 0 0}
+    .inline-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .inline-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+    @media (max-width:760px){ .inline-grid,.inline-3{grid-template-columns:1fr} }
+    .list-bordered{border:1px dashed var(--line); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:10px}
+    .item-row{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .item-row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+    .item-actions{display:flex; gap:8px; justify-content:flex-end}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">Reservas • Mercatto Delícia</div>
+      <div class="badge">Cadastro → Calendário → Resumo</div>
+    </header>
+
+    <!-- ============ FORMULÁRIO (em cima) ============ -->
+    <form id="reservaForm" class="card" novalidate>
+      <div class="card-head"><h2>Nova / Editar Reserva</h2></div>
+
+      <input type="hidden" name="acao" value="cadastrar" />
+      <input type="hidden" name="status" value="Pendente" />
+      <input type="hidden" name="id" id="reservaId" value="" />
+
+      <div class="section">
+        <h3>👤 Dados do Cliente</h3>
+        <div class="inline-grid">
+          <div>
+            <label for="nome">Nome Completo <span style="color:var(--danger)">*</span></label>
+            <input id="nome" name="nome" type="text" autocomplete="name" required />
+          </div>
+          <div>
+            <label for="email">E-mail <span style="color:var(--danger)">*</span></label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+          <div>
+            <label for="telefone">Telefone (WhatsApp) <span style="color:var(--danger)">*</span></label>
+            <input id="telefone" name="telefone" type="tel" inputmode="numeric" placeholder="(99) 99999-9999" required />
+            <div class="hint">Usaremos para confirmação da reserva.</div>
+          </div>
+          <div>
+            <label for="pessoas">Quantidade de Pessoas <span style="color:var(--danger)">*</span></label>
+            <input id="pessoas" name="pessoas" type="number" min="1" step="1" required />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>🪑 Detalhes da Reserva</h3>
+        <div class="inline-grid">
+          <div>
+            <label for="mesa">Local da Reserva <span style="color:var(--danger)">*</span></label>
+            <select id="mesa" name="mesa" required>
+              <option value="">Selecione o local</option>
+              <option>SALA VIP</option>
+              <option>SALA VIP 2</option>
+              <option>SACADA</option>
+              <option>SALÃO CENTRAL</option>
+            </select>
+          </div>
+          <div>
+            <label for="cardapio">Cardápio</label>
+            <select id="cardapio" name="cardapio">
+              <option value="">Selecione</option>
+              <option>Buffet Ouro</option>
+              <option>Buffet Diamante</option>
+              <option>Buffet Master Gold</option>
+              <option>Rodízio Pizza</option>
+              <option>Rodízio Happy Hour</option>
+              <option>À la carte</option>
+              <option>Cardápio Verde</option>
+              <option>Cardápio Azul</option>
+              <option>Cardápio Vermelho</option>
+              <option>Cardápio Rubi</option>
+              <option>Cardápio Diamente</option>
+              <option>Cardápio safira</option>
+              <option>Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="datahora">Data e Hora da Reserva <span style="color:var(--danger)">*</span></label>
+        <input type="datetime-local" id="datahora" name="datahora" required />
+        <div class="hint">Não é permitido escolher data passada.</div>
+      </div>
+
+      <div class="section">
+        <h3>💳 Pagamento / Sinal</h3>
+        <div class="inline-3">
+          <div>
+            <label for="valorEstimado">Valor Estimado (R$)</label>
+            <input id="valorEstimado" name="valorEstimado" type="text" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div>
+            <label for="pagamentoAntecipado">Antecipação Inicial (R$)</label>
+            <input id="pagamentoAntecipado" name="pagamentoAntecipado" type="text" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div>
+            <label for="banco">Banco <span id="bancoReq" style="display:none; color:var(--danger)">*</span></label>
+            <select id="banco" name="banco">
+              <option value="">Selecione</option>
+              <option>SICREDI</option>
+              <option>ITAÚ</option>
+              <option>CRÉDITO POS</option>
+              <option>DÉBITO POS</option>
+            </select>
+            <div class="hint">Obrigatório quando houver pagamento antecipado.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>📝 Observações & Comprovante</h3>
+        <div class="inline-grid">
+          <div>
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" name="observacoes" rows="3" placeholder="Preferências, restrições, aniversariante, etc."></textarea>
+          </div>
+          <div>
+            <label for="arquivo">Comprovante (PDF, JPG ou PNG)</label>
+            <input id="arquivo" type="file" accept=".pdf,.jpg,.jpeg,.png" />
+            <div class="file-box" id="fileBox" style="display:none; margin-top:8px">
+              <div class="file-name" id="fileName">—</div>
+              <button type="button" id="clearFile" class="btn btn-danger" style="width:auto">Remover</button>
+            </div>
+            <div class="hint">Tamanho máximo 5 MB.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="row" style="justify-content:space-between">
+          <div class="chip">Status: <strong id="statusChip">PENDENTE</strong></div>
+          <div class="chip">Envio seguro</div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="spinner" id="spinner">⬤ Enviando...</div>
+        <div class="toolbar" style="margin-left:auto">
+          <button type="button" id="cancelEdit" class="btn btn-ghost" style="display:none">Cancelar edição</button>
+          <button type="reset" class="btn btn-ghost">Limpar</button>
+          <button type="submit" id="submitBtn" class="btn btn-primary">Salvar Reserva</button>
+        </div>
+      </footer>
+    </form>
+
+    <!-- ============ CALENDÁRIO (embaixo) + RESUMO ============ -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-head">
+        <h2>Calendário de Reservas</h2>
+        <div class="toolbar">
+          <button id="prevMonth" class="btn btn-ghost">◀ Mês anterior</button>
+          <button id="todayBtn" class="btn btn-ghost">Hoje</button>
+          <button id="nextMonth" class="btn btn-ghost">Próximo mês ▶</button>
+        </div>
+      </div>
+
+      <div class="cal">
+        <div class="cal-head">
+          <div class="cal-title" id="calTitle">—</div>
+        </div>
+        <div class="cal-grid" id="calDow"></div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div class="summary">
+        <h3 style="margin:0 0 6px 0; color:var(--muted)">Resumo do mês</h3>
+        <div class="summary-grid">
+          <div class="kpi"><div class="label">Antecipado (mês)</div><div class="value" id="kpiAntecipado">R$ 0,00</div></div>
+          <div class="kpi"><div class="label">Final pago (mês)</div><div class="value" id="kpiFinalPago">R$ 0,00</div></div>
+          <div class="kpi">
+            <div class="label">A receber (mês)</div>
+            <div class="value" id="kpiAReceber">R$ 0,00</div>
+            <div class="sum-note">* "A receber" não entra na soma do mês (apenas adiantamento + final pago).</div>
+          </div>
+        </div>
+        <div class="section" style="padding-top:12px">
+          <div class="kpi" style="display:flex; align-items:center; justify-content:space-between">
+            <div>
+              <div class="label">Total do mês (adiantamento + final pago)</div>
+              <div class="value" id="kpiTotalMes">R$ 0,00</div>
+            </div>
+            <button id="refreshBtn" class="btn btn-ghost" style="width:auto">Atualizar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAIS ============ -->
+  <div class="modal" id="dayModal" aria-hidden="true">
+    <div class="sheet">
+      <h3 id="modalTitle">Reservas do dia</h3>
+      <div class="list" id="modalList"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="finishModal" aria-hidden="true">
+    <div class="sheet">
+      <div style="padding:18px 18px 0 18px"><h3>Concluir reserva</h3></div>
+      <div style="padding:0 18px 18px 18px">
+        <div class="hint">Informe o valor final pago para concluir a reserva.</div>
+        <label for="finalPagoInput" style="display:block; margin-top:10px; font-weight:700">Valor final pago (R$)</label>
+        <input id="finalPagoInput" type="text" inputmode="decimal" placeholder="0,00" />
+        <div class="toolbar" style="margin-top:14px; justify-content:flex-end">
+          <button id="cancelFinish" class="btn btn-ghost" style="width:auto">Cancelar</button>
+          <button id="confirmFinish" class="btn btn-primary" style="width:auto">Concluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição (opcional — mantido caso queira usar depois) -->
+  <div class="modal" id="editModal" aria-hidden="true">
+    <div class="sheet">
+      <h3 style="margin-bottom:0">✏️ Editar reserva / adicionar pagamentos & anexos</h3>
+      <div style="padding:0 16px 16px">
+        <input type="hidden" id="editId" />
+        <div class="section">
+          <h3>👤 Cliente</h3>
+          <div class="inline-grid">
+            <div><label>Nome</label><input id="e_nome" /></div>
+            <div><label>E-mail</label><input id="e_email" type="email" /></div>
+            <div><label>Telefone</label><input id="e_telefone" /></div>
+            <div><label>Pessoas</label><input id="e_pessoas" type="number" min="1" /></div>
+          </div>
+        </div>
+        <div class="section">
+          <h3>🪑 Reserva</h3>
+          <div class="inline-grid">
+            <div>
+              <label>Local</label>
+              <select id="e_mesa">
+                <option value="">Selecione</option>
+                <option>SALA VIP</option>
+                <option>SALA VIP 2</option>
+                <option>SACADA</option>
+                <option>SALÃO CENTRAL</option>
+              </select>
+            </div>
+            <div>
+              <label>Cardápio</label>
+              <select id="e_cardapio">
+                <option value="">Selecione</option>
+                <option>Buffet Básico</option>
+                <option>Buffet Premium</option>
+                <option>Rodízio</option>
+                <option>À la carte</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
+          <label>Data e Hora</label>
+          <input id="e_datahora" type="datetime-local" />
+        </div>
+        <div class="section">
+          <h3>💳 Pagamentos</h3>
+          <div class="inline-3">
+            <div><label>Estimado (R$)</label><input id="e_valorEstimado" inputmode="decimal" placeholder="0,00" /></div>
+            <div><label>Adiantado (base) (R$)</label><input id="e_pagamentoAntecipado" inputmode="decimal" placeholder="0,00" /></div>
+            <div>
+              <label>Banco do adiantamento</label>
+              <select id="e_banco">
+                <option value="">Selecione</option>
+                <option>SICREDI</option>
+                <option>ITAÚ</option>
+                <option>CRÉDITO POS</option>
+                <option>DÉBITO POS</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:10px" class="hint">Use a lista abaixo para adicionar pagamentos extras.</div>
+          <div id="extrasList" class="list-bordered" aria-live="polite"></div>
+          <div class="toolbar" style="justify-content:flex-end; margin-top:8px">
+            <button id="addExtraBtn" type="button" class="btn btn-ghost" style="width:auto">+ Adicionar pagamento extra</button>
+          </div>
+          <div class="chip" id="sumPreview" style="margin-top:8px">Total adiantado (base + extras): <b>R$ 0,00</b></div>
+        </div>
+        <div class="section">
+          <h3>📎 Anexos adicionais</h3>
+          <div id="anexosList" class="list-bordered"></div>
+          <div class="toolbar" style="justify-content:flex-end; margin-top:8px">
+            <button id="addAnexoBtn" type="button" class="btn btn-ghost" style="width:auto">+ Adicionar anexo</button>
+          </div>
+          <div class="hint">Tipos aceitos: PDF, JPG, PNG. Máx 5 MB por arquivo.</div>
+        </div>
+        <div class="section">
+          <h3>📝 Observações</h3>
+          <textarea id="e_observacoes" rows="3" placeholder="Observações gerais..."></textarea>
+        </div>
+        <div class="toolbar" style="justify-content:flex-end">
+          <button type="button" id="cancelEditModal" class="btn btn-ghost" style="width:auto">Cancelar</button>
+          <button type="button" id="saveEditBtn" class="btn btn-primary" style="width:auto">Salvar alterações</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    /* ==============================
+       Config
+    ============================== */
+    const endpoint = "https://script.google.com/macros/s/AKfycbwE-0oOl4wGHz7gFXHIgYHNihCTW4-uzUjGv_iLvPSWX1sma8pi9eJIwx1K4grFOILj/exec";
+
+    /* ==============================
+       Helpers
+    ============================== */
+    const $ = (s,el=document)=>el.querySelector(s);
+    const $$ = (s,el=document)=>Array.from(el.querySelectorAll(s));
+    const toast = (msg, ms=3500) => { const el = $("#toast"); el.textContent = msg; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"), ms); };
+    const maskPhone = v => { const d = v.replace(/\D/g,'').slice(0,11); return d.length<=10? d.replace(/^(\d{2})(\d{4})(\d{0,4}).*/,"($1) $2-$3") : d.replace(/^(\d{2})(\d{5})(\d{0,4}).*/,"($1) $2-$3"); };
+    const formatBRL = (num) => Number(num||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    const formatBRLInput = v => {
+  const only = v.replace(/[^\d]/g, "");
+  const n = Number(only) / 100;
+  if (isNaN(n)) return "";
+
+  // Mantém apenas vírgula decimal, sem ponto de milhar
+  return n.toFixed(2).replace(".", ",");
+};
+
+   const parseBRL = v => {
+  if (!v) return 0;
+
+  // remove tudo menos dígitos e vírgula/ponto
+  let s = v.toString().replace(/[^\d,]/g, '');
+
+  // se NÃO tem vírgula → interpretar como CENTAVOS
+  if (!s.includes(',')) {
+    return Number(s) / 100;
+  }
+
+  // se tem vírgula → formato BR
+  s = s.replace(/\./g, '').replace(',', '.');
+  return Number(s) || 0;
+};
+
+    const nowLocalMin = ()=>{ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); };
+    const ymd = d=>{ const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`; };
+    const toBase64 = (file) => new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
+
+    /* ==============================
+       Estado
+    ============================== */
+    const state = { mes:(new Date()).getMonth(), ano:(new Date()).getFullYear(), reservas:[], editingId:null };
+
+    /* ==============================
+       API
+    ============================== */
+    const api = {
+      async listar(ano, mes){
+        const url = `${endpoint}?acao=listar&ano=${ano}&mes=${mes+1}`;
+        const res = await fetch(url, {method:'GET'});
+        if(!res.ok) throw new Error(`Erro ${res.status}`);
+        const data = await res.json();
+        if(!Array.isArray(data)) throw new Error('Resposta inválida da API.');
+        return data;
+      },
+      async cadastrar(payload){
+        try{
+          const res = await fetch(endpoint, { method:'POST', body:new URLSearchParams(payload) });
+          const txt = await res.text();
+          if(!res.ok) return { ok:false, message: txt || 'Falha ao salvar na planilha.' };
+          return { ok:true, message: txt || 'OK' };
+        }catch(e){
+          return { ok:false, message:`Erro ao salvar na planilha: ${e.message}` };
+        }
+      },
+      async atualizar(id, payload){
+        try{
+          const body = new URLSearchParams({ acao:'atualizar', id, ...payload });
+          const res = await fetch(endpoint, { method:'POST', body });
+          const txt = await res.text();
+          if(!res.ok) return { ok:false, message: txt || 'Falha ao atualizar na planilha.' };
+          try{
+            const json = JSON.parse(txt);
+            if (json.ok === false) return { ok:false, message: json.error || 'Falha ao atualizar.' };
+            return { ok:true, message: json.message || 'Atualizado' };
+          }catch{ /* resposta texto simples */ }
+          return { ok:true, message: txt || 'Atualizado' };
+        }catch(e){
+          return { ok:false, message:`Erro ao atualizar: ${e.message}` };
+        }
+      },
+      async concluir(id, valorFinalPago){
+        try{
+          const body = new URLSearchParams({ acao:'concluir', id, valorFinalPago:String(valorFinalPago), status:'Concluída' });
+          const res = await fetch(endpoint, { method:'POST', body });
+          const txt = await res.text();
+          if(!res.ok) return { ok:false, message: txt || 'Falha ao concluir na planilha.' };
+          return { ok:true, message: txt || 'Concluída' };
+        }catch(e){
+          return { ok:false, message:`Erro ao concluir: ${e.message}` };
+        }
+      },
+      async excluir(id){
+        try{
+          const body = new URLSearchParams({ acao:'excluir', id });
+          const res = await fetch(endpoint, { method:'POST', body });
+        const txt = await res.text();
+          if(!res.ok) return { ok:false, message: txt || 'Falha ao excluir na planilha.' };
+          return { ok:true, message: txt || 'Excluída' };
+        }catch(e){
+          return { ok:false, message:`Erro ao excluir: ${e.message}` };
+        }
+      }
+    };
+
+    /* ==============================
+       Calendário
+    ============================== */
+    const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const dow = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const calTitle = $('#calTitle'), calDow = $('#calDow'), calGrid = $('#calGrid');
+    calDow.innerHTML = dow.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+    function buildCalendar(){
+      const {mes, ano} = state;
+      calTitle.textContent = `${monthNames[mes]} de ${ano}`;
+      calGrid.innerHTML = '';
+      const first = new Date(ano, mes, 1);
+      const start = new Date(first);
+      const startDay = (first.getDay()+7)%7;
+      start.setDate(1 - startDay);
+
+      for(let i=0;i<42;i++){
+        const d = new Date(start); d.setDate(start.getDate()+i);
+        const inMonth = d.getMonth()===mes;
+        const cell = document.createElement('button');
+        cell.type='button';
+        cell.className = 'cal-day' + (inMonth? '':' out');
+        cell.dataset.date = ymd(d);
+
+        const items = state.reservas.filter(r=> r.datahora && ymd(new Date(r.datahora))===ymd(d));
+
+        // Agrupar por setor e colorir VIP vs OUTROS
+        const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+        const groups = new Map();
+        for (const r of items) {
+          const label = (r.mesa || '—').trim();
+          const key   = norm(label);
+          groups.set(key, { label, count:(groups.get(key)?.count||0)+1 });
+        }
+        const isVipKey = k => k === 'SALA VIP' || k === 'SALA VIP 2';
+        const sectorTags = Array.from(groups.entries()).map(([key, info]) => {
+          const vip = isVipKey(key);
+          const css = vip ? 't-vip' : 't-outros';
+          return `<span class="tag ${css}">${info.count} ${info.label}</span>`;
+        }).join('');
+
+        const pend = items.filter(r=> (r.status||'Pendente')!=='Concluída').length;
+        const done = items.filter(r=> r.status==='Concluída').length;
+
+        cell.innerHTML = `
+          <div class="num">${d.getDate()}</div>
+          <div class="tags">
+            ${sectorTags}
+            ${pend ? `<span class="tag t-pend">Pend: ${pend}</span>` : ''}
+            ${done ? `<span class="tag t-done">Conc: ${done}</span>` : ''}
+          </div>
+        `;
+        cell.addEventListener('click', ()=> openDayModal(d, items));
+        calGrid.appendChild(cell);
+      }
+    }
+
+    /* ==============================
+       Resumo mensal
+    ============================== */
+    function sumExtrasFromRecord(r){
+      const keys = Object.keys(r||{}).filter(k=>k.toLowerCase().startsWith('pagamentoextra'));
+      return keys.reduce((acc,k)=> acc + parseBRL(r[k]), 0);
+    }
+    function updateSummary(){
+      const {mes, ano} = state;
+      const inMonth = state.reservas.filter(r=>{ const d=new Date(r.datahora); return d.getMonth()===mes && d.getFullYear()===ano; });
+      const sum = (arr,fn)=> arr.reduce((a,b)=>a+fn(b),0);
+      const adiantado = sum(inMonth, r=> parseBRL(r.pagamentoAntecipado||0) + sumExtrasFromRecord(r));
+      const finalPago = sum(inMonth, r=> parseBRL(r.valorFinalPago||0));
+      const aReceber = sum(inMonth.filter(r=> (r.status||'Pendente')!=='Concluída'), r=> {
+        const estimado = parseBRL(r.valorEstimado||0);
+        const ant = parseBRL(r.pagamentoAntecipado||0) + sumExtrasFromRecord(r);
+        const rest = Math.max(estimado - ant, 0);
+        return rest;
+      });
+      $('#kpiAntecipado').textContent = formatBRL(adiantado);
+      $('#kpiFinalPago').textContent = formatBRL(finalPago);
+      $('#kpiAReceber').textContent = formatBRL(aReceber);
+      $('#kpiTotalMes').textContent = formatBRL(adiantado + finalPago);
+    }
+
+    /* ==============================
+       Modal do dia
+    ============================== */
+    const dayModal = $('#dayModal');
+    function openDayModal(date, items){
+      $('#modalTitle').textContent = `Reservas de ${date.toLocaleDateString('pt-BR')}`;
+      const list = $('#modalList');
+      if(!items || !items.length){ list.innerHTML = '<div class="hint">Nenhuma reserva neste dia.</div>'; }
+      else{
+        list.innerHTML = items.map(r=> renderResItem(r)).join('');
+        $$('#dayModal .btn-concluir').forEach(btn=> btn.addEventListener('click', onClickConcluir));
+        $$('#dayModal .btn-editar').forEach(btn=> btn.addEventListener('click', onClickEditar));
+        $$('#dayModal .btn-excluir').forEach(btn=> btn.addEventListener('click', onClickExcluir));
+      }
+      dayModal.classList.add('show');
+    }
+    dayModal.addEventListener('click', (e)=>{ if(e.target===dayModal) dayModal.classList.remove('show'); });
+
+    function renderResItem(r){
+      const hora = new Date(r.datahora).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      const status = r.status||'Pendente';
+
+      const anexoKeys = Object.keys(r).filter(k => k.toLowerCase().includes("anexo") && r[k]);
+      const anexos = anexoKeys.map((k,i) => `<a href="${r[k]}" target="_blank">📎 Anexo ${i+1}</a>`).join("<br>");
+
+      const pagamentoKeys = Object.keys(r).filter(k=> /pagamento/i.test(k) && !['pagamentoAntecipado','valorFinalPago','valorEstimado'].includes(k));
+      const pagamentos = pagamentoKeys.map((k,i)=> `💵 Pagamento ${i+1}: ${formatBRL(parseBRL(r[k]))}`).join('<br>');
+
+      return `<div class="res-item" data-id="${r.id}">
+        <div class="top">
+          <div>
+            <div class="name">${r.nome||'—'}</div>
+            <div class="meta">${hora} • ${r.mesa||'—'} • ${r.pessoas||'0'} pessoa(s)</div>
+          </div>
+          <div class="row" style="margin-left:auto">
+            <span class="chip">${status}</span>
+            ${r._semIdReal
+              ? `<button class="btn btn-ghost" style="width:auto" disabled title="Sem ID da planilha">Editar</button>`
+              : `<button class="btn btn-ghost btn-editar" data-id="${r.id}" style="width:auto">Editar</button>`
+            }
+            <button class="btn btn-danger btn-excluir" data-id="${r.id}" style="width:auto">Excluir</button>
+            <button class="btn btn-primary btn-concluir" data-id="${r.id}" style="width:auto">Concluir</button>
+          </div>
+        </div>
+        <div class="meta"><b>Email:</b> ${r.email||'—'} • <b>Tel:</b> ${r.telefone||'—'}</div>
+        <div class="meta"><b>Cardápio:</b> ${r.cardapio||'—'} • <b>Banco:</b> ${r.banco||'—'}</div>
+        <div class="meta"><b>Obs:</b> ${r.observacoes||'—'}</div>
+        <div class="meta">
+  Estimado: R$ ${r.valorEstimado ?? ''} • 
+  Adiantamento: R$ ${r.pagamentoAntecipado ?? ''} • 
+  Final pago: R$ ${r.valorFinalPago ?? ''}
+</div>
+
+        ${pagamentos? `<div class="meta">${pagamentos}</div>`:""}
+        ${anexos? `<div class="meta">${anexos}</div>`:""}
+      </div>`;
+    }
+
+    /* ==============================
+       Form & validações
+    ============================== */
+    const form = $('#reservaForm');
+    const spinner = $('#spinner');
+    const submitBtn = $('#submitBtn');
+    const cancelEditBtn = $('#cancelEdit');
+    const statusChip = $('#statusChip');
+
+    const inputTelefone = $('#telefone');
+    const inputValor = $('#valorEstimado');
+    const inputSinal = $('#pagamentoAntecipado');
+    const selectBanco = $('#banco');
+    const bancoReq = $('#bancoReq');
+    const inputArquivo = $('#arquivo');
+    const fileBox = $('#fileBox');
+    const fileName = $('#fileName');
+    const clearFile = $('#clearFile');
+    const inputData = $('#datahora');
+
+    inputData.min = nowLocalMin();
+    inputTelefone.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
+    ;inputValor.addEventListener('input', e => e.target.value = formatBRLInput(e.target.value));
+
+    const toggleBancoRequired = () => {
+      const v = parseBRL(inputSinal.value);
+      const has = v > 0; selectBanco.required = has; bancoReq.style.display = has? '' : 'none';
+    };
+    inputSinal.addEventListener('input', toggleBancoRequired);
+
+    inputArquivo.addEventListener('change', () => {
+      const f = inputArquivo.files[0];
+      if(!f){ fileBox.style.display="none"; return; }
+      const okType = /pdf|jpg|jpeg|png/i.test(f.type) || /(pdf|jpg|jpeg|png)$/i.test(f.name);
+      if(!okType){ toast('Tipo de arquivo inválido.'); inputArquivo.value=''; return; }
+      if(f.size > 5*1024*1024){ toast('Arquivo maior que 5 MB.'); inputArquivo.value=''; return; }
+      fileName.textContent = f.name + " • " + (f.size/1024/1024).toFixed(2) + " MB";
+      fileBox.style.display = 'flex';
+    });
+    clearFile.addEventListener('click', ()=>{ inputArquivo.value=''; fileBox.style.display='none'; });
+
+    function validateExtra(){
+      if(new Date(inputData.value) < new Date()){ toast('Data/hora no passado.'); inputData.focus(); return false; }
+      const telDigits = inputTelefone.value.replace(/\D/g,''); if(telDigits.length<10){ toast('Telefone incompleto.'); inputTelefone.focus(); return false; }
+      if(parseBRL(inputSinal.value) > 0 && !selectBanco.value){ toast('Selecione o banco do adiantamento.'); selectBanco.focus(); return false; }
+      return true;
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!form.checkValidity()){ toast('Confira os campos obrigatórios.'); return; }
+      if(!validateExtra()) return;
+      spinner.classList.add('show'); submitBtn.disabled = true;
+
+      const payload = collectPayload();
+      const file = inputArquivo.files[0];
+      if(file){
+        try{
+          const b64 = await toBase64(file);
+          payload.arquivo = String(b64).split(',')[1];
+          payload.nomeArquivo = file.name;
+        }catch(e){ console.error(e); toast('Falha ao ler o arquivo.'); }
+      }
+
+      let resp;
+      if(state.editingId){
+        resp = await api.atualizar(state.editingId, payload);
+      }else{
+        resp = await api.cadastrar(payload);
+      }
+
+      if(resp.ok){
+        toast('✅ ' + (resp.message||'OK'));
+        await loadMonth(state.ano, state.mes);
+        form.reset(); statusChip.textContent='PENDENTE'; inputData.min = nowLocalMin();
+        fileBox.style.display='none'; cancelEditBtn.style.display='none'; state.editingId=null; $('#reservaId').value='';
+      }else{
+        toast('⚠️ ' + resp.message);
+      }
+
+      spinner.classList.remove('show'); submitBtn.disabled = false;
+    });
+
+    function collectPayload(){
+      const fd = new FormData(form);
+      const obj = Object.fromEntries(fd.entries());
+      obj.valorEstimado = String(parseBRL(obj.valorEstimado||0));
+      obj.pagamentoAntecipado = String(parseBRL(obj.pagamentoAntecipado||0));
+      return obj;
+    }
+
+    /* ==============================
+       Ações: Editar / Concluir / Excluir
+    ============================== */
+    function onClickEditar(e){
+      const id = e.currentTarget.dataset.id;
+      const r = state.reservas.find(x=>String(x.id)===String(id));
+      if(!r) return;
+
+      if (r._semIdReal){
+        toast('Não é possível editar: este registro veio sem ID da planilha. Ajuste o GAS para listar retornar o ID.');
+        return;
+      }
+
+      // Marca edição
+      state.editingId = r.id;
+      $('#reservaId').value = r.id;
+      $('#cancelEdit').style.display = ''; // mostra "Cancelar edição"
+
+      // Preenche formulário principal
+      $('#nome').value = r.nome || '';
+      $('#email').value = r.email || '';
+      $('#telefone').value = r.telefone || '';
+      $('#pessoas').value = r.pessoas || '';
+      $('#mesa').value = r.mesa || '';
+      $('#cardapio').value = r.cardapio || '';
+      $('#observacoes').value = r.observacoes || '';
+
+      // Data/hora no formato local
+      if (r.datahora){
+        const dt = new Date(r.datahora);
+        const off = new Date(dt);
+        off.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+        $('#datahora').value = off.toISOString().slice(0,16);
+      } else {
+        $('#datahora').value = '';
+      }
+
+      // Valores R$
+      $('#valorEstimado').value = (Number(r.valorEstimado||0)).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+$('#pagamentoAntecipado').value = r.pagamentoAntecipado ?? '';
+      $('#banco').value = r.banco || '';
+
+      // Status
+      $('#statusChip').textContent = (r.status || 'Pendente').toUpperCase();
+
+      // Regras de obrigatoriedade do banco
+      const v = parseBRL($('#pagamentoAntecipado').value);
+      const has = v > 0;
+      $('#banco').required = has;
+      $('#bancoReq').style.display = has ? '' : 'none';
+
+      toast('✏️ Editando reserva — altere no formulário e clique em "Salvar Reserva".');
+      // Fecha o modal do dia, se estiver aberto
+      $('#dayModal').classList.remove('show');
+    }
+
+    async function onClickExcluir(e){
+      const id = e.currentTarget.dataset.id;
+      const r = state.reservas.find(x=>String(x.id)===String(id));
+      if(!r) return;
+      const ok = confirm(`Excluir a reserva de ${r.nome||'—'} em ${new Date(r.datahora).toLocaleString('pt-BR')}? Esta ação não pode ser desfeita.`);
+      if(!ok) return;
+      const resp = await api.excluir(id);
+      if(resp.ok){
+        toast('🗑️ Reserva excluída');
+        await loadMonth(state.ano, state.mes);
+      }else{
+        toast('⚠️ ' + resp.message);
+      }
+    }
+
+    // Concluir fluxo com modal
+    const finishModal = $('#finishModal');
+    const finalPagoInput = $('#finalPagoInput');
+    let finishId = null;
+
+    function onClickConcluir(e){
+      finishId = e.currentTarget.dataset.id;
+      finalPagoInput.value = '';
+      finishModal.classList.add('show');
+      finalPagoInput.focus();
+    }
+
+    $('#cancelFinish').addEventListener('click', ()=>{ finishModal.classList.remove('show'); finishId=null; });
+    finishModal.addEventListener('click', (e)=>{ if(e.target===finishModal){ finishModal.classList.remove('show'); finishId=null; } });
+
+    $('#confirmFinish').addEventListener('click', async ()=>{
+      const v = parseBRL(finalPagoInput.value);
+      if(!(v>0)){ toast('Informe um valor válido.'); finalPagoInput.focus(); return; }
+      if(!finishId) return;
+      const resp = await api.concluir(finishId, v);
+      if(resp.ok){
+        toast('✅ ' + (resp.message||'Concluída'));
+        finishModal.classList.remove('show'); finishId=null;
+        await loadMonth(state.ano, state.mes);
+      }else{
+        toast('⚠️ ' + resp.message);
+      }
+    });
+
+    // Cancelar edição
+    cancelEditBtn.addEventListener('click', ()=>{
+      state.editingId = null;
+      $('#reservaId').value = '';
+      $('#cancelEdit').style.display = 'none';
+      form.reset();
+      $('#statusChip').textContent = 'PENDENTE';
+      $('#fileBox').style.display='none';
+      $('#datahora').min = nowLocalMin();
+      toast('Edição cancelada.');
+    });
+
+    /* ==============================
+       Navegação e Carregamento
+    ============================== */
+    $('#prevMonth').addEventListener('click', ()=>{ const m = new Date(state.ano,state.mes,1); m.setMonth(m.getMonth()-1); state.mes=m.getMonth(); state.ano=m.getFullYear(); refreshAll(); });
+    $('#nextMonth').addEventListener('click', ()=>{ const m = new Date(state.ano,state.mes,1); m.setMonth(m.getMonth()+1); state.mes=m.getMonth(); state.ano=m.getFullYear(); refreshAll(); });
+    $('#todayBtn').addEventListener('click', ()=>{ const t=new Date(); state.mes=t.getMonth(); state.ano=t.getFullYear(); refreshAll(); });
+    $('#refreshBtn').addEventListener('click', ()=> refreshAll());
+
+    async function loadMonth(ano, mes){
+      try{
+        const data = await api.listar(ano, mes);
+state.reservas = data.map((r,i)=> {
+  const idReal = r.id ?? r.ID ?? r.Id ?? r.IdReserva ?? r.IdPlanilha ?? r['Id'] ?? '';
+  return {
+    id: idReal || `ROW-${i+1}`,
+    _semIdReal: !idReal,
+    nome: r.nome||r.Nome||'',
+    email:r.email||r.Email||'',
+    telefone: r.telefone || r.Telefone || r.Fone || '',
+    pessoas:r.pessoas||r.Pessoas||'',
+    mesa:r.mesa||r.Mesa||r.Local||'',
+    cardapio:r.cardapio||r.Cardapio||'',
+    observacoes: r.observacoes || r.Observacoes || r.Obs || '',
+    datahora: r.datahora || r.DataHora || r.data || r.Data || '',
+    valorEstimado: String(r.valorEstimado ?? r.ValorEstimado ?? '0'),
+    pagamentoAntecipado: String(r.pagamentoAntecipado ?? r.Adiantamento ?? '0'),
+    valorFinalPago: String(r.valorFinalPago ?? r.FinalPago ?? '0'),
+    banco: r.banco || r.Banco || '',
+    status: r.status || r.Status || 'Pendente',
+    ...r
+  };
+});
+
+      }catch(e){
+        state.reservas = [];
+        toast('⚠️ Erro ao carregar dados da planilha: ' + e.message);
+      }
+      buildCalendar(); updateSummary();
+    }
+
+    function refreshAll(){ buildCalendar(); updateSummary(); loadMonth(state.ano, state.mes); }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', ()=>{
+      $('#datahora').min = nowLocalMin();
+      refreshAll();
+    });
+  </script>
+</body>
+</html>
