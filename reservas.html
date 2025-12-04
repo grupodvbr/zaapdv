@@ -2,125 +2,260 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel de Reservas • Mercatto Delícia</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Reservas • Mercatto Delícia</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+  />
   <meta name="color-scheme" content="light dark" />
 
   <style>
-    /* ============ Design base ============ */
-    :root{
-      --bg:#f3f5f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --line:#e5e7eb;
-      --brand:#2563eb; --brand-2:#1e40af; --ok:#16a34a; --warn:#b45309; --danger:#ef4444;
-      --accent:#f59e0b; --radius:16px;
-      --shadow: 0 12px 30px rgba(2,6,23,.06);
-      --glass: rgba(255,255,255,.6);
+    /* ======================= BASE ======================= */
+    :root {
+      --bg: #f3f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e5e7eb;
+      --brand: #2563eb;
+      --brand-2: #1e40af;
+      --ok: #16a34a;
+      --warn: #b45309;
+      --danger: #ef4444;
+      --radius: 16px;
+      --shadow: 0 12px 30px rgba(2, 6, 23, 0.06);
+      --glass: rgba(255, 255, 255, 0.65);
     }
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg:#0b0e14; --card:#0f131b; --text:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
-        --shadow: 0 12px 30px rgba(0,0,0,.35); --glass: rgba(17,24,39,.5);
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0e14;
+        --card: #0f131b;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #1f2937;
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        --glass: rgba(17, 24, 39, 0.5);
       }
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:
-        radial-gradient(1200px 800px at -10% -20%, rgba(37,99,235,.08), transparent 60%),
-        radial-gradient(900px 700px at 110% -10%, rgba(16,185,129,.08), transparent 60%),
-        var(--bg);
-      color:var(--text);
+
+    * {
+      box-sizing: border-box;
     }
 
-    .wrap{max-width:1180px; margin:auto; padding:28px 18px 40px}
-    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px}
-    .title{font-size:clamp(1.4rem,2.8vw,2rem); font-weight:900;}
-    .badge{font-size:.82rem; background:linear-gradient(90deg,var(--brand),var(--brand-2)); color:#fff;
-      padding:6px 10px; border-radius:999px; box-shadow:var(--shadow)}
-
-    /* Cartão */
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .card-head{
-      padding:16px 18px;
-      border-bottom:1px dashed var(--line);
-      background:var(--glass);
-      backdrop-filter:blur(6px);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    button{
-      border:1px solid var(--line);
-      background:var(--glass);
-      padding:8px 14px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    button:hover{
-      background:var(--card);
+    body {
+      margin: 0;
+      padding: 12px;
+      background: var(--bg);
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
     }
 
-    /* Calendário */
-    .cal{padding:16px}
-    .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
-    .cal-title{font-weight:800; font-size:1.1rem}
-    .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
-    .cal-dow{font-size:.9rem; color:var(--muted); text-align:center; padding:6px 0}
-    .cal-day{
-      background:transparent; border:1px solid var(--line); border-radius:14px;
-      padding:12px; min-height:120px; position:relative; cursor:pointer;
-      transition:.12s transform ease, .12s box-shadow ease;
+    /* ======================= HEADER ======================= */
+    header {
+      text-align: center;
+      padding: 8px 0 14px;
     }
-    .cal-day:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(2,6,23,.06)}
-    .cal-day.out{opacity:.45}
-    .cal-day .num{
-      position:absolute; top:8px; right:10px;
-      font-weight:900; font-size:1.05rem;
-    }
-    .cal-day .tags{
-      position:absolute; bottom:10px; left:10px; right:10px;
-      display:flex; gap:6px; flex-wrap:wrap
-    }
-    .tag{font-size:.78rem; padding:4px 8px; border-radius:999px; border:1px solid var(--line)}
 
-    /* Resumo */
-    .summary{padding:16px; border-top:1px dashed var(--line); background:var(--glass)}
-    .summary-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
-    @media (max-width:720px){ .summary-grid{grid-template-columns:1fr} }
-    .kpi{border:1px solid var(--line); border-radius:12px; background:var(--card); padding:14px}
-    .label{font-size:.9rem; color:var(--muted)}
-    .value{font-size:1.4rem; font-weight:900}
+    header .title {
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
 
-    /* Modal */
-    .modal{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:flex-end; z-index:60}
-    .modal.show{display:flex}
-    .sheet{background:var(--card); width:100%; max-height:82vh; border-radius:18px 18px 0 0; overflow:auto}
-    .res-item{border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px; background:var(--glass)}
-    .meta{font-size:.9rem; color:var(--muted)}
-    .hint{font-size:.9rem; color:var(--muted)}
+    /* ====================== CARD BASE ===================== */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-bottom: 1px dashed var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(6px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ============== BOTÕES PARA MOBILE ============== */
+    button {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--glass);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    button:active {
+      opacity: 0.8;
+      transform: scale(0.97);
+    }
+
+    /* ======================= CALENDÁRIO ======================= */
+    .cal {
+      padding: 10px;
+    }
+
+    .cal-title {
+      font-weight: 800;
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .cal-grid {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .cal-dow {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .cal-day {
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 6px;
+      min-height: 62px;
+      position: relative;
+      overflow: hidden;
+      font-size: 0.8rem;
+    }
+
+    .cal-day .num {
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .cal-day .tags {
+      position: absolute;
+      bottom: 6px;
+      left: 4px;
+      right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 2px 6px;
+      font-size: 0.72rem;
+      border: 1px solid var(--line);
+      width: fit-content;
+    }
+
+    .t-vip {
+      background: #dbeafe;
+      border-color: #93c5fd;
+      color: #1e3a8a;
+    }
+    .t-outros {
+      background: #ffedd5;
+      border-color: #fed7aa;
+      color: #9a3412;
+    }
+    .t-pend {
+      background: #fef3c7;
+      border-color: #fde68a;
+    }
+    .t-done {
+      background: #dcfce7;
+      border-color: #bbf7d0;
+    }
+
+    /* ======================= RESUMO ======================= */
+    .summary {
+      padding: 12px;
+      background: var(--glass);
+      border-top: 1px dashed var(--line);
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: var(--card);
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .kpi .value {
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    /* ======================= MODAL ======================= */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(0, 0, 0, 0.55);
+      padding-top: 28%;
+      z-index: 999;
+    }
+
+    .modal.show {
+      display: block;
+    }
+
+    .sheet {
+      background: var(--card);
+      border-radius: 20px 20px 0 0;
+      padding: 14px;
+      height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .res-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 14px;
+      background: var(--glass);
+      font-size: 0.9rem;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 
 <body>
-<div class="wrap">
 
   <header>
     <div class="title">Reservas • Mercatto Delícia</div>
-    <div class="badge">Calendário + Resumo</div>
   </header>
 
-  <!-- ============ SOMENTE CALENDÁRIO + RESUMO ============ -->
+  <!-- ======================= CALENDÁRIO ======================= -->
   <div class="card">
     <div class="card-head">
-      <h2>Calendário de Reservas</h2>
-      <div style="display:flex; gap:10px">
+      <span>Calendário</span>
+      <div style="display:flex; gap:6px;">
         <button id="prevMonth">◀</button>
         <button id="todayBtn">Hoje</button>
         <button id="nextMonth">▶</button>
@@ -128,172 +263,216 @@
     </div>
 
     <div class="cal">
-      <div class="cal-head"><div id="calTitle" class="cal-title">—</div></div>
+      <div class="cal-title" id="calTitle">—</div>
       <div class="cal-grid" id="calDow"></div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
 
     <div class="summary">
-      <h3 style="margin:0 0 6px;color:var(--muted)">Resumo do mês</h3>
-
-      <div class="summary-grid">
-        <div class="kpi"><div class="label">Antecipado</div><div class="value" id="kpiAntecipado">R$ 0,00</div></div>
-        <div class="kpi"><div class="label">Final pago</div><div class="value" id="kpiFinalPago">R$ 0,00</div></div>
-        <div class="kpi"><div class="label">A receber</div><div class="value" id="kpiAReceber">R$ 0,00</div></div>
+      <div class="kpi">
+        <div class="label">Antecipado</div>
+        <div class="value" id="kpiAntecipado">R$ 0,00</div>
       </div>
 
-      <div class="kpi" style="margin-top:16px">
-        <div class="label">Total do mês</div>
+      <div class="kpi">
+        <div class="label">Final pago</div>
+        <div class="value" id="kpiFinalPago">R$ 0,00</div>
+      </div>
+
+      <div class="kpi">
+        <div class="label">A receber</div>
+        <div class="value" id="kpiAReceber">R$ 0,00</div>
+      </div>
+
+      <div class="kpi" style="background:#eef; border-color:#cbd5e1;">
+        <div class="label">Total mês</div>
         <div class="value" id="kpiTotalMes">R$ 0,00</div>
       </div>
 
-      <button id="refreshBtn" style="margin-top:10px">Atualizar</button>
+      <button id="refreshBtn" style="margin-top:10px; width:100%">Atualizar</button>
     </div>
   </div>
-</div>
 
-<!-- Modal lista do dia -->
-<div class="modal" id="dayModal">
-  <div class="sheet">
-    <h3 id="modalTitle" style="margin:14px 16px">Reservas do dia</h3>
-    <div class="list" id="modalList" style="padding:0 16px 16px"></div>
+  <!-- ======================= MODAL DIA ======================= -->
+  <div class="modal" id="dayModal">
+    <div class="sheet">
+      <h3 id="modalTitle">Reservas do dia</h3>
+      <div id="modalList"></div>
+    </div>
   </div>
-</div>
 
+  <!-- ======================= SCRIPTS ======================= -->
 <script>
-/* ============ Configuração ============ */
+/* ==================================== CONFIG ==================================== */
 const endpoint = "https://script.google.com/macros/s/AKfycbwE-0oOl4wGHz7gFXHIgYHNihCTW4-uzUjGv_iLvPSWX1sma8pi9eJIwx1K4grFOILj/exec";
 
-const $ = s=>document.querySelector(s);
-const formatBRL = n => Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const parseBRL = v => Number(String(v).replace(/[^\d]/g,'')||0)/100;
-const ymd = d=> d.toISOString().slice(0,10);
+const $ = (s, el=document)=>el.querySelector(s);
+const formatBRL = n => Number(n||0).toLocaleString('pt-BR',{style:'currency', currency:'BRL'});
+const parseBRL = v => Number(String(v).replace(/[^\d]/g,''))/100;
+const ymd = d => d.toISOString().slice(0,10);
 
 /* Estado */
 const state = {
-  mes:(new Date()).getMonth(),
-  ano:(new Date()).getFullYear(),
-  reservas:[]
+  mes: (new Date()).getMonth(),
+  ano: (new Date()).getFullYear(),
+  reservas: []
 };
 
-/* API */
-async function apiListar(ano,mes){
+/* ============================ API ============================ */
+async function apiListar(ano, mes){
   const url = `${endpoint}?acao=listar&ano=${ano}&mes=${mes+1}`;
   const r = await fetch(url);
   return r.json();
 }
 
-/* Calendário */
+/* ============================ CALENDÁRIO ============================ */
 const monthNames=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const dow=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
 $('#calDow').innerHTML = dow.map(d=>`<div class="cal-dow">${d}</div>`).join('');
 
 function buildCalendar(){
   const {mes, ano} = state;
   $('#calTitle').textContent = `${monthNames[mes]} de ${ano}`;
+
   const grid = $('#calGrid');
   grid.innerHTML='';
 
   const first = new Date(ano,mes,1);
   const start = new Date(first);
-  const offset = (first.getDay()+7)%7;
-  start.setDate(1-offset);
+  start.setDate(1 - ((first.getDay()+7)%7));
 
   for(let i=0;i<42;i++){
     const d = new Date(start); d.setDate(start.getDate()+i);
     const inMonth = d.getMonth()===mes;
+
     const items = state.reservas.filter(r => r.datahora && ymd(new Date(r.datahora))===ymd(d));
 
+    const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+    const groups = new Map();
+    items.forEach(r=>{
+      const label = r.mesa || '—';
+      const key = norm(label);
+      groups.set(key, { label, count:(groups.get(key)?.count||0)+1 });
+    });
+
+    const isVip = k => k==='SALA VIP' || k==='SALA VIP 2';
+    const sectorTags = [...groups].map(([key,info])=>`
+      <span class="tag ${isVip(key)?'t-vip':'t-outros'}">${info.count} ${info.label}</span>
+    `).join('');
+
+    const pend = items.filter(r=> (r.status||'Pendente')!=='Concluída').length;
+    const done = items.filter(r=> r.status==='Concluída').length;
+
     const cell = document.createElement('div');
-    cell.className='cal-day'+(inMonth?'':' out');
+    cell.className = 'cal-day' + (inMonth?'':' out');
+
     cell.innerHTML = `
       <div class="num">${d.getDate()}</div>
       <div class="tags">
-        ${items.length? `<span class="tag t-outros">${items.length} reserva(s)</span>` : ''}
+        ${sectorTags}
+        ${pend?`<span class="tag t-pend">Pend ${pend}</span>`:''}
+        ${done?`<span class="tag t-done">Conc ${done}</span>`:''}
       </div>
     `;
-    cell.onclick = ()=> openDayModal(d,items);
-    grid.append(cell);
+
+    cell.onclick = ()=> openDayModal(d, items);
+
+    grid.appendChild(cell);
   }
 }
 
-/* Modal do dia */
-function openDayModal(date, items){
-  $('#modalTitle').textContent = `Reservas de ${date.toLocaleDateString('pt-BR')}`;
-  const list = $('#modalList');
-  if(!items.length){
-    list.innerHTML = `<div class="hint">Nenhuma reserva neste dia.</div>`;
-  }else{
-    list.innerHTML = items.map(r => `
-      <div class="res-item">
-        <b>${r.nome||'—'}</b>
-        <div class="meta">${new Date(r.datahora).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
-        <div class="meta">${r.mesa||'—'} – ${r.pessoas||0} pessoas</div>
-        <div class="meta">Estimado: ${formatBRL(r.valorEstimado)}</div>
-        <div class="meta">Adiantado: ${formatBRL(r.pagamentoAntecipado)}</div>
-        <div class="meta">Final pago: ${formatBRL(r.valorFinalPago)}</div>
-      </div>
-    `).join('');
-  }
-  $('#dayModal').classList.add('show');
-}
-$('#dayModal').onclick = e=>{ if(e.target.id==='dayModal') e.target.classList.remove('show'); };
-
-/* Resumo */
+/* ============================ RESUMO ============================ */
 function updateSummary(){
-  const {mes,ano,reservas} = state;
-  const inMonth = reservas.filter(r => {
+  const {mes, ano} = state;
+
+  const inMonth = state.reservas.filter(r=>{
     const d = new Date(r.datahora);
     return d.getMonth()===mes && d.getFullYear()===ano;
   });
 
-  const adiantado = inMonth.reduce((s,r)=> s+parseBRL(r.pagamentoAntecipado),0);
-  const final = inMonth.reduce((s,r)=> s+parseBRL(r.valorFinalPago),0);
-  const estimado = inMonth.reduce((s,r)=> s+parseBRL(r.valorEstimado),0);
-  const aReceber = estimado - (adiantado + final);
+  const sum = (arr,fn)=>arr.reduce((a,b)=>a+fn(b),0);
 
-  $('#kpiAntecipado').textContent = formatBRL(adiantado);
-  $('#kpiFinalPago').textContent = formatBRL(final);
-  $('#kpiAReceber').textContent = formatBRL(aReceber);
-  $('#kpiTotalMes').textContent = formatBRL(adiantado + final);
+  const ad = sum(inMonth, r=> parseBRL(r.pagamentoAntecipado||0));
+  const fp = sum(inMonth, r=> parseBRL(r.valorFinalPago||0));
+  const est = sum(inMonth, r=> parseBRL(r.valorEstimado||0));
+
+  $('#kpiAntecipado').textContent = formatBRL(ad);
+  $('#kpiFinalPago').textContent = formatBRL(fp);
+  $('#kpiAReceber').textContent = formatBRL(est - (ad + fp));
+  $('#kpiTotalMes').textContent = formatBRL(ad + fp);
 }
 
-/* Carregar mês */
+/* ============================ MODAL ============================ */
+const dayModal = $('#dayModal');
+
+function openDayModal(date, items){
+  $('#modalTitle').textContent = `Reservas de ${date.toLocaleDateString('pt-BR')}`;
+
+  if(!items.length){
+    $('#modalList').innerHTML = `<div class="meta">Nenhuma reserva.</div>`;
+  } else {
+    $('#modalList').innerHTML = items.map(r => `
+      <div class="res-item">
+        <strong>${r.nome||'—'}</strong><br>
+        <div class="meta">${r.mesa||'—'} • ${r.pessoas||0} pessoas</div>
+        <div class="meta">${new Date(r.datahora).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="meta">Estimado: ${formatBRL(parseBRL(r.valorEstimado))}</div>
+        <div class="meta">Adiantado: ${formatBRL(parseBRL(r.pagamentoAntecipado))}</div>
+        <div class="meta">Final pago: ${formatBRL(parseBRL(r.valorFinalPago))}</div>
+      </div>
+    `).join('');
+  }
+
+  dayModal.classList.add('show');
+}
+
+dayModal.addEventListener('click', e=>{
+  if(e.target===dayModal) dayModal.classList.remove('show');
+});
+
+/* ============================ LOAD MONTH ============================ */
 async function loadMonth(){
   try{
-    const data = await apiListar(state.ano,state.mes);
+    const data = await apiListar(state.ano, state.mes);
     state.reservas = data;
-  }catch(e){
-    state.reservas=[];
-    alert('Erro ao carregar: '+e.message);
+  }catch{
+    state.reservas = [];
   }
+
   buildCalendar();
   updateSummary();
 }
 
-/* Navegação */
+/* ============================ NAV ============================ */
 $('#prevMonth').onclick = ()=>{
-  const d=new Date(state.ano,state.mes,1);
+  const d = new Date(state.ano,state.mes,1);
   d.setMonth(d.getMonth()-1);
-  state.mes=d.getMonth(); state.ano=d.getFullYear();
+  state.mes=d.getMonth();
+  state.ano=d.getFullYear();
   loadMonth();
 };
+
 $('#nextMonth').onclick = ()=>{
-  const d=new Date(state.ano,state.mes,1);
+  const d = new Date(state.ano,state.mes,1);
   d.setMonth(d.getMonth()+1);
-  state.mes=d.getMonth(); state.ano=d.getFullYear();
+  state.mes=d.getMonth();
+  state.ano=d.getFullYear();
   loadMonth();
 };
+
 $('#todayBtn').onclick = ()=>{
-  const t=new Date();
-  state.mes=t.getMonth(); state.ano=t.getFullYear();
+  const t = new Date();
+  state.mes=t.getMonth();
+  state.ano=t.getFullYear();
   loadMonth();
 };
+
 $('#refreshBtn').onclick = loadMonth;
 
-/* Inicial */
+/* ============================ INIT ============================ */
 loadMonth();
-</script>
 
+</script>
 </body>
 </html>
