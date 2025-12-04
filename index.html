@@ -2,70 +2,97 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Login • ZaapDV</title>
+<title>ZaapDV • Login</title>
 
 <style>
 body{
   margin:0;
   padding:0;
-  background:#ffffff;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
+  background:#f5f7fa;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  overflow:hidden;
 }
 
-.container{
-  width:92%;
-  max-width:360px;
+/* Containers */
+.container{ width:92%; max-width:380px; }
+
+/* Telas */
+.tela{ display:none; animation:fade .4s ease; }
+@keyframes fade{ from{opacity:0;} to{opacity:1;} }
+
+/* ===========================================
+   EMPRESAS
+=========================================== */
+.empresas{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:20px;
+  margin-top:20px;
 }
 
-.card{
-  background:white;
-  padding:24px;
-  border-radius:16px;
-  box-shadow:0 8px 30px rgba(0,0,0,.12);
+.empresa-item{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,.15);
+  transition:.3s;
 }
 
-h2{
-  text-align:center;
-  margin-bottom:20px;
-  font-size:22px;
-  font-weight:700;
+.empresa-item img{
+  width:70px;
+  height:70px;
+  object-fit:cover;
+  transition:.3s;
 }
 
-/* Seleção de usuários */
+.empresa-item:active img{
+  transform:scale(1.25);
+}
+
+/* ===========================================
+   USUÁRIOS
+=========================================== */
 .user-list{
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:14px;
+  margin-top:20px;
 }
 
 .user-item{
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:12px;
   padding:12px;
   border-radius:14px;
-  border:1px solid #ddd;
+  background:white;
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
   cursor:pointer;
   transition:.25s;
 }
 
 .user-item:hover{
-  background:#f4f4f4;
+  transform:scale(1.02);
 }
 
 .user-item img{
-  width:52px;
-  height:52px;
+  width:55px;
+  height:55px;
   border-radius:50%;
   object-fit:cover;
-  border:2px solid #ddd;
 }
 
 .user-name{
@@ -73,75 +100,107 @@ h2{
   font-weight:600;
 }
 
-/* Tela de senha */
-#senhaBox{
-  display:none;
-}
-
+/* ===========================================
+   SENHA
+=========================================== */
 .user-foto-big{
-  width:90px;
-  height:90px;
+  width:120px;
+  height:120px;
   border-radius:50%;
   object-fit:cover;
   display:block;
-  margin:0 auto 14px auto;
-  border:3px solid #007aff;
+  margin:0 auto 12px auto;
+  border:4px solid #007aff;
 }
 
 .bemvindo{
   text-align:center;
   font-size:20px;
-  margin-bottom:10px;
-  font-weight:600;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.cargo{
+  text-align:center;
+  font-size:15px;
+  color:#007aff;
+  margin-bottom:18px;
 }
 
 .input{
   width:100%;
   padding:12px;
-  border:1px solid #ccc;
   border-radius:12px;
-  font-size:16px;
+  border:1px solid #ccc;
   margin-bottom:14px;
+  font-size:16px;
 }
 
 .btn{
   width:100%;
   padding:12px;
-  border:none;
-  border-radius:12px;
-  font-size:16px;
-  cursor:pointer;
   background:#007aff;
   color:white;
+  border:none;
+  border-radius:12px;
+  font-size:17px;
   font-weight:600;
+  cursor:pointer;
 }
 
 #erro{
   text-align:center;
   color:red;
-  margin-top:10px;
   display:none;
+  margin-top:10px;
+  font-size:14px;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-  
-  <!-- Lista de usuários -->
-  <div id="loginBox" class="card">
-    <h2>Selecione o Usuário</h2>
 
-    <div class="user-list" id="listaUsuarios"></div>
+  <!-- ==============================
+       TELA 1 — SELEÇÃO DE EMPRESA
+  =============================== -->
+  <div id="telaEmpresa" class="tela" style="display:block;">
+      <h2 style="text-align:center;margin-bottom:20px;">Selecione a Empresa</h2>
+
+      <div class="empresas">
+          <div class="empresa-item" onclick="selecionarEmpresa('mercatto')">
+            <img src="icons/mercatto.png">
+          </div>
+
+          <div class="empresa-item" onclick="selecionarEmpresa('villa')">
+            <img src="icons/villa.png">
+          </div>
+
+          <div class="empresa-item" onclick="selecionarEmpresa('kids')">
+            <img src="icons/kids.png">
+          </div>
+      </div>
   </div>
 
-  <!-- Tela de senha -->
-  <div id="senhaBox" class="card">
+  <!-- ==============================
+       TELA 2 — USUÁRIOS DA EMPRESA
+  =============================== -->
+  <div id="telaUsuarios" class="tela">
+    <h2 style="text-align:center">Selecione o Usuário</h2>
+    <div id="listaUsuarios" class="user-list"></div>
+  </div>
+
+  <!-- ==============================
+       TELA 3 — SENHA
+  =============================== -->
+  <div id="telaSenha" class="tela">
       <img id="fotoSelecionada" class="user-foto-big">
-      
-      <div id="textoBemVindo" class="bemvindo"></div>
+
+      <div id="bemvindo" class="bemvindo"></div>
+      <div id="cargoSelecionado" class="cargo"></div>
 
       <input id="senhaInput" class="input" type="password" placeholder="Digite sua senha">
+
       <button class="btn" onclick="entrar()">Entrar</button>
       <div id="erro">Senha incorreta</div>
   </div>
@@ -150,71 +209,91 @@ h2{
 
 <script>
 /* ==========================================================
-   USUÁRIOS CADASTRADOS
+   DADOS DAS EMPRESAS E USUÁRIOS
 ========================================================== */
-const usuarios = [
-  { nome:"Dheure", senha:"8486", foto:"icons/dheure.png", pagina:"dheure.html" },
-  { nome:"Maria Santos", senha:"2025", foto:"icons/user2.png", pagina:"maria.html" },
-  { nome:"Pedro", senha:"1234", foto:"icons/user3.png", pagina:"pedro.html" }
-];
+const dados = {
+  mercatto: [
+    { nome:"Dheure", cargo:"Gerente Geral", senha:"8486", foto:"icons/dheure.png", pagina:"dheure.html" },
+    { nome:"Maria", cargo:"Supervisora", senha:"2025", foto:"icons/user2.png", pagina:"maria.html" }
+  ],
 
-/* ==========================================================
-   CARREGAR LISTA DE USUÁRIOS NA TELA
-========================================================== */
-function montarLista(){
-  const lista = document.getElementById("listaUsuarios");
+  villa: [
+    { nome:"Pedro", cargo:"Financeiro", senha:"1234", foto:"icons/user3.png", pagina:"pedro.html" }
+  ],
 
-  usuarios.forEach(u => {
-    const div = document.createElement("div");
-    div.className = "user-item";
-    div.onclick = () => selecionarUsuario(u);
+  kids: [
+    { nome:"Elenice", cargo:"Atendente Kids", senha:"5555", foto:"icons/user4.png", pagina:"elenice.html" }
+  ]
+};
 
-    div.innerHTML = `
-      <img src="${u.foto}">
-      <div class="user-name">${u.nome}</div>
-    `;
-
-    lista.appendChild(div);
-  });
-}
-
-montarLista();
-
+let empresaSelecionada = null;
 let usuarioSelecionado = null;
 
 /* ==========================================================
-   SELECIONAR O USUÁRIO
+   SELECIONAR EMPRESA
 ========================================================== */
-function selecionarUsuario(user){
-  usuarioSelecionado = user;
+function selecionarEmpresa(emp){
+  empresaSelecionada = emp;
 
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("senhaBox").style.display = "block";
-  document.getElementById("fotoSelecionada").src = user.foto;
-  document.getElementById("textoBemVindo").textContent =
-    `Bem-vindo(a), ${user.nome}`;
+  document.getElementById("telaEmpresa").style.display = "none";
+  document.getElementById("telaUsuarios").style.display = "block";
+
+  montarListaUsuarios();
 }
 
 /* ==========================================================
-   LOGIN → SALVAR SENHA E REDIRECIONAR
+   LISTA DE USUÁRIOS DA EMPRESA
+========================================================== */
+function montarListaUsuarios(){
+  const lista = document.getElementById("listaUsuarios");
+  lista.innerHTML = "";
+
+  dados[empresaSelecionada].forEach(u=>{
+      const div = document.createElement("div");
+      div.className = "user-item";
+      div.onclick = () => selecionarUsuario(u);
+
+      div.innerHTML = `
+        <img src="${u.foto}">
+        <div class="user-name">${u.nome}</div>
+      `;
+
+      lista.appendChild(div);
+  });
+}
+
+/* ==========================================================
+   SELECIONAR USUÁRIO
+========================================================== */
+function selecionarUsuario(u){
+  usuarioSelecionado = u;
+  
+  document.getElementById("telaUsuarios").style.display = "none";
+  document.getElementById("telaSenha").style.display = "block";
+
+  document.getElementById("fotoSelecionada").src = u.foto;
+  document.getElementById("bemvindo").textContent = "Bem-vindo(a), " + u.nome;
+  document.getElementById("cargoSelecionado").textContent = u.cargo;
+}
+
+/* ==========================================================
+   LOGIN
 ========================================================== */
 function entrar(){
   const senha = document.getElementById("senhaInput").value;
 
   if(senha !== usuarioSelecionado.senha){
-    document.getElementById("erro").style.display = "block";
+    document.getElementById("erro").style.display="block";
     return;
   }
 
-  // salvar sessão permanente
   localStorage.setItem("usuarioLogado", JSON.stringify(usuarioSelecionado));
 
-  // redirecionar
   window.location.href = usuarioSelecionado.pagina;
 }
 
 /* ==========================================================
-   LOGIN AUTOMÁTICO SE JÁ ESTIVER LOGADO
+   LOGIN AUTOMÁTICO
 ========================================================== */
 const salvo = localStorage.getItem("usuarioLogado");
 if(salvo){
