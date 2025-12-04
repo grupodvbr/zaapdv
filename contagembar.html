@@ -13,6 +13,7 @@ body{
     margin:0;
     background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+    overflow:hidden; /* impede scroll no fundo */
 }
 
 /* HEADER */
@@ -53,10 +54,11 @@ body{
     color:#007aff;
 }
 
-/* AREA */
+/* AREA PRINCIPAL */
 .area{
     padding:16px;
-    padding-bottom:160px;
+    height:calc(100vh - 90px);
+    overflow-y:auto;
 }
 
 /* TITULO CATEGORIA */
@@ -92,7 +94,7 @@ body{
     text-align:center;
 }
 
-/* BOTÃO */
+/* BOTÃO SALVAR */
 .btnSalvar{
     position:fixed;
     bottom:0;
@@ -105,35 +107,45 @@ body{
     font-weight:700;
     text-align:center;
     border:none;
-    border-radius:0;
     z-index:20;
 }
 
-/* POPUP RESUMO */
+/* POPUP — FUNDO */
 #popupResumo{
     position:fixed;
     top:0; left:0;
     width:100%; height:100%;
-    background:rgba(0,0,0,.35);
+    background:rgba(0,0,0,.55);
     display:none;
     justify-content:center;
-    align-items:flex-end;
-    padding-bottom:40px;
+    align-items:center;
+    backdrop-filter:blur(4px);
     z-index:50;
 }
 
+/* POPUP — CAIXA */
 .resumo-box{
     width:92%;
     max-width:420px;
     background:white;
-    padding:18px;
-    border-radius:16px;
-    max-height:70%;
-    overflow-y:auto;
+    padding:20px;
+    border-radius:18px;
+    max-height:80vh;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 8px 28px rgba(0,0,0,.25);
 }
 
+/* SCROLL INTERNO SOMENTE DO CONTEÚDO */
+.resumo-scroll{
+    overflow-y:auto;
+    padding-right:6px;
+    flex:1;
+}
+
+/* TITULOS */
 .resumo-titulo{
-    font-size:20px;
+    font-size:22px;
     font-weight:700;
     margin-bottom:12px;
     text-align:center;
@@ -151,14 +163,15 @@ body{
     justify-content:space-between;
     padding:6px 0;
     border-bottom:1px solid #eee;
+    font-size:16px;
 }
 
 .resumo-btn{
     width:100%;
-    padding:12px;
+    padding:14px;
     font-size:17px;
     text-align:center;
-    border-radius:10px;
+    border-radius:12px;
     margin-top:14px;
     cursor:pointer;
 }
@@ -170,6 +183,7 @@ body{
 
 .btn-fechar{
     background:#ddd;
+    color:#222;
 }
 </style>
 </head>
@@ -193,7 +207,8 @@ body{
 <div id="popupResumo">
     <div class="resumo-box">
         <div class="resumo-titulo">Resumo da Contagem</div>
-        <div id="resumoLista"></div>
+
+        <div id="resumoLista" class="resumo-scroll"></div>
 
         <div class="resumo-btn btn-confirmar" onclick="confirmarEnvio()">Confirmar</div>
         <div class="resumo-btn btn-fechar" onclick="fecharResumo()">Fechar</div>
@@ -203,7 +218,7 @@ body{
 <script>
 /* ============================ CONFIG ============================ */
 
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbz0y5kM1wao0R3LMaJJqSStSS89CUE1LKmMXWVxyeQDGjo_fsQHav93ZXb-vfaYPqMc/exec";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxrKaYwk67zw4rLhLsD5iR_Z3AbUwtyg6gR5vE2y4QtlgBdCsOtMzFNOpwUh9-arZeu/exec";
 const usuario = JSON.parse(localStorage.getItem("usuarioLogado"))?.nome || "Usuário";
 
 /* ==================== CARREGAR ITENS ==================== */
@@ -318,7 +333,7 @@ async function confirmarEnvio(){
         return;
     }
 
-    /* --- DATA AUTOMÁTICA --- */
+    /* DATA AUTOMÁTICA */
     const agora = new Date();
     let dataReal = new Date();
 
@@ -329,7 +344,7 @@ async function confirmarEnvio(){
     const dia = dataReal.toISOString().split("T")[0];
     const hora = agora.toTimeString().slice(0,5);
 
-    /* --- ENVIO --- */
+    /* ENVIO */
     const req = await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
