@@ -50,7 +50,6 @@ body{
     font-weight:500;
     color:#999;
 }
-
 .status-online{
     color:#007aff;
 }
@@ -59,6 +58,22 @@ body{
 .area{
     padding:16px;
     padding-bottom:140px;
+}
+
+/* Seleção de data */
+.dataBox{
+    margin-bottom:18px;
+}
+.dataLabel{
+    font-weight:700;
+    margin-bottom:8px;
+}
+.dataInput{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #bbb;
+    font-size:16px;
 }
 
 /* TÍTULO CATEGORIA */
@@ -124,23 +139,35 @@ body{
     </div>
 </div>
 
-<div class="area" id="conteudo"></div>
+<div class="area" id="conteudo">
+
+    <!-- Seleção de data -->
+    <div class="dataBox">
+        <div class="dataLabel">Selecione o dia da contagem</div>
+        <input type="date" id="dataContagem" class="dataInput">
+    </div>
+
+</div>
 
 <button class="btnSalvar" onclick="salvarContagem()">Salvar Contagem</button>
 
 <script>
 /* ========================= CONFIG ========================== */
 
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbyTnsk_TKHVyIbRWNuztkgx8OYJdbytB9hppn490UrWpEc-WFP1uV8KmFKLNfNtgZ8o/exec";
-let usuario = "Usuário"; // ← você pode substituir pelo usuário da sessão
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbz0y5kM1wao0R3LMaJJqSStSS89CUE1LKmMXWVxyeQDGjo_fsQHav93ZXb-vfaYPqMc/exec";  
+let usuario = "Usuário"; 
 
 /* ========================= CARREGAR ITENS ========================== */
 
 async function carregarItens(){
     const box = document.getElementById("conteudo");
-    box.innerHTML = "";
 
     const dados = await fetch(`${ENDPOINT}?acao=listarItens`).then(r=>r.json());
+
+    if(!dados.ok){
+        alert("Erro ao carregar itens");
+        return;
+    }
 
     Object.keys(dados.categorias).forEach(categoria=>{
         
@@ -150,7 +177,9 @@ async function carregarItens(){
             box.innerHTML += `
             <div class="item-box">
                 <div class="item-label">${obj.item}</div>
-                <input type="number" class="inputQtd" min="0" id="qtd_${obj.item.replace(/\\s+/g,'_')}">
+                <input type="number" class="inputQtd"
+                       min="0"
+                       id="qtd_${obj.item.replace(/\s+/g,'_')}">
             </div>`;
         });
 
@@ -165,6 +194,13 @@ carregarItens();
 /* ========================= SALVAR CONTAGEM ========================== */
 
 async function salvarContagem(){
+
+    const data = document.getElementById("dataContagem").value;
+    if(!data){
+        alert("Selecione a data antes de salvar.");
+        return;
+    }
+
     const todosInputs = document.querySelectorAll(".inputQtd");
 
     const registros = [];
@@ -173,7 +209,7 @@ async function salvarContagem(){
         const valor = Number(inp.value || 0);
         if(valor > 0){
             const item = inp.id.replace("qtd_","").replace(/_/g," ");
-            const categoria = descobrirCategoria(item);
+            const categoria = pegarCategoriaDoItem(item);
 
             registros.push({
                 categoria,
@@ -188,11 +224,11 @@ async function salvarContagem(){
         return;
     }
 
-    // envia ao GAS
     const req = await fetch(ENDPOINT,{
         method:"POST",
         body:JSON.stringify({
             usuario,
+            data,
             registros
         })
     });
@@ -209,20 +245,20 @@ async function salvarContagem(){
 
 /* ========================= DESCOBRIR CATEGORIA ========================== */
 
-function descobrirCategoria(item){
-    const todas = document.querySelectorAll(".cat-title");
+function pegarCategoriaDoItem(item){
+    const caixas = document.querySelectorAll(".cat-title");
 
-    for(let c of todas){
-        const categoria = c.textContent;
+    for(let c of caixas){
+        let cat = c.textContent;
+        let prox = c.nextElementSibling;
 
-        const itens = c.nextElementSibling;
-
-        if(itens){
-            // sempre retorna a categoria exibida
-            return categoria;
+        while(prox && prox.classList.contains("item-box")){
+            if(prox.querySelector(".item-label").textContent === item){
+                return cat;
+            }
+            prox = prox.nextElementSibling;
         }
     }
-
     return "Desconhecido";
 }
 </script>
