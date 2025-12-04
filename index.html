@@ -2,9 +2,36 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+
+<!-- Responsividade + Bloqueio de Zoom -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>ZaapDV • Login</title>
+
+<!-- =============================== -->
+<!-- LOGO DO APLICATIVO (PWA / iOS / ANDROID) -->
+<!-- =============================== -->
+
+<!-- Ícone principal -->
+<link rel="icon" type="image/png" href="icons/logo.png">
+
+<!-- Ícone para iPhone (tela inicial) -->
+<link rel="apple-touch-icon" href="icons/logo.png">
+
+<!-- Splash screen (tela de carregamento no iPhone) -->
+<link rel="apple-touch-startup-image" href="icons/logo.png">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="white">
+<meta name="theme-color" content="#ffffff">
+
+<!-- =============================== -->
+<!-- ESTILO -->
+<!-- =============================== -->
 
 <style>
 body{
@@ -176,7 +203,7 @@ body{
 
       <div class="empresas">
           <div class="empresa-item" onclick="selecionarEmpresa('mercatto')">
-            <img src="icons/logomercatto.png">
+            <img src="icons/logo.png"> <!-- LOGO IGUAL AO PWA -->
           </div>
       </div>
   </div>
@@ -210,7 +237,7 @@ body{
 
 <script>
 /* ==========================================================
-   DADOS REAIS
+   USUÁRIOS POR EMPRESA
 ========================================================== */
 const dados = {
   mercatto: [
