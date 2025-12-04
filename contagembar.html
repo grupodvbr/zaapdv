@@ -1,1 +1,231 @@
-a
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+
+<title>Contagem • Grupo DV</title>
+
+<style>
+body{
+    margin:0;
+    background:#efeae2;
+    font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+    overscroll-behavior-y: contain;
+}
+
+/* HEADER */
+.header{
+    height:calc(65px + env(safe-area-inset-top));
+    padding-top:calc(10px + env(safe-area-inset-top));
+    padding-left:16px;
+    padding-right:16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+.header img{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.header-name{
+    font-size:18px;
+    font-weight:700;
+}
+
+.status-line{
+    font-size:13px;
+    margin-top:2px;
+    font-weight:500;
+    color:#999;
+}
+
+.status-online{
+    color:#007aff;
+}
+
+/* ÁREA */
+.area{
+    padding:16px;
+    padding-bottom:140px;
+}
+
+/* TÍTULO CATEGORIA */
+.cat-title{
+    font-size:18px;
+    font-weight:700;
+    margin-top:25px;
+    margin-bottom:10px;
+}
+
+/* ITEM */
+.item-box{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.15);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.item-label{
+    font-size:16px;
+}
+
+.inputQtd{
+    width:70px;
+    padding:8px;
+    font-size:16px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    text-align:center;
+}
+
+/* BOTÃO */
+.btnSalvar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    padding:18px;
+    background:#007aff;
+    color:white;
+    font-size:18px;
+    font-weight:700;
+    text-align:center;
+    border:none;
+    border-radius:0;
+    z-index:20;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<div class="header">
+    <img src="icons/cozinha.png">
+    <div>
+        <div class="header-name">Contagem de Itens</div>
+        <div id="statusSetor" class="status-line">Carregando…</div>
+    </div>
+</div>
+
+<div class="area" id="conteudo"></div>
+
+<button class="btnSalvar" onclick="salvarContagem()">Salvar Contagem</button>
+
+<script>
+/* ========================= CONFIG ========================== */
+
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbyTnsk_TKHVyIbRWNuztkgx8OYJdbytB9hppn490UrWpEc-WFP1uV8KmFKLNfNtgZ8o/exec";
+let usuario = "Usuário"; // ← você pode substituir pelo usuário da sessão
+
+/* ========================= CARREGAR ITENS ========================== */
+
+async function carregarItens(){
+    const box = document.getElementById("conteudo");
+    box.innerHTML = "";
+
+    const dados = await fetch(`${ENDPOINT}?acao=listarItens`).then(r=>r.json());
+
+    Object.keys(dados.categorias).forEach(categoria=>{
+        
+        box.innerHTML += `<div class='cat-title'>${categoria}</div>`;
+
+        dados.categorias[categoria].forEach(obj=>{
+            box.innerHTML += `
+            <div class="item-box">
+                <div class="item-label">${obj.item}</div>
+                <input type="number" class="inputQtd" min="0" id="qtd_${obj.item.replace(/\\s+/g,'_')}">
+            </div>`;
+        });
+
+    });
+
+    document.getElementById("statusSetor").textContent = "Online";
+    document.getElementById("statusSetor").classList.add("status-online");
+}
+
+carregarItens();
+
+/* ========================= SALVAR CONTAGEM ========================== */
+
+async function salvarContagem(){
+    const todosInputs = document.querySelectorAll(".inputQtd");
+
+    const registros = [];
+
+    todosInputs.forEach(inp=>{
+        const valor = Number(inp.value || 0);
+        if(valor > 0){
+            const item = inp.id.replace("qtd_","").replace(/_/g," ");
+            const categoria = descobrirCategoria(item);
+
+            registros.push({
+                categoria,
+                item,
+                quantidade: valor
+            });
+        }
+    });
+
+    if(registros.length === 0){
+        alert("Nenhum item informado.");
+        return;
+    }
+
+    // envia ao GAS
+    const req = await fetch(ENDPOINT,{
+        method:"POST",
+        body:JSON.stringify({
+            usuario,
+            registros
+        })
+    });
+
+    const resp = await req.json();
+
+    if(resp.ok){
+        alert("Contagem registrada com sucesso!");
+        document.querySelectorAll(".inputQtd").forEach(i=>i.value="");
+    } else {
+        alert("Erro: " + resp.erro);
+    }
+}
+
+/* ========================= DESCOBRIR CATEGORIA ========================== */
+
+function descobrirCategoria(item){
+    const todas = document.querySelectorAll(".cat-title");
+
+    for(let c of todas){
+        const categoria = c.textContent;
+
+        const itens = c.nextElementSibling;
+
+        if(itens){
+            // sempre retorna a categoria exibida
+            return categoria;
+        }
+    }
+
+    return "Desconhecido";
+}
+</script>
+
+</body>
+</html>
