@@ -6,43 +6,7 @@ export const supa = createClient(
 );
 
 // =======================
-// LISTAR ITENS DO SETOR
-// =======================
-export async function listarItens(setor) {
-  const { data, error } = await supa
-    .from("itens_setores")
-    .select("*")
-    .eq("setor", setor)
-    .order("categoria", { ascending: true })
-    .order("item", { ascending: true });
-
-  if (error) {
-    console.error("ERRO LISTAR ITENS:", error);
-    return [];
-  }
-
-  return data;
-}
-
-// =======================
-// REGISTRAR CONTAGEM
-// =======================
-export async function registrarContagem(obj) {
-  const { error } = await supa
-    .from("registros")
-    .insert({
-      usuario: obj.usuario,
-      setor: obj.setor,
-      categoria: obj.categoria,
-      item: obj.item,
-      quantidade: obj.quantidade
-    });
-
-  return { ok: !error, error };
-}
-
-// =======================
-// PEGAR DIAS COM CONTAGEM
+// LISTAR DIAS COM CONTAGEM
 // =======================
 export async function diasComContagem(setor) {
   const { data, error } = await supa
@@ -50,12 +14,30 @@ export async function diasComContagem(setor) {
     .select("data_hora")
     .eq("setor", setor);
 
+  if (error) {
+    console.error("Erro dias:", error);
+    return [];
+  }
+
+  return [...new Set(data.map(x => x.data_hora.split("T")[0]))];
+}
+
+// =======================
+// PEGAR REGISTROS DO DIA
+// =======================
+export async function registrosDoDia(data, setor) {
+  const inicio = data + " 00:00:00";
+  const fim = data + " 23:59:59";
+
+  const { data: registros, error } = await supa
+    .from("registros")
+    .select("*")
+    .eq("setor", setor)
+    .gte("data_hora", inicio)
+    .lte("data_hora", fim)
+    .order("categoria")
+    .order("item");
+
   if (error) return [];
-
-  // extrair apenas data (AAAA-MM-DD)
-  const dias = [...new Set(
-    data.map(d => d.data_hora.split("T")[0])
-  )];
-
-  return dias;
+  return registros;
 }
