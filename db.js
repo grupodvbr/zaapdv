@@ -1,6 +1,7 @@
 import { supa } from "./supabase.js";
 
-export async function listarItens(setor) {
+/* LISTAR ITENS DE UM SETOR */
+export async function listarItens(setor){
   const { data } = await supa
     .from("itens_setores")
     .select("*")
@@ -8,21 +9,36 @@ export async function listarItens(setor) {
   return data || [];
 }
 
-export async function registrarContagem(info) {
+/* REGISTRAR UM LANÇAMENTO */
+export async function registrarContagem(info){
   const { error } = await supa.from("registros").insert(info);
   return !error;
 }
 
-export async function contarPendentes(setor) {
-  const { data, count } = await supa
+/* CONTAR PENDENTES DE UM SETOR */
+export async function contarPendentes(setor){
+  const { count } = await supa
     .from("registros")
-    .select("id", { count: "exact" })
+    .select("id", { count:"exact" })
     .eq("setor", setor);
 
   return count ?? 0;
 }
 
-export async function listarDiasValidos() {
+/* DIAS VÁLIDOS */
+export async function diasValidos(){
   const { data } = await supa.from("dias_parametros").select("*");
   return data || [];
+}
+
+/* REGISTRAR HISTÓRICO */
+export async function registrarHistorico(usuario, cargo, descricao){
+  const { error } = await supa.from("registros").insert({
+    usuario,
+    setor:"HISTORICO",
+    categoria:cargo,
+    item:descricao,
+    quantidade:0
+  });
+  return !error;
 }
