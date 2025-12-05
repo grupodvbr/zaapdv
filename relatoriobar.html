@@ -2,114 +2,68 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
-
-<title>Relatório • Contagem do Bar</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relatório do Bar</title>
 
 <style>
 body{
     margin:0;
-    background:#efeae2;
+    background:#f2eee6;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-    overflow:hidden;
 }
 .header{
-    height:calc(65px + env(safe-area-inset-top));
-    padding-top:calc(10px + env(safe-area-inset-top));
-    padding-left:16px;
-    padding-right:16px;
     display:flex;
     align-items:center;
-    gap:12px;
+    padding:16px;
     background:#fff;
     border-bottom:1px solid #ddd;
 }
 .header img{
-    width:46px; height:46px;
-    border-radius:50%;
+    width:46px; height:46px; border-radius:50%;
 }
-.header-title{ font-size:20px; font-weight:700; }
-.header-sub{ font-size:14px; color:#777; }
-
-.area{
+.header-title{
+    margin-left:12px;
+    font-size:20px;
+    font-weight:700;
+}
+.status{
+    font-size:13px;
+    color:#888;
+    margin-left:12px;
+}
+#dias{
     padding:16px;
-    height:calc(100vh - 90px);
-    overflow-y:auto;
 }
-
-.dia-card{
+.dia{
     background:white;
-    padding:14px 16px;
-    border-radius:14px;
-    box-shadow:0 2px 5px rgba(0,0,0,.12);
-    margin-bottom:12px;
+    padding:14px;
+    border-radius:10px;
+    margin-bottom:10px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
     display:flex;
     justify-content:space-between;
     align-items:center;
 }
-
-.dia-date{ font-size:18px; font-weight:700; }
-.dia-info{ font-size:14px; color:#777; }
-
-.dif-green{ color:#2ecc71; font-weight:700; }
-.dif-red{ color:#e74c3c; font-weight:700; }
-
-.grafico-box{
-    background:white;
-    padding:16px;
-    border-radius:16px;
-    box-shadow:0 2px 5px rgba(0,0,0,.12);
-    margin-top:20px;
-}
-
-#popupDia{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    display:none;
-    justify-content:center;
-    align-items:center;
-    backdrop-filter:blur(6px);
+.dif-positivo{color:#2ecc71;font-weight:bold;}
+.dif-negativo{color:#e74c3c;font-weight:bold;}
+.popup{
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,.6);
+    display:none; justify-content:center; align-items:center;
 }
 .popup-box{
-    width:92%;
-    max-width:450px;
     background:white;
+    width:90%; max-width:420px;
     padding:20px;
-    border-radius:16px;
+    border-radius:14px;
     max-height:80vh;
-    display:flex;
-    flex-direction:column;
-}
-.popup-title{
-    font-size:22px;
-    font-weight:700;
-    text-align:center;
-}
-.popup-scroll{
-    flex:1;
     overflow-y:auto;
-    margin-top:12px;
 }
-.popup-item{
-    padding:8px 0;
+.item-row{
     display:flex;
     justify-content:space-between;
     border-bottom:1px solid #eee;
-    font-size:16px;
-}
-.btn-close{
-    margin-top:16px;
-    padding:14px;
-    background:#ddd;
-    border-radius:12px;
-    text-align:center;
-    font-weight:700;
-    cursor:pointer;
+    padding:6px 0;
 }
 </style>
 </head>
@@ -118,169 +72,113 @@ body{
 
 <div class="header">
     <img src="icons/contagembar.png">
-    <div>
-        <div class="header-title">Relatório do Bar</div>
-        <div class="header-sub" id="subinfo">Carregando…</div>
-    </div>
+    <div class="header-title">Relatório do Bar</div>
+    <div id="status" class="status">Carregando…</div>
 </div>
 
-<div class="area" id="conteudo"></div>
+<div id="dias">Carregando…</div>
 
 <!-- POPUP -->
-<div id="popupDia">
+<div id="popup" class="popup">
     <div class="popup-box">
-        <div class="popup-title" id="popupTitulo"></div>
-        <div class="popup-scroll" id="popupLista"></div>
-        <div class="btn-close" onclick="fecharPopup()">Fechar</div>
+        <h3 id="popupData"></h3>
+        <div id="popupConteudo"></div>
+        <button onclick="fecharPopup()">Fechar</button>
     </div>
 </div>
 
 <script type="module">
-import { supa } from "./db.js";
+import { diasComContagem, registrosDoDia } from "./db.js";
 
-/* ================= CARREGA TOTAL DE ITENS ================= */
-let totalItens = 0;
+const setor = "Bar";
+const divDias = document.getElementById("dias");
+const status = document.getElementById("status");
 
-async function carregarItensBase(){
-    const { data, error } = await supa
-        .from("itens_setores")
-        .select("*")
-        .eq("setor", "Bar");
+// ============================
+// CARREGAR DIAS
+// ============================
+async function carregarDias() {
+    const dias = await diasComContagem(setor);
 
-    if(error) console.error("Erro itens:", error);
-
-    totalItens = data?.length ?? 0;
-}
-
-/* ================= CARREGA DIAS ================= */
-async function carregarDias(){
-    await carregarItensBase();
-
-    const conteudo = document.getElementById("conteudo");
-    conteudo.innerHTML = "";
-
-    const { data: registros, error } = await supa
-        .from("registros")
-        .select("*")
-        .eq("setor", "Bar")
-        .order("data_hora", { ascending:false });
-
-    if(error){
-        conteudo.innerHTML = "<p>Erro ao carregar dados.</p>";
-        console.error(error);
+    if (!dias.length) {
+        divDias.innerHTML = "<p>Nenhuma contagem registrada.</p>";
+        status.textContent = "Nenhum dado";
         return;
     }
 
-    if(!registros.length){
-        conteudo.innerHTML = "<p>Nenhuma contagem registrada.</p>";
-        return;
+    status.textContent = "Online";
+
+    let html = "";
+
+    for (let i = 0; i < dias.length; i++) {
+        const dia = dias[i];
+        const anterior = dias[i - 1];
+
+        let diferencas = 0;
+
+        if (anterior) {
+            const regHoje = await registrosDoDia(dia, setor);
+            const regAnt = await registrosDoDia(anterior, setor);
+
+            regHoje.forEach(r => {
+                const ant = regAnt.find(a => a.item === r.item);
+                if (ant && ant.quantidade !== r.quantidade) {
+                    diferencas++;
+                }
+            });
+        }
+
+        html += `
+            <div class="dia" onclick="abrirPopup('${dia}')">
+                <div>${dia}</div>
+                <div>${diferencas === 0 ? "" :
+                    diferencas > 0 ?
+                    "<span class='dif-negativo'>-" + diferencas + "</span>" :
+                    "<span class='dif-positivo'>+" + diferencas + "</span>"
+                }</div>
+            </div>`;
     }
 
-    // Agrupar por data
-    const dias = {};
-    registros.forEach(r=>{
-        const data = r.data_hora.split("T")[0];
-        if(!dias[data]) dias[data] = [];
-        dias[data].push(r);
-    });
-
-    const ordenado = Object.keys(dias).sort((a,b)=> new Date(b) - new Date(a));
-
-    document.getElementById("subinfo").textContent = "Última contagem: " + ordenado[0];
-
-    let labels = [];
-    let valores = [];
-
-    ordenado.forEach((dia, index)=>{
-        const preenchidos = dias[dia].length;
-        const pendentes = totalItens - preenchidos;
-
-        labels.push(dia);
-        valores.push(preenchidos);
-
-        let diferenca = "";
-        if(index < ordenado.length-1){
-            const anterior = dias[ordenado[index+1]].length;
-            const dif = preenchidos - anterior;
-            diferenca =
-                dif > 0 ? `<span class='dif-green'>+${dif}</span>` :
-                dif < 0 ? `<span class='dif-red'>${dif}</span>` : "0";
-        }
-
-        conteudo.innerHTML += `
-            <div class="dia-card" onclick="abrirPopup('${dia}')">
-                <div>
-                    <div class="dia-date">${dia}</div>
-                    <div class="dia-info">${pendentes} itens pendentes</div>
-                </div>
-                <div>${diferenca}</div>
-            </div>
-        `;
-    });
-
-    gerarGrafico(labels.reverse(), valores.reverse());
+    divDias.innerHTML = html;
 }
-
-/* ================= POPUP ================= */
-async function abrirPopup(dia){
-    const { data } = await supa
-        .from("registros")
-        .select("*")
-        .eq("setor", "Bar");
-
-    const lista = document.getElementById("popupLista");
-    lista.innerHTML = "";
-
-    const filtrado = data.filter(r => r.data_hora.startsWith(dia));
-
-    document.getElementById("popupTitulo").textContent = "Dia " + dia;
-
-    filtrado.forEach(r=>{
-        lista.innerHTML += `
-            <div class="popup-item">
-                <span>${r.item}</span>
-                <span><b>${r.quantidade}</b></span>
-            </div>
-        `;
-    });
-
-    document.getElementById("popupDia").style.display="flex";
-}
-window.abrirPopup = abrirPopup;
-
-function fecharPopup(){
-    document.getElementById("popupDia").style.display="none";
-}
-window.fecharPopup = fecharPopup;
-
-/* ================= GRÁFICO ================= */
-function gerarGrafico(labels, valores){
-    const box = document.getElementById("conteudo");
-    box.innerHTML += `
-        <div class="grafico-box">
-            <h3 style="margin-bottom:10px;font-size:18px;">Itens preenchidos por dia</h3>
-            <canvas id="graf"></canvas>
-        </div>
-    `;
-
-    new Chart(document.getElementById("graf"), {
-        type:"line",
-        data:{
-            labels,
-            datasets:[{
-                label:"Itens preenchidos",
-                data: valores,
-                borderColor:"#007aff",
-                backgroundColor:"rgba(0,122,255,0.2)",
-                borderWidth:3,
-                tension:.4,
-                fill:true
-            }]
-        }
-    });
-}
-
 carregarDias();
+
+// ============================
+// POPUP
+// ============================
+window.abrirPopup = async function(dia) {
+    document.getElementById("popupData").textContent = "Comparação: " + dia;
+
+    const registros = await registrosDoDia(dia, setor);
+    const ontem = await registrosDoDia(
+        new Date(new Date(dia).getTime() - 86400000)
+            .toISOString()
+            .split("T")[0],
+        setor
+    );
+
+    let html = "";
+
+    registros.forEach(r => {
+        const ant = ontem.find(a => a.item === r.item);
+        const dif = ant ? r.quantidade - ant.quantidade : r.quantidade;
+
+        html += `
+            <div class="item-row">
+                <span>${r.item}</span>
+                <span class="${dif > 0 ? "dif-positivo" : dif < 0 ? "dif-negativo" : ""}">
+                    ${dif}
+                </span>
+            </div>`;
+    });
+
+    document.getElementById("popupConteudo").innerHTML = html;
+    document.getElementById("popup").style.display = "flex";
+};
+
+window.fecharPopup = function() {
+    document.getElementById("popup").style.display = "none";
+};
 </script>
 
 </body>
