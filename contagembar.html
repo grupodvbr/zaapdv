@@ -13,10 +13,8 @@ body{
     margin:0;
     background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-    overflow:hidden; /* impede scroll no fundo */
+    overflow:hidden;
 }
-
-/* HEADER */
 .header{
     height:calc(65px + env(safe-area-inset-top));
     padding-top:calc(10px + env(safe-area-inset-top));
@@ -31,45 +29,25 @@ body{
     top:0;
     z-index:10;
 }
-
 .header img{
-    width:46px;
-    height:46px;
-    border-radius:50%;
-    object-fit:cover;
+    width:46px; height:46px;
+    border-radius:50%; object-fit:cover;
 }
+.header-name{ font-size:18px; font-weight:700; }
+.status-line{ font-size:13px; margin-top:2px; font-weight:500; color:#999; }
+.status-online{ color:#007aff; }
 
-.header-name{
-    font-size:18px;
-    font-weight:700;
-}
-
-.status-line{
-    font-size:13px;
-    margin-top:2px;
-    font-weight:500;
-    color:#999;
-}
-.status-online{
-    color:#007aff;
-}
-
-/* AREA PRINCIPAL */
 .area{
     padding:16px;
     height:calc(100vh - 90px);
     overflow-y:auto;
 }
-
-/* TITULO CATEGORIA */
 .cat-title{
     font-size:18px;
     font-weight:700;
     margin-top:25px;
     margin-bottom:10px;
 }
-
-/* ITEM */
 .item-box{
     background:white;
     border-radius:12px;
@@ -80,11 +58,7 @@ body{
     justify-content:space-between;
     align-items:center;
 }
-
-.item-label{
-    font-size:16px;
-}
-
+.item-label{ font-size:16px; }
 .inputQtd{
     width:70px;
     padding:8px;
@@ -93,12 +67,9 @@ body{
     border:1px solid #ccc;
     text-align:center;
 }
-
-/* BOTÃO SALVAR */
 .btnSalvar{
     position:fixed;
-    bottom:0;
-    left:0;
+    bottom:0; left:0;
     width:100%;
     padding:18px;
     background:#007aff;
@@ -110,11 +81,10 @@ body{
     z-index:20;
 }
 
-/* POPUP — FUNDO */
+/* POPUP */
 #popupResumo{
     position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
+    top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,.55);
     display:none;
     justify-content:center;
@@ -122,69 +92,39 @@ body{
     backdrop-filter:blur(4px);
     z-index:50;
 }
-
-/* POPUP — CAIXA */
 .resumo-box{
-    width:92%;
-    max-width:420px;
+    width:92%; max-width:420px;
     background:white;
     padding:20px;
     border-radius:18px;
     max-height:80vh;
-    display:flex;
-    flex-direction:column;
-    box-shadow:0 8px 28px rgba(0,0,0,.25);
+    display:flex; flex-direction:column;
 }
+.resumo-scroll{ overflow-y:auto; flex:1; padding-right:6px; }
 
-/* SCROLL INTERNO SOMENTE DO CONTEÚDO */
-.resumo-scroll{
-    overflow-y:auto;
-    padding-right:6px;
-    flex:1;
-}
-
-/* TITULOS */
 .resumo-titulo{
-    font-size:22px;
-    font-weight:700;
-    margin-bottom:12px;
-    text-align:center;
+    font-size:22px; font-weight:700;
+    margin-bottom:12px; text-align:center;
 }
-
 .resumo-cat{
-    font-size:17px;
-    font-weight:700;
-    margin-top:14px;
-    margin-bottom:6px;
+    font-size:17px; font-weight:700;
+    margin-top:14px; margin-bottom:6px;
 }
-
 .res-item{
-    display:flex;
-    justify-content:space-between;
-    padding:6px 0;
-    border-bottom:1px solid #eee;
+    display:flex; justify-content:space-between;
+    padding:6px 0; border-bottom:1px solid #eee;
     font-size:16px;
 }
-
 .resumo-btn{
-    width:100%;
-    padding:14px;
+    width:100%; padding:14px;
     font-size:17px;
     text-align:center;
     border-radius:12px;
     margin-top:14px;
     cursor:pointer;
 }
-
-.btn-confirmar{
-    background:#28a745;
-    color:white;
-}
-
-.btn-fechar{
-    background:#ddd;
-    color:#222;
-}
+.btn-confirmar{ background:#28a745; color:white; }
+.btn-fechar{ background:#ddd; color:#222; }
 </style>
 </head>
 
@@ -207,56 +147,61 @@ body{
 <div id="popupResumo">
     <div class="resumo-box">
         <div class="resumo-titulo">Resumo da Contagem</div>
-
         <div id="resumoLista" class="resumo-scroll"></div>
-
         <div class="resumo-btn btn-confirmar" onclick="confirmarEnvio()">Confirmar</div>
         <div class="resumo-btn btn-fechar" onclick="fecharResumo()">Fechar</div>
     </div>
 </div>
 
-<script>
-/* ============================ CONFIG ============================ */
+<script type="module">
+import { listarItens, registrarContagem, registrarHistorico } from "./db.js";
 
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbxrKaYwk67zw4rLhLsD5iR_Z3AbUwtyg6gR5vE2y4QtlgBdCsOtMzFNOpwUh9-arZeu/exec";
-const usuario = JSON.parse(localStorage.getItem("usuarioLogado"))?.nome || "Usuário";
+/* ==================== USUÁRIO ==================== */
+const user = JSON.parse(localStorage.getItem("usuarioLogado"));
+if(!user) location.href="index.html";
 
-/* ==================== CARREGAR ITENS ==================== */
+const usuario = user.nome;
+const setor = "Bar";
 
+/* ==================== CARREGAR ITENS DO SUPABASE ==================== */
 async function carregarItens(){
     const box = document.getElementById("conteudo");
+    box.innerHTML = "";
 
-    const dados = await fetch(`${ENDPOINT}?acao=listarItens`).then(r=>r.json());
+    const itens = await listarItens(setor);
 
-    if(!dados.ok){
-        alert("Erro ao carregar itens");
+    if(!itens.length){
+        box.innerHTML = "<p>Nenhum item cadastrado no Supabase.</p>";
         return;
     }
 
-    Object.keys(dados.categorias).forEach(categoria=>{
-        
-        box.innerHTML += `<div class='cat-title'>${categoria}</div>`;
+    const categoriasMap = {};
 
-        dados.categorias[categoria].forEach(obj=>{
+    itens.forEach(obj=>{
+        if(!categoriasMap[obj.categoria]) categoriasMap[obj.categoria] = [];
+        categoriasMap[obj.categoria].push(obj.item);
+    });
+
+    Object.keys(categoriasMap).forEach(cat=>{
+        box.innerHTML += `<div class='cat-title'>${cat}</div>`;
+        categoriasMap[cat].forEach(item=>{
             box.innerHTML += `
-            <div class="item-box">
-                <div class="item-label">${obj.item}</div>
-                <input type="number" class="inputQtd"
-                       min="0"
-                       id="qtd_${obj.item.replace(/\s+/g,'_')}">
-            </div>`;
+                <div class="item-box">
+                    <div class="item-label">${item}</div>
+                    <input type="number" min="0"
+                        class="inputQtd"
+                        id="qtd_${item.replace(/\s+/g,'_')}">
+                </div>
+            `;
         });
-
     });
 
     document.getElementById("statusSetor").textContent = "Online";
     document.getElementById("statusSetor").classList.add("status-online");
 }
-
 carregarItens();
 
-/* ==================== GERAR RESUMO ==================== */
-
+/* ==================== POPUP RESUMO ==================== */
 function abrirResumo(){
     const lista = document.getElementById("resumoLista");
     lista.innerHTML = "";
@@ -282,26 +227,25 @@ function abrirResumo(){
                 <div class="res-item">
                     <span>${obj.item}</span>
                     <span><b>${obj.valor}</b></span>
-                </div>`;
+                </div>
+            `;
         });
     });
 
-    document.getElementById("popupResumo").style.display = "flex";
+    document.getElementById("popupResumo").style.display="flex";
 }
+window.abrirResumo = abrirResumo;
 
-function fecharResumo(){
-    document.getElementById("popupResumo").style.display = "none";
-}
+window.fecharResumo = function(){
+    document.getElementById("popupResumo").style.display="none";
+};
 
 /* ==================== DESCOBRIR CATEGORIA ==================== */
-
 function pegarCategoria(item){
-    const titulos = document.querySelectorAll(".cat-title");
-
-    for(let c of titulos){
+    const categorias = document.querySelectorAll(".cat-title");
+    for(let c of categorias){
         let categoria = c.textContent;
         let prox = c.nextElementSibling;
-
         while(prox && prox.classList.contains("item-box")){
             if(prox.querySelector(".item-label").textContent === item){
                 return categoria;
@@ -312,12 +256,10 @@ function pegarCategoria(item){
     return "Desconhecido";
 }
 
-/* ==================== SALVAR ==================== */
-
+/* ==================== SALVAR NO SUPABASE ==================== */
 async function confirmarEnvio(){
-
-    const registros = [];
     const inputs = document.querySelectorAll(".inputQtd");
+    const registros = [];
 
     inputs.forEach(inp=>{
         const valor = Number(inp.value || 0);
@@ -333,39 +275,23 @@ async function confirmarEnvio(){
         return;
     }
 
-    /* DATA AUTOMÁTICA */
-    const agora = new Date();
-    let dataReal = new Date();
-
-    if(agora.getHours() <= 5){
-        dataReal.setDate(dataReal.getDate() - 1);
-    }
-
-    const dia = dataReal.toISOString().split("T")[0];
-    const hora = agora.toTimeString().slice(0,5);
-
-    /* ENVIO */
-    const req = await fetch(ENDPOINT,{
-        method:"POST",
-        body:JSON.stringify({
+    for(const r of registros){
+        await registrarContagem({
             usuario,
-            data: dia,
-            hora,
-            registros
-        })
-    });
-
-    const resp = await req.json();
-
-    if(resp.ok){
-        alert("Contagem registrada com sucesso!");
-        fecharResumo();
-        document.querySelectorAll(".inputQtd").forEach(i=>i.value="");
-    } else {
-        alert("Erro: " + resp.erro);
+            setor,
+            categoria: r.categoria,
+            item: r.item,
+            quantidade: r.quantidade
+        });
     }
-}
 
+    await registrarHistorico(usuario, "Funcionário", "Enviou contagem do bar");
+
+    alert("Contagem salva com sucesso!");
+    fecharResumo();
+    document.querySelectorAll(".inputQtd").forEach(i=>i.value="");
+}
+window.confirmarEnvio = confirmarEnvio;
 </script>
 
 </body>
