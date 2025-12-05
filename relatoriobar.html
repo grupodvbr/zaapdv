@@ -2,104 +2,89 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Relatório Bar • Grupo DV</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Relatório Bar – Grupo DV</title>
 
 <style>
 body{
     margin:0;
-    background:#f4f4f7;
+    background:#f4f4f4;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-header{
-    padding:20px;
+.header{
     background:white;
-    border-bottom:1px solid #ddd;
+    padding:18px;
     font-size:22px;
+    font-weight:700;
+    border-bottom:1px solid #ddd;
+}
+
+.calendario{
+    padding:16px;
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:8px;
+}
+
+.dia{
+    background:white;
+    border-radius:10px;
+    padding:12px;
+    text-align:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.15);
+    cursor:pointer;
+    font-size:15px;
+}
+.dia.ok{
+    background:#d9ffe0;
+    color:#0a7a27;
     font-weight:700;
 }
 
-.calendar{
-    display:grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap:8px;
-    padding:16px;
-}
-
-.day{
-    background:white;
-    padding:14px;
-    border-radius:12px;
-    text-align:center;
-    font-size:16px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.07);
-    cursor:pointer;
-}
-
-.day.active{
-    background:#007aff;
-    color:white;
-}
-
+/* POPUP */
 .popup{
     position:fixed;
     top:0; left:0;
     width:100%; height:100%;
     background:rgba(0,0,0,.55);
-    backdrop-filter:blur(4px);
     display:none;
     justify-content:center;
     align-items:center;
-    z-index:20;
+    backdrop-filter:blur(4px);
 }
-
-.popup-box{
-    width:92%;
-    max-width:420px;
+.box{
     background:white;
+    width:92%;
+    max-width:430px;
+    max-height:80vh;
     padding:20px;
-    border-radius:16px;
-    max-height:85vh;
-    display:flex;
-    flex-direction:column;
+    border-radius:18px;
+    overflow-y:auto;
 }
-
-.popup-title{
+.tituloDia{
     font-size:20px;
     font-weight:700;
-    margin-bottom:10px;
     text-align:center;
+    margin-bottom:10px;
 }
-
-.list{
-    overflow-y:auto;
-    padding-right:6px;
-    flex:1;
-}
-
-.item{
+.itemLinha{
     display:flex;
     justify-content:space-between;
     padding:6px 0;
     border-bottom:1px solid #eee;
     font-size:16px;
 }
-
-.red{ color:#e63946; font-weight:700; }
-.green{ color:#2a9d8f; font-weight:700; }
-.gray{ color:#555; font-weight:600; }
-
-.close-btn{
-    margin-top:14px;
-    padding:14px;
-    background:#007aff;
-    color:white;
+.red{ color:#d00; font-weight:700; }
+.green{ color:#007a2e; font-weight:700; }
+.btnFechar{
+    margin-top:15px;
+    padding:12px;
+    background:#ddd;
     text-align:center;
-    border-radius:12px;
+    border-radius:10px;
     cursor:pointer;
 }
 </style>
@@ -107,160 +92,169 @@ header{
 
 <body>
 
-<header>Relatório de Contagem • Bar</header>
+<div class="header">Relatório de Contagem – Bar</div>
 
-<div id="calendar" class="calendar"></div>
+<div id="calendario" class="calendario"></div>
 
 <!-- POPUP -->
 <div id="popup" class="popup">
-    <div class="popup-box">
-        <div id="popupTitle" class="popup-title"></div>
-
-        <div id="popupList" class="list"></div>
-
-        <div class="close-btn" onclick="fecharPopup()">Fechar</div>
+    <div class="box">
+        <div id="tituloDia" class="tituloDia"></div>
+        <div id="lista"></div>
+        <div class="btnFechar" onclick="fecharPopup()">Fechar</div>
     </div>
 </div>
 
-<script>
-/* ===========================================================
-   CONFIG SUPABASE
-=========================================================== */
-const SUPA_URL = "https://ckkqcxbzfkjzicvoeehw.supabase.co";
-const SUPA_KEY = "sb_publishable_djiQsCSrnLUmo0iA_eNjijMw__7rfP11m";
+<script type="module">
+import { supa } from "./db.js";
 
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const setor = "Bar";
 
-/* ===========================================================
-   1 — BUSCAR DIAS COM CONTAGEM
-=========================================================== */
-async function carregarDias() {
-
+/* ======================================================
+   1. Buscar dias válidos (quantidade > 0)
+====================================================== */
+async function carregarDias(){
     const { data, error } = await supa
         .from("registros")
-        .select("data_hora")
-        .eq("setor", "Bar")
-        .gt("quantidade", 0);
+        .select("data_hora, quantidade")
+        .eq("setor", setor)
+        .gt("quantidade", 0);   // IGNORA histórico
 
-    if (error) {
-        alert("Erro ao carregar dias!");
+    if(error){
+        alert("Erro ao carregar dias");
         return;
     }
 
     const dias = new Set();
 
-    data.forEach(r => {
-        const dia = r.data_hora.split("T")[0];
-        dias.add(dia);
+    data.forEach(r=>{
+        if(r.data_hora){
+            const dia = r.data_hora.split("T")[0];
+            dias.add(dia);
+        }
     });
 
     montarCalendario([...dias].sort());
 }
 
-/* ===========================================================
-   2 — MONTAR CALENDÁRIO
-=========================================================== */
-function montarCalendario(listaDias) {
-    const cal = document.getElementById("calendar");
+/* ======================================================
+   2. Montar calendário
+====================================================== */
+function montarCalendario(listaDias){
+    const cal = document.getElementById("calendario");
     cal.innerHTML = "";
 
-    listaDias.forEach(dia => {
-        const p = document.createElement("div");
-        p.className = "day active";
-        p.textContent = dia.split("-")[2];
-        p.onclick = () => abrirDia(dia);
-        cal.appendChild(p);
-    });
-}
-
-/* ===========================================================
-   3 — ABRIR POPUP COM COMPARAÇÃO
-=========================================================== */
-async function abrirDia(diaSelecionado) {
-
-    // BUSCAR TODAS AS CONTAGENS DO BAR
-    const { data, error } = await supa
-        .from("registros")
-        .select("*")
-        .eq("setor", "Bar")
-        .gt("quantidade", 0)
-        .order("data_hora", { ascending:true });
-
-    if (error) {
-        alert("Erro ao buscar detalhes!");
+    if(listaDias.length === 0){
+        cal.innerHTML = "<p style='grid-column:span 7; text-align:center; color:#777;'>Nenhuma contagem registrada.</p>";
         return;
     }
 
-    // FILTRAR POR DIA
-    const atual = data.filter(r => r.data_hora.startsWith(diaSelecionado));
-
-    // DESCOBRIR A CONTAGEM ANTERIOR
-    const anteriores = data.filter(r => r.data_hora < atual[0].data_hora);
-
-    let ultima = [];
-
-    if (anteriores.length > 0) {
-        const ultimoDia = anteriores[anteriores.length - 1].data_hora.split("T")[0];
-        ultima = anteriores.filter(r => r.data_hora.startsWith(ultimoDia));
-    }
-
-    mostrarComparacao(diaSelecionado, atual, ultima);
+    listaDias.forEach(dia=>{
+        const [y,m,d] = dia.split("-");
+        cal.innerHTML += `
+            <div class="dia ok" onclick="abrirDia('${dia}')">
+                ${d}/${m}
+            </div>
+        `;
+    });
 }
 
-/* ===========================================================
-   4 — COMPARAR ITEM A ITEM
-=========================================================== */
-function mostrarComparacao(dia, atual, anterior) {
+/* ======================================================
+   3. Abrir informações do dia
+====================================================== */
+window.abrirDia = async function(dia){
 
-    const popup = document.getElementById("popup");
-    const title = document.getElementById("popupTitle");
-    const list = document.getElementById("popupList");
+    const atual = await buscarRegistrosPorDia(dia);
 
-    title.textContent = "Comparação do dia " + dia;
-    list.innerHTML = "";
+    const diaAnterior = await buscarUltimoDiaAnterior(dia);
+    let anterior = [];
+
+    if(diaAnterior){
+        anterior = await buscarRegistrosPorDia(diaAnterior);
+    }
+
+    montarPopup(dia, atual, anterior);
+}
+
+/* === Buscar registros do dia === */
+async function buscarRegistrosPorDia(dia){
+    const { data } = await supa
+        .from("registros")
+        .select("item, quantidade, data_hora")
+        .eq("setor", setor)
+        .gt("quantidade", 0);   // IGNORA histórico
+
+    return data.filter(r => r.data_hora.startsWith(dia));
+}
+
+/* === Buscar dia anterior === */
+async function buscarUltimoDiaAnterior(diaAtual){
+    const { data } = await supa
+        .from("registros")
+        .select("data_hora")
+        .eq("setor", setor)
+        .gt("quantidade", 0);
+
+    const dias = [...new Set(
+        data.map(r => r.data_hora.split("T")[0])
+    )].sort();
+
+    const idx = dias.indexOf(diaAtual);
+    return idx > 0 ? dias[idx - 1] : null;
+}
+
+/* ======================================================
+   4. Construir popup de comparação
+====================================================== */
+function montarPopup(dia, atual, anterior){
+    document.getElementById("tituloDia").textContent =
+        "Contagem de " + dia.split("-").reverse().join("/");
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
 
     const mapaAtual = {};
     const mapaAnterior = {};
 
-    atual.forEach(r => mapaAtual[r.item] = r.quantidade);
-    anterior.forEach(r => mapaAnterior[r.item] = r.quantidade);
+    atual.forEach(r => mapaAtual[r.item] = Number(r.quantidade));
+    anterior.forEach(r => mapaAnterior[r.item] = Number(r.quantidade));
 
     const itens = new Set([...Object.keys(mapaAtual), ...Object.keys(mapaAnterior)]);
 
-    itens.forEach(item => {
-        const qtdAtual = mapaAtual[item] || 0;
-        const qtdAnt = mapaAnterior[item] || 0;
-        const dif = qtdAtual - qtdAnt;
+    itens.forEach(item=>{
+        const a = mapaAtual[item] || 0;
+        const b = mapaAnterior[item] || 0;
+        const diff = a - b;
 
-        let cor = "gray";
-        if (dif > 0) cor = "green";
-        if (dif < 0) cor = "red";
+        let cor = "";
+        if(diff > 0) cor = "green";
+        if(diff < 0) cor = "red";
 
-        list.innerHTML += `
-            <div class="item">
+        lista.innerHTML += `
+            <div class="itemLinha">
                 <span>${item}</span>
-                <span class="${cor}">
-                    ${qtdAtual} (${dif >= 0 ? "+"+dif : dif})
-                </span>
+                <span class="${cor}">${diff === 0 ? "OK" : diff}</span>
             </div>
         `;
     });
 
-    popup.style.display = "flex";
+    abrirPopup();
 }
 
-/* ===========================================================
-   FECHAR POPUP
-=========================================================== */
-function fecharPopup() {
+/* ======================================================
+   POPUP
+====================================================== */
+function abrirPopup(){
+    document.getElementById("popup").style.display = "flex";
+}
+window.fecharPopup = function(){
     document.getElementById("popup").style.display = "none";
-}
+};
 
-/* ===========================================================
+/* ======================================================
    INICIAR
-=========================================================== */
+====================================================== */
 carregarDias();
-
 </script>
 
 </body>
