@@ -8,7 +8,6 @@
 
 <title>Relatório • Contagem do Bar</title>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -28,9 +27,6 @@ body{
     gap:12px;
     background:#fff;
     border-bottom:1px solid #ddd;
-    position:sticky;
-    top:0;
-    z-index:10;
 }
 .header img{
     width:46px; height:46px;
@@ -45,26 +41,23 @@ body{
     overflow-y:auto;
 }
 
-/* ================= DIA CARD ================= */
 .dia-card{
     background:white;
     padding:14px 16px;
     border-radius:14px;
     box-shadow:0 2px 5px rgba(0,0,0,.12);
     margin-bottom:12px;
-
     display:flex;
     justify-content:space-between;
     align-items:center;
 }
-.dia-left{}
+
 .dia-date{ font-size:18px; font-weight:700; }
 .dia-info{ font-size:14px; color:#777; }
 
 .dif-green{ color:#2ecc71; font-weight:700; }
 .dif-red{ color:#e74c3c; font-weight:700; }
 
-/* ================= GRAFICOS ================= */
 .grafico-box{
     background:white;
     padding:16px;
@@ -73,19 +66,18 @@ body{
     margin-top:20px;
 }
 
-/* ================= POPUP ================= */
 #popupDia{
     position:fixed;
-    top:0; left:0; width:100%; height:100%;
+    inset:0;
     background:rgba(0,0,0,.45);
     display:none;
     justify-content:center;
     align-items:center;
     backdrop-filter:blur(6px);
-    z-index:50;
 }
 .popup-box{
-    width:92%; max-width:450px;
+    width:92%;
+    max-width:450px;
     background:white;
     padding:20px;
     border-radius:16px;
@@ -94,12 +86,13 @@ body{
     flex-direction:column;
 }
 .popup-title{
-    font-size:22px; font-weight:700; text-align:center;
+    font-size:22px;
+    font-weight:700;
+    text-align:center;
 }
 .popup-scroll{
     flex:1;
     overflow-y:auto;
-    padding-right:6px;
     margin-top:12px;
 }
 .popup-item{
@@ -145,99 +138,104 @@ body{
 <script type="module">
 import { supa } from "./db.js";
 
-/* ================= CARREGA ITENS CADASTRADOS ================= */
+/* ================= CARREGA TOTAL DE ITENS ================= */
 let totalItens = 0;
 
 async function carregarItensBase(){
-    const { data } = await supa
-        .from("itens")
+    const { data, error } = await supa
+        .from("itens_setores")
         .select("*")
         .eq("setor", "Bar");
 
-    totalItens = data.length;
+    if(error) console.error("Erro itens:", error);
+
+    totalItens = data?.length ?? 0;
 }
 
-/* ================= CARREGAR DIAS ================= */
+/* ================= CARREGA DIAS ================= */
 async function carregarDias(){
     await carregarItensBase();
 
     const conteudo = document.getElementById("conteudo");
     conteudo.innerHTML = "";
 
-    const { data: registros } = await supa
-        .from("registro")
+    const { data: registros, error } = await supa
+        .from("registros")
         .select("*")
         .eq("setor", "Bar")
-        .order("data", { ascending:false });
+        .order("data_hora", { ascending:false });
+
+    if(error){
+        conteudo.innerHTML = "<p>Erro ao carregar dados.</p>";
+        console.error(error);
+        return;
+    }
 
     if(!registros.length){
         conteudo.innerHTML = "<p>Nenhuma contagem registrada.</p>";
         return;
     }
 
-    document.getElementById("subinfo").textContent =
-        "Última contagem: " + registros[0].data;
-
-    // Agrupa por dia
+    // Agrupar por data
     const dias = {};
     registros.forEach(r=>{
-        if(!dias[r.data]) dias[r.data] = [];
-        dias[r.data].push(r);
+        const data = r.data_hora.split("T")[0];
+        if(!dias[data]) dias[data] = [];
+        dias[data].push(r);
     });
 
-    const diasOrd = Object.keys(dias).sort((a,b)=> new Date(b) - new Date(a));
+    const ordenado = Object.keys(dias).sort((a,b)=> new Date(b) - new Date(a));
 
-    let grafLabels = [];
-    let grafValores = [];
+    document.getElementById("subinfo").textContent = "Última contagem: " + ordenado[0];
 
-    // MONTAR CARDS
-    diasOrd.forEach((dia, index)=>{
-        const itensPreenchidos = dias[dia].length;
-        const tarefas = totalItens - itensPreenchidos;
+    let labels = [];
+    let valores = [];
 
-        grafLabels.push(dia);
-        grafValores.push(itensPreenchidos);
+    ordenado.forEach((dia, index)=>{
+        const preenchidos = dias[dia].length;
+        const pendentes = totalItens - preenchidos;
 
-        let difTxt = "";
+        labels.push(dia);
+        valores.push(preenchidos);
 
-        if(index < diasOrd.length-1){
-            const anterior = diasOrd[index+1];
-            const antes = dias[anterior].length;
-            const dif = itensPreenchidos - antes;
-
-            difTxt = dif > 0
-                ? `<span class='dif-green'>+${dif}</span>`
-                : `<span class='dif-red'>${dif}</span>`;
+        let diferenca = "";
+        if(index < ordenado.length-1){
+            const anterior = dias[ordenado[index+1]].length;
+            const dif = preenchidos - anterior;
+            diferenca =
+                dif > 0 ? `<span class='dif-green'>+${dif}</span>` :
+                dif < 0 ? `<span class='dif-red'>${dif}</span>` : "0";
         }
 
         conteudo.innerHTML += `
             <div class="dia-card" onclick="abrirPopup('${dia}')">
-                <div class="dia-left">
+                <div>
                     <div class="dia-date">${dia}</div>
-                    <div class="dia-info">${tarefas} tarefas pendentes</div>
+                    <div class="dia-info">${pendentes} itens pendentes</div>
                 </div>
-                <div>${difTxt}</div>
+                <div>${diferenca}</div>
             </div>
         `;
     });
 
-    gerarGrafico(grafLabels.reverse(), grafValores.reverse());
+    gerarGrafico(labels.reverse(), valores.reverse());
 }
 
-/* ================= POPUP DO DIA ================= */
+/* ================= POPUP ================= */
 async function abrirPopup(dia){
-    const { data: registros } = await supa
-        .from("registro")
+    const { data } = await supa
+        .from("registros")
         .select("*")
-        .eq("setor", "Bar")
-        .eq("data", dia);
-
-    document.getElementById("popupTitulo").textContent = "Dia " + dia;
+        .eq("setor", "Bar");
 
     const lista = document.getElementById("popupLista");
     lista.innerHTML = "";
 
-    registros.forEach(r=>{
+    const filtrado = data.filter(r => r.data_hora.startsWith(dia));
+
+    document.getElementById("popupTitulo").textContent = "Dia " + dia;
+
+    filtrado.forEach(r=>{
         lista.innerHTML += `
             <div class="popup-item">
                 <span>${r.item}</span>
@@ -246,24 +244,26 @@ async function abrirPopup(dia){
         `;
     });
 
-    document.getElementById("popupDia").style.display = "flex";
+    document.getElementById("popupDia").style.display="flex";
 }
 window.abrirPopup = abrirPopup;
 
-window.fecharPopup = ()=> document.getElementById("popupDia").style.display="none";
+function fecharPopup(){
+    document.getElementById("popupDia").style.display="none";
+}
+window.fecharPopup = fecharPopup;
 
 /* ================= GRÁFICO ================= */
 function gerarGrafico(labels, valores){
     const box = document.getElementById("conteudo");
-
     box.innerHTML += `
         <div class="grafico-box">
-            <h3 style="margin-bottom:10px;font-size:18px;">Itens Preenchidos por Dia</h3>
-            <canvas id="graf1"></canvas>
+            <h3 style="margin-bottom:10px;font-size:18px;">Itens preenchidos por dia</h3>
+            <canvas id="graf"></canvas>
         </div>
     `;
 
-    new Chart(document.getElementById("graf1"), {
+    new Chart(document.getElementById("graf"), {
         type:"line",
         data:{
             labels,
@@ -271,7 +271,7 @@ function gerarGrafico(labels, valores){
                 label:"Itens preenchidos",
                 data: valores,
                 borderColor:"#007aff",
-                backgroundColor:"rgba(0,122,255,0.25)",
+                backgroundColor:"rgba(0,122,255,0.2)",
                 borderWidth:3,
                 tension:.4,
                 fill:true
