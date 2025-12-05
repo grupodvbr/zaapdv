@@ -114,11 +114,16 @@ const setor = "Bar";
    1. Buscar dias válidos (quantidade > 0)
 ====================================================== */
 async function carregarDias(){
+    console.log("➡ BUSCANDO DIAS...");
+
     const { data, error } = await supa
         .from("registros")
-        .select("data_hora, quantidade")
-        .eq("setor", setor)
-        .gt("quantidade", 0);   // IGNORA histórico
+        .select("data_hora, quantidade, setor")
+        .eq("setor", "Bar")
+        .gt("quantidade", 0);
+
+    console.log("DATA:", data);
+    console.log("ERROR:", error);
 
     if(error){
         alert("Erro ao carregar dias");
@@ -134,8 +139,11 @@ async function carregarDias(){
         }
     });
 
+    console.log("DIAS ENCONTRADOS:", [...dias]);
+
     montarCalendario([...dias].sort());
 }
+
 
 /* ======================================================
    2. Montar calendário
