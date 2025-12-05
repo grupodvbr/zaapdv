@@ -2,264 +2,296 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Relatório de Contagem – Bar</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+
+<title>Contagem • Grupo DV</title>
 
 <style>
 body{
     margin:0;
-    background:#f4f4f4;
+    background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+    overflow:hidden;
 }
 .header{
-    background:white;
-    padding:18px;
-    font-size:22px;
-    font-weight:700;
+    height:calc(65px + env(safe-area-inset-top));
+    padding-top:calc(10px + env(safe-area-inset-top));
+    padding-left:16px;
+    padding-right:16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
     border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:10;
 }
-.calendario{
+.header img{
+    width:46px; height:46px;
+    border-radius:50%; object-fit:cover;
+}
+.header-name{ font-size:18px; font-weight:700; }
+.status-line{ font-size:13px; margin-top:2px; font-weight:500; color:#999; }
+.status-online{ color:#007aff; }
+
+.area{
     padding:16px;
-    display:grid;
-    grid-template-columns:repeat(7, 1fr);
-    gap:8px;
+    height:calc(100vh - 90px);
+    overflow-y:auto;
 }
-.dia{
-    background:white;
-    border-radius:10px;
-    padding:12px;
-    text-align:center;
-    box-shadow:0 1px 3px rgba(0,0,0,.15);
-    cursor:pointer;
-    font-size:15px;
-}
-.dia.ok{
-    background:#d9ffe0;
-    color:#0a7a27;
+.cat-title{
+    font-size:18px;
     font-weight:700;
+    margin-top:25px;
+    margin-bottom:10px;
 }
-.popup{
+.item-box{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.15);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.item-label{ font-size:16px; }
+.inputQtd{
+    width:70px;
+    padding:8px;
+    font-size:16px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    text-align:center;
+}
+.btnSalvar{
     position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
+    bottom:0; left:0;
+    width:100%;
+    padding:18px;
+    background:#007aff;
+    color:white;
+    font-size:18px;
+    font-weight:700;
+    text-align:center;
+    border:none;
+    z-index:20;
+}
+
+/* POPUP */
+#popupResumo{
+    position:fixed;
+    top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,.55);
     display:none;
     justify-content:center;
     align-items:center;
-    backdrop-filter:blur(5px);
+    backdrop-filter:blur(4px);
+    z-index:50;
 }
-.box{
+.resumo-box{
+    width:92%; max-width:420px;
     background:white;
-    width:92%;
-    max-width:460px;
-    max-height:80vh;
     padding:20px;
     border-radius:18px;
-    overflow-y:auto;
+    max-height:80vh;
+    display:flex; flex-direction:column;
 }
-.tituloDia{
-    font-size:20px;
-    font-weight:700;
-    text-align:center;
-    margin-bottom:10px;
+.resumo-scroll{ overflow-y:auto; flex:1; padding-right:6px; }
+
+.resumo-titulo{
+    font-size:22px; font-weight:700;
+    margin-bottom:12px; text-align:center;
 }
-.itemLinha{
-    display:flex;
-    justify-content:space-between;
-    padding:6px 0;
-    border-bottom:1px solid #eee;
+.resumo-cat{
+    font-size:17px; font-weight:700;
+    margin-top:14px; margin-bottom:6px;
+}
+.res-item{
+    display:flex; justify-content:space-between;
+    padding:6px 0; border-bottom:1px solid #eee;
     font-size:16px;
 }
-.red{ color:#d00; font-weight:700; }
-.green{ color:#007a2e; font-weight:700; }
-.btnFechar{
-    margin-top:15px;
-    padding:12px;
-    background:#ddd;
+.resumo-btn{
+    width:100%; padding:14px;
+    font-size:17px;
     text-align:center;
-    border-radius:10px;
+    border-radius:12px;
+    margin-top:14px;
     cursor:pointer;
 }
-.empty{
-    padding:20px;
-    text-align:center;
-    color:#888;
-}
+.btn-confirmar{ background:#28a745; color:white; }
+.btn-fechar{ background:#ddd; color:#222; }
 </style>
 </head>
 
 <body>
 
-<div class="header">Relatório do Bar</div>
+<!-- ==================== HEADER ==================== -->
+<div class="header">
+    <img src="icons/contagembar.png">
+    <div>
+        <div class="header-name">Contagem de Itens</div>
+        <div id="statusSetor" class="status-line">Carregando…</div>
+    </div>
+</div>
 
-<div id="calendario" class="calendario"></div>
+<div class="area" id="conteudo"></div>
 
-<!-- POPUP -->
-<div id="popup" class="popup">
-    <div class="box">
-        <div id="tituloDia" class="tituloDia"></div>
-        <div id="lista"></div>
-        <div class="btnFechar" onclick="fecharPopup()">Fechar</div>
+<button class="btnSalvar" onclick="abrirResumo()">Salvar Contagem</button>
+
+<!-- ==================== POPUP RESUMO ==================== -->
+<div id="popupResumo">
+    <div class="resumo-box">
+        <div class="resumo-titulo">Resumo da Contagem</div>
+        <div id="resumoLista" class="resumo-scroll"></div>
+        <div class="resumo-btn btn-confirmar" onclick="confirmarEnvio()">Confirmar</div>
+        <div class="resumo-btn btn-fechar" onclick="fecharResumo()">Fechar</div>
     </div>
 </div>
 
 <script type="module">
-import { supa } from "./db.js";
+import { listarItens, registrarContagem, registrarHistorico } from "./db.js";
+
+/* ==================== USUÁRIO ==================== */
+const user = JSON.parse(localStorage.getItem("usuarioLogado"));
+if(!user) location.href="index.html";
+
+const usuario = user.nome;
 const setor = "Bar";
 
-/* ======================================================
-   1. Buscar dias com contagem
-====================================================== */
-async function carregarDias(){
-    const { data, error } = await supa
-        .from("registros")
-        .select("data_hora, quantidade")
-        .eq("setor", setor);
+/* ==================== CARREGAR ITENS DO SUPABASE ==================== */
+async function carregarItens(){
+    const box = document.getElementById("conteudo");
+    box.innerHTML = "";
 
-    if(error){
-        alert("Erro ao carregar dias");
+    const itens = await listarItens(setor);
+
+    if(!itens.length){
+        box.innerHTML = "<p>Nenhum item cadastrado no Supabase.</p>";
         return;
     }
 
-    const dias = new Set();
+    const categoriasMap = {};
 
-    data.forEach(r=>{
-        if(!r.data_hora) return;
-        if(Number(r.quantidade) > 0){
-            dias.add(r.data_hora.split("T")[0]);
+    itens.forEach(obj=>{
+        if(!categoriasMap[obj.categoria]) categoriasMap[obj.categoria] = [];
+        categoriasMap[obj.categoria].push(obj.item);
+    });
+
+    Object.keys(categoriasMap).forEach(cat=>{
+        box.innerHTML += `<div class='cat-title'>${cat}</div>`;
+        categoriasMap[cat].forEach(item=>{
+            box.innerHTML += `
+                <div class="item-box">
+                    <div class="item-label">${item}</div>
+                    <input type="number" min="0"
+                        class="inputQtd"
+                        id="qtd_${item.replace(/\s+/g,'_')}">
+                </div>
+            `;
+        });
+    });
+
+    document.getElementById("statusSetor").textContent = "Online";
+    document.getElementById("statusSetor").classList.add("status-online");
+}
+carregarItens();
+
+/* ==================== POPUP RESUMO ==================== */
+function abrirResumo(){
+    const lista = document.getElementById("resumoLista");
+    lista.innerHTML = "";
+
+    const inputs = document.querySelectorAll(".inputQtd");
+    const categorias = {};
+
+    inputs.forEach(inp=>{
+        const valor = Number(inp.value || 0);
+        if(valor > 0){
+            const item = inp.id.replace("qtd_","").replace(/_/g," ");
+            const categoria = pegarCategoria(item);
+
+            if(!categorias[categoria]) categorias[categoria] = [];
+            categorias[categoria].push({ item, valor });
         }
     });
 
-    montarCalendario([...dias].sort());
+    Object.keys(categorias).forEach(cat=>{
+        lista.innerHTML += `<div class='resumo-cat'>${cat}</div>`;
+        categorias[cat].forEach(obj=>{
+            lista.innerHTML += `
+                <div class="res-item">
+                    <span>${obj.item}</span>
+                    <span><b>${obj.valor}</b></span>
+                </div>
+            `;
+        });
+    });
+
+    document.getElementById("popupResumo").style.display="flex";
+}
+window.abrirResumo = abrirResumo;
+
+window.fecharResumo = function(){
+    document.getElementById("popupResumo").style.display="none";
+};
+
+/* ==================== DESCOBRIR CATEGORIA ==================== */
+function pegarCategoria(item){
+    const categorias = document.querySelectorAll(".cat-title");
+    for(let c of categorias){
+        let categoria = c.textContent;
+        let prox = c.nextElementSibling;
+        while(prox && prox.classList.contains("item-box")){
+            if(prox.querySelector(".item-label").textContent === item){
+                return categoria;
+            }
+            prox = prox.nextElementSibling;
+        }
+    }
+    return "Desconhecido";
 }
 
-/* ======================================================
-   2. Montar calendário simples
-====================================================== */
-function montarCalendario(listaDias){
-    const cal = document.getElementById("calendario");
-    cal.innerHTML = "";
+/* ==================== SALVAR NO SUPABASE ==================== */
+async function confirmarEnvio(){
+    const inputs = document.querySelectorAll(".inputQtd");
+    const registros = [];
 
-    if(listaDias.length === 0){
-        cal.innerHTML = `<div class='empty'>Nenhuma contagem registrada.</div>`;
+    inputs.forEach(inp=>{
+        const valor = Number(inp.value || 0);
+        if(valor > 0){
+            const item = inp.id.replace("qtd_","").replace(/_/g," ");
+            const categoria = pegarCategoria(item);
+            registros.push({ categoria, item, quantidade:valor });
+        }
+    });
+
+    if(registros.length === 0){
+        alert("Nenhum item informado.");
         return;
     }
 
-    listaDias.forEach(dia=>{
-        cal.innerHTML += `
-            <div class="dia ok" onclick="abrirDia('${dia}')">
-                ${dia.split("-")[2]}/${dia.split("-")[1]}
-            </div>
-        `;
-    });
-}
-
-/* ======================================================
-   3. Abrir comparação do dia com o anterior
-====================================================== */
-window.abrirDia = async function(dia){
-
-    // pegar registros do dia selecionado
-    const atual = await buscarRegistrosPorDia(dia);
-
-    // pegar dia anterior
-    const anteriorDia = await buscarUltimoDiaAntes(dia);
-    let anterior = [];
-
-    if(anteriorDia){
-        anterior = await buscarRegistrosPorDia(anteriorDia);
+    for(const r of registros){
+        await registrarContagem({
+            usuario,
+            setor,
+            categoria: r.categoria,
+            item: r.item,
+            quantidade: r.quantidade
+        });
     }
 
-    montarPopup(dia, atual, anterior);
+    await registrarHistorico(usuario, "Funcionário", "Enviou contagem do bar");
+
+    alert("Contagem salva com sucesso!");
+    fecharResumo();
+    document.querySelectorAll(".inputQtd").forEach(i=>i.value="");
 }
-
-/* ======================================================
-   Buscar registros de um dia
-====================================================== */
-async function buscarRegistrosPorDia(dia){
-    const { data } = await supa
-        .from("registros")
-        .select("item, quantidade")
-        .eq("setor","Bar");
-
-    return data.filter(r => r.data_hora && r.data_hora.startsWith(dia));
-}
-
-/* ======================================================
-   Achar o último dia antes do atual
-====================================================== */
-async function buscarUltimoDiaAntes(dia){
-    const { data } = await supa
-        .from("registros")
-        .select("data_hora")
-        .eq("setor","Bar");
-
-    const dias = [...new Set(
-        data
-            .filter(r=>r.data_hora)
-            .map(r=>r.data_hora.split("T")[0])
-    )].sort();
-
-    const index = dias.indexOf(dia);
-    return index > 0 ? dias[index-1] : null;
-}
-
-/* ======================================================
-   4. Montar popup de comparação
-====================================================== */
-function montarPopup(dia, atual, anterior){
-    document.getElementById("tituloDia").textContent =
-        "Contagem de " + dia.split("-").reverse().join("/");
-
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
-
-    const mapaAtual = {};
-    const mapaAnterior = {};
-
-    atual.forEach(r=> mapaAtual[r.item] = Number(r.quantidade));
-    anterior.forEach(r=> mapaAnterior[r.item] = Number(r.quantidade));
-
-    const itens = new Set([
-        ...Object.keys(mapaAtual),
-        ...Object.keys(mapaAnterior)
-    ]);
-
-    itens.forEach(item=>{
-        const a = mapaAtual[item] || 0;
-        const b = mapaAnterior[item] || 0;
-        const diff = a - b;
-
-        let cor = "";
-        if(diff > 0) cor = "green";
-        if(diff < 0) cor = "red";
-
-        lista.innerHTML += `
-            <div class="itemLinha">
-                <span>${item}</span>
-                <span class="${cor}">${diff === 0 ? "OK" : diff}</span>
-            </div>
-        `;
-    });
-
-    abrirPopup();
-}
-
-/* ======================================================
-   POPUP
-====================================================== */
-function abrirPopup(){
-    document.getElementById("popup").style.display = "flex";
-}
-window.fecharPopup = function(){
-    document.getElementById("popup").style.display = "none";
-};
-
-/* ======================================================
-   INICIAR
-====================================================== */
-carregarDias();
+window.confirmarEnvio = confirmarEnvio;
 </script>
 
 </body>
