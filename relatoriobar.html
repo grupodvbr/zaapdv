@@ -2,174 +2,277 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
 <title>Relatório do Bar</title>
 
 <style>
+/* =============================== */
+/*   ESTILO GERAL + HEADER FIXO    */
+/* =============================== */
 body{
     margin:0;
-    background:#ece5dd; /* fundo WhatsApp */
+    background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/****************************
-   CABEÇALHO WHATSAPP
-*****************************/
 .header{
-    background:#075E54;
-    color:white;
+    position:fixed;
+    top:0; left:0; right:0;
+    height:70px;
     padding:14px;
+    background:#fff;
+    border-bottom:1px solid #ddd;
     display:flex;
     align-items:center;
+    gap:12px;
+    z-index:10;
 }
 .header img{
-    width:40px; height:40px;
+    width:46px;
+    height:46px;
     border-radius:50%;
-    margin-right:12px;
 }
 .header-title{
-    font-size:18px;
-    font-weight:600;
+    font-size:20px;
+    font-weight:700;
 }
 
-/****************************
-   DATA DO CHAT
-*****************************/
+/* área abaixo do header */
+.area{
+    padding:90px 16px 20px;
+}
+
+/* card de dias */
+.dia{
+    background:white;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.12);
+    cursor:pointer;
+}
+.dif-negativo{color:#e74c3c;font-weight:700;}
+.dif-positivo{color:#2ecc71;font-weight:700;}
+
+/* =============================== */
+/*           POPUP FIXO            */
+/* =============================== */
+.popup{
+    position:fixed;
+    top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,.55);
+    display:none;
+    justify-content:center;
+    align-items:flex-end;
+    padding:0 0 20px;
+}
+.popup-box{
+    background:white;
+    width:100%;
+    max-width:480px;
+    border-radius:14px 14px 0 0;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:18px;
+}
+
+/* Data estilo WhatsApp */
 .data-chat{
     text-align:center;
-    margin:20px auto;
-    background:#e2dfdc;
-    color:#555;
+    background:#d9d7d6;
     padding:6px 14px;
     border-radius:10px;
-    font-size:14px;
+    font-size:13px;
+    color:#555;
+    margin:14px auto;
     width:max-content;
 }
 
-/****************************
-   BOLHA DE MENSAGEM
-*****************************/
+/* Bolha */
 .msg-box{
     background:white;
-    margin:0 auto 20px auto;
-    width:92%;
-    padding:18px;
+    padding:16px;
     border-radius:12px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.18);
     font-size:16px;
     line-height:1.55;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    position:relative;
     white-space:pre-line;
 }
-.item{
-    display:flex;
-    align-items:center;
-    margin-bottom:5px;
-}
-.item span{
-    margin-left:6px;
-}
 
-/****************************
-   DIFERENÇAS
-*****************************/
-.dif-plus{ color:#2ecc71; font-weight:600; }
-.dif-minus{ color:#e74c3c; font-weight:600; }
-
-/****************************
-   RODAPÉ DISCRETO
-*****************************/
-.rodape-info{
-    text-align:center;
-    margin-top:10px;
-    font-size:13px;
+/* Data no canto direito da bolha */
+.msg-date{
+    position:absolute;
+    bottom:6px;
+    right:10px;
+    font-size:12px;
     color:#777;
 }
+
+/* Ver mais / menos */
+.vermais{
+    color:#3b82f6;
+    font-size:14px;
+    margin-top:6px;
+    cursor:pointer;
+}
+
+.rodape-info{
+    font-size:13px;
+    text-align:center;
+    color:#777;
+    margin-top:10px;
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- HEADER FIXO -->
 <div class="header">
     <img src="icons/contagembar.png">
     <div class="header-title">Relatório do Bar</div>
 </div>
 
-<div id="container"></div>
+<div class="area" id="dias">Carregando…</div>
+
+<!-- POPUP -->
+<div id="popup" class="popup">
+    <div class="popup-box">
+        <div id="popupMsg"></div>
+        <button onclick="fecharPopup()" style="
+            margin-top:20px;width:100%;padding:14px;border:none;
+            border-radius:10px;background:#ddd;font-size:17px;">
+            Fechar
+        </button>
+    </div>
+</div>
+
 
 <script type="module">
 import { diasComContagem, registrosDoDia } from "./db.js";
 
 const setor = "Bar";
-const container = document.getElementById("container");
+const divDias = document.getElementById("dias");
+const popup = document.getElementById("popup");
+const popupMsg = document.getElementById("popupMsg");
 
-/******** FORMATADOR ********/
-const fmt = (d)=> {
-    const [ano,mes,dia] = d.split("-");
-    return `${dia}/${mes}/${ano}`;
-};
+/* formatar dd/mm/aaaa */
+function fmt(d){
+    const [a,m,g] = d.split("-");
+    return `${g}/${m}/${a}`;
+}
 
-/*********** EXECUTAR ***********/
-(async ()=>{
-
+/* ================================
+   LISTAR DIAS
+================================ */
+async function carregarDias(){
     let dias = await diasComContagem(setor);
     dias = dias.sort();
 
-    if(dias.length === 0){
-        container.innerHTML = "<p style='padding:16px;'>Nenhuma contagem registrada.</p>";
-        return;
-    }
+    let html = "";
 
-    const ultimaData = dias[dias.length - 1];
-    const penultimaData = dias[dias.length - 2] ?? null;
+    for(let i=0;i<dias.length;i++){
+        const dia = dias[i];
+        const ant = dias[i-1];
 
-    const ultima = await registrosDoDia(ultimaData, setor);
-    const penultima = penultimaData ? await registrosDoDia(penultimaData, setor) : [];
-
-    const totalMes = dias.filter(d => d.startsWith(ultimaData.slice(0,7))).length;
-
-    /********** CABEÇALHO DE DATA **********/
-    container.innerHTML += `
-        <div class="data-chat">${fmt(ultimaData)}</div>
-    `;
-
-    /********** MENSAGEM WHATSAPP **********/
-    let html = `BOM DIA!\nSEGUEM AS INFORMAÇÕES DA ÚLTIMA CONTAGEM:\n\n`;
-
-    ultima.forEach(reg => {
-
-        const ant = penultima.find(a => a.item === reg.item);
-        let difTxt = "";
-        let difClass = "";
+        let difs = 0;
 
         if(ant){
-            const dif = reg.quantidade - ant.quantidade;
-
-            if(Math.abs(dif) >= 1){
-                if(dif > 0){
-                    difTxt = ` (+${dif})`;
-                    difClass = "dif-plus";
-                } else {
-                    difTxt = ` (${dif})`;
-                    difClass = "dif-minus";
-                }
-            }
+            const h = await registrosDoDia(dia,setor);
+            const a = await registrosDoDia(ant,setor);
+            h.forEach(r=>{
+                const aa = a.find(x=>x.item===r.item);
+                if(aa && aa.quantidade!==r.quantidade) difs++;
+            });
         }
 
-        html += `🟢 ${reg.item} — <span class="${difClass}">${reg.quantidade}${difTxt}</span>\n`;
+        html += `
+        <div class="dia" onclick="abrirPopup('${dia}')">
+            <div>${fmt(dia)}</div>
+            <div>${difs>0?`<span class='dif-negativo'>-${difs}</span>`:""}</div>
+        </div>`;
+    }
+
+    divDias.innerHTML = html;
+}
+carregarDias();
+
+
+/* ================================
+   POPUP WHATSAPP + ver mais
+================================ */
+window.abrirPopup = async function(dia){
+
+    const hoje = await registrosDoDia(dia,setor);
+
+    const antData = new Date(new Date(dia).getTime() - 86400000)
+        .toISOString().split("T")[0];
+    const ant = await registrosDoDia(antData,setor);
+
+    /* montar mensagem estilo WhatsApp */
+    let texto = `BOM DIA!
+SEGUEM AS INFORMAÇÕES DA CONTAGEM DO DIA:
+
+`;
+
+    hoje.forEach(r=>{
+        const a = ant.find(x=>x.item===r.item);
+        let difTxt = "";
+        if(a){
+            const dif = r.quantidade - a.quantidade;
+            if(dif>0) difTxt = ` (+${dif})`;
+            if(dif<0) difTxt = ` (${dif})`;
+        }
+        texto += `🟢 ${r.item} — ${r.quantidade}${difTxt}\n`;
     });
 
-    html += `\n🕒 HORÁRIO DA CONTAGEM: ${new Date(ultima[0]?.data_hora).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`;
+    /* parte dinâmica do ver mais */
+    let pequeno = texto.slice(0,340);
+    let longo = texto;
 
-    container.innerHTML += `
-        <div class="msg-box">${html}</div>
+    const precisaVerMais = longo.length > 340;
+
+    popupMsg.innerHTML = `
+        <div class="data-chat">${fmt(dia)}</div>
+
+        <div class="msg-box">
+            <div id="msgTexto">${precisaVerMais ? pequeno+"..." : longo}</div>
+            <div class="msg-date">${fmt(dia)}</div>
+
+            ${precisaVerMais ?
+                `<div id="toggle" class="vermais">Ver mais</div>` : ""
+            }
+        </div>
+        <div class="rodape-info">Clique em Fechar para voltar</div>
     `;
 
-    /********** RODAPÉ — CONTAGENS NO MÊS **********/
-    container.innerHTML += `
-        <div class="rodape-info">Contagens realizadas no mês: ${totalMes}</div>
-    `;
+    /* controle ver mais / menos */
+    if(precisaVerMais){
+        document.getElementById("toggle").onclick = function(){
+            const el = document.getElementById("msgTexto");
+            if(this.textContent==="Ver mais"){
+                el.textContent = longo;
+                this.textContent="Ver menos";
+            } else {
+                el.textContent = pequeno+"...";
+                this.textContent="Ver mais";
+            }
+        }
+    }
 
-})();
+    popup.style.display="flex";
+};
+
+window.fecharPopup = function(){
+    popup.style.display="none";
+};
+
 </script>
 
 </body>
