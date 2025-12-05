@@ -3,88 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 
-<title>Relatório Bar – Grupo DV</title>
+<title>Relatório do Bar • Grupo DV</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+:root{
+    --bg:#efeae2;
+    --card:#ffffff;
+    --line:#ddd;
+    --text:#111;
+    --muted:#777;
+    --blue:#007aff;
+    --red:#e74c3c;
+    --green:#2ecc71;
+}
+
 body{
     margin:0;
-    background:#f4f4f4;
+    background:var(--bg);
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+    overflow:hidden;
 }
 
+/* ================= HEADER ================= */
 .header{
-    background:white;
-    padding:18px;
-    font-size:22px;
+    height:calc(65px + env(safe-area-inset-top));
+    padding-top:calc(10px + env(safe-area-inset-top));
+    padding-left:16px;
+    padding-right:16px;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:10;
+}
+.header img{
+    width:46px; height:46px;
+    border-radius:50%;
+}
+.header-title{
+    font-size:20px;
     font-weight:700;
-    border-bottom:1px solid #ddd;
+}
+.header-sub{
+    font-size:14px;
+    color:var(--muted);
 }
 
-.calendario{
+/* ================= AREA ================= */
+.area{
     padding:16px;
-    display:grid;
-    grid-template-columns:repeat(7, 1fr);
-    gap:8px;
+    height:calc(100vh - 90px);
+    overflow-y:auto;
 }
 
-.dia{
+/* ================= CARD DIA ================= */
+.dia-card{
     background:white;
-    border-radius:10px;
-    padding:12px;
-    text-align:center;
-    box-shadow:0 1px 3px rgba(0,0,0,.15);
-    cursor:pointer;
-    font-size:15px;
+    padding:14px 16px;
+    border-radius:14px;
+    box-shadow:0 2px 5px rgba(0,0,0,.12);
+    margin-bottom:12px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
-.dia.ok{
-    background:#d9ffe0;
-    color:#0a7a27;
+
+.dia-date{
+    font-size:18px;
     font-weight:700;
+}
+.dia-info{
+    font-size:14px;
+    color:var(--muted);
+}
+
+.dif-green{ color:var(--green); font-weight:700; }
+.dif-red{ color:var(--red); font-weight:700; }
+
+/* GRÁFICOS */
+.grafico-card{
+    background:white;
+    padding:16px;
+    border-radius:16px;
+    box-shadow:0 2px 5px rgba(0,0,0,.12);
+    margin-top:20px;
 }
 
 /* POPUP */
-.popup{
+#popupDia{
     position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background:rgba(0,0,0,.55);
+    top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,.45);
     display:none;
     justify-content:center;
     align-items:center;
-    backdrop-filter:blur(4px);
+    backdrop-filter:blur(6px);
+    z-index:50;
 }
-.box{
+.popup-box{
+    width:92%; max-width:450px;
     background:white;
-    width:92%;
-    max-width:430px;
-    max-height:80vh;
-    padding:20px;
     border-radius:18px;
-    overflow-y:auto;
+    padding:20px;
+    max-height:80vh;
+    display:flex; flex-direction:column;
 }
-.tituloDia{
-    font-size:20px;
-    font-weight:700;
-    text-align:center;
-    margin-bottom:10px;
+.popup-title{
+    font-size:22px; font-weight:700; text-align:center;
 }
-.itemLinha{
-    display:flex;
-    justify-content:space-between;
-    padding:6px 0;
+.popup-scroll{
+    flex:1; overflow-y:auto; padding-right:6px; margin-top:12px;
+}
+.popup-item{
+    display:flex; justify-content:space-between;
+    padding:8px 0;
     border-bottom:1px solid #eee;
     font-size:16px;
 }
-.red{ color:#d00; font-weight:700; }
-.green{ color:#007a2e; font-weight:700; }
-.btnFechar{
-    margin-top:15px;
-    padding:12px;
-    background:#ddd;
+.btn-close{
+    margin-top:14px;
+    padding:14px;
+    border-radius:12px;
     text-align:center;
-    border-radius:10px;
+    background:#ddd;
+    font-weight:700;
     cursor:pointer;
 }
 </style>
@@ -92,177 +143,157 @@ body{
 
 <body>
 
-<div class="header">Relatório de Contagem – Bar</div>
+<!-- HEADER -->
+<div class="header">
+    <img src="icons/contagembar.png">
+    <div>
+        <div class="header-title">Relatório do Bar</div>
+        <div class="header-sub" id="subinfo">Carregando...</div>
+    </div>
+</div>
 
-<div id="calendario" class="calendario"></div>
+<div class="area" id="conteudo">
+    <!-- Dias são carregados aqui -->
+</div>
 
-<!-- POPUP -->
-<div id="popup" class="popup">
-    <div class="box">
-        <div id="tituloDia" class="tituloDia"></div>
-        <div id="lista"></div>
-        <div class="btnFechar" onclick="fecharPopup()">Fechar</div>
+<!-- POPUP DETALHES DO DIA -->
+<div id="popupDia">
+    <div class="popup-box">
+        <div class="popup-title" id="popupTitulo"></div>
+        <div class="popup-scroll" id="popupLista"></div>
+        <div class="btn-close" onclick="fecharPopup()">Fechar</div>
     </div>
 </div>
 
 <script type="module">
 import { supa } from "./db.js";
 
-const setor = "Bar";
+/* ====================== CARREGAR DIAS ====================== */
 
-/* ======================================================
-   1. Buscar dias válidos (quantidade > 0)
-====================================================== */
 async function carregarDias(){
-    console.log("➡ BUSCANDO DIAS...");
+    const box = document.getElementById("conteudo");
+    box.innerHTML = "";
 
-    const { data, error } = await supa
-        .from("registros")
-        .select("data_hora, quantidade, setor")
+    const { data: registros } = await supa
+        .from("registro")
+        .select("*")
         .eq("setor", "Bar")
-        .gt("quantidade", 0);
+        .order("data", { ascending:false });
 
-    console.log("DATA:", data);
-    console.log("ERROR:", error);
-
-    if(error){
-        alert("Erro ao carregar dias");
+    if(!registros || registros.length === 0){
+        box.innerHTML = "<p>Nenhuma contagem registrada.</p>";
         return;
     }
 
-    const dias = new Set();
+    document.getElementById("subinfo").textContent =
+        "Última contagem: " + registros[0].data;
 
-    data.forEach(r=>{
-        if(r.data_hora){
-            const dia = r.data_hora.split("T")[0];
-            dias.add(dia);
-        }
+    // Agrupa por dia
+    const dias = {};
+    registros.forEach(r=>{
+        if(!dias[r.data]) dias[r.data] = [];
+        dias[r.data].push(r);
     });
 
-    console.log("DIAS ENCONTRADOS:", [...dias]);
+    const diasOrd = Object.keys(dias).sort((a,b)=> new Date(b) - new Date(a));
 
-    montarCalendario([...dias].sort());
-}
+    let listaEvolucao = [];
+    let listaEvolucaoDias = [];
 
+    for(let i=0; i<diasOrd.length; i++){
+        const dia = diasOrd[i];
+        const registrosDia = dias[dia];
 
-/* ======================================================
-   2. Montar calendário
-====================================================== */
-function montarCalendario(listaDias){
-    const cal = document.getElementById("calendario");
-    cal.innerHTML = "";
+        const total = registrosDia.reduce((s,r)=> s + Number(r.quantidade), 0);
 
-    if(listaDias.length === 0){
-        cal.innerHTML = "<p style='grid-column:span 7; text-align:center; color:#777;'>Nenhuma contagem registrada.</p>";
-        return;
-    }
+        listaEvolucao.push(total);
+        listaEvolucaoDias.push(dia);
 
-    listaDias.forEach(dia=>{
-        const [y,m,d] = dia.split("-");
-        cal.innerHTML += `
-            <div class="dia ok" onclick="abrirDia('${dia}')">
-                ${d}/${m}
+        let difTxt = "";
+        if(i < diasOrd.length-1){
+            const diaAnterior = diasOrd[i+1];
+            const totalAnt = dias[diaAnterior].reduce((s,r)=> s + Number(r.quantidade), 0);
+            const dif = total - totalAnt;
+
+            difTxt = dif > 0
+                ? `<span class='dif-green'>+${dif}</span>`
+                : `<span class='dif-red'>${dif}</span>`;
+        }
+
+        box.innerHTML += `
+            <div class="dia-card" onclick="abrirPopup('${dia}')">
+                <div>
+                    <div class="dia-date">${dia}</div>
+                    <div class="dia-info">${registrosDia.length} itens</div>
+                </div>
+                <div>${difTxt || ""}</div>
             </div>
         `;
-    });
-}
-
-/* ======================================================
-   3. Abrir informações do dia
-====================================================== */
-window.abrirDia = async function(dia){
-
-    const atual = await buscarRegistrosPorDia(dia);
-
-    const diaAnterior = await buscarUltimoDiaAnterior(dia);
-    let anterior = [];
-
-    if(diaAnterior){
-        anterior = await buscarRegistrosPorDia(diaAnterior);
     }
 
-    montarPopup(dia, atual, anterior);
+    gerarGraficos(listaEvolucaoDias.reverse(), listaEvolucao.reverse());
 }
 
-/* === Buscar registros do dia === */
-async function buscarRegistrosPorDia(dia){
-    const { data } = await supa
-        .from("registros")
-        .select("item, quantidade, data_hora")
-        .eq("setor", setor)
-        .gt("quantidade", 0);   // IGNORA histórico
+carregarDias();
 
-    return data.filter(r => r.data_hora.startsWith(dia));
-}
+/* ====================== POPUP DIA ====================== */
 
-/* === Buscar dia anterior === */
-async function buscarUltimoDiaAnterior(diaAtual){
-    const { data } = await supa
-        .from("registros")
-        .select("data_hora")
-        .eq("setor", setor)
-        .gt("quantidade", 0);
+async function abrirPopup(dia){
+    const { data: registros } = await supa
+        .from("registro")
+        .select("*")
+        .eq("setor", "Bar")
+        .eq("data", dia);
 
-    const dias = [...new Set(
-        data.map(r => r.data_hora.split("T")[0])
-    )].sort();
+    document.getElementById("popupTitulo").textContent = "Dia " + dia;
 
-    const idx = dias.indexOf(diaAtual);
-    return idx > 0 ? dias[idx - 1] : null;
-}
-
-/* ======================================================
-   4. Construir popup de comparação
-====================================================== */
-function montarPopup(dia, atual, anterior){
-    document.getElementById("tituloDia").textContent =
-        "Contagem de " + dia.split("-").reverse().join("/");
-
-    const lista = document.getElementById("lista");
+    const lista = document.getElementById("popupLista");
     lista.innerHTML = "";
 
-    const mapaAtual = {};
-    const mapaAnterior = {};
-
-    atual.forEach(r => mapaAtual[r.item] = Number(r.quantidade));
-    anterior.forEach(r => mapaAnterior[r.item] = Number(r.quantidade));
-
-    const itens = new Set([...Object.keys(mapaAtual), ...Object.keys(mapaAnterior)]);
-
-    itens.forEach(item=>{
-        const a = mapaAtual[item] || 0;
-        const b = mapaAnterior[item] || 0;
-        const diff = a - b;
-
-        let cor = "";
-        if(diff > 0) cor = "green";
-        if(diff < 0) cor = "red";
-
+    registros.forEach(r=>{
         lista.innerHTML += `
-            <div class="itemLinha">
-                <span>${item}</span>
-                <span class="${cor}">${diff === 0 ? "OK" : diff}</span>
+            <div class="popup-item">
+                <span>${r.item}</span>
+                <span><b>${r.quantidade}</b></span>
             </div>
         `;
     });
 
-    abrirPopup();
+    document.getElementById("popupDia").style.display = "flex";
 }
 
-/* ======================================================
-   POPUP
-====================================================== */
-function abrirPopup(){
-    document.getElementById("popup").style.display = "flex";
-}
-window.fecharPopup = function(){
-    document.getElementById("popup").style.display = "none";
-};
+window.abrirPopup = abrirPopup;
+window.fecharPopup = ()=> document.getElementById("popupDia").style.display="none";
 
-/* ======================================================
-   INICIAR
-====================================================== */
-carregarDias();
+
+/* ====================== GRÁFICOS ====================== */
+
+function gerarGraficos(labels, valores){
+    const box = document.getElementById("conteudo");
+
+    box.innerHTML += `
+        <div class="grafico-card">
+            <h3 style="margin-bottom:10px;">Evolução das Contagens</h3>
+            <canvas id="grafEvo"></canvas>
+        </div>
+    `;
+
+    new Chart(document.getElementById("grafEvo"), {
+        type:"line",
+        data:{
+            labels,
+            datasets:[{
+                label:"Total",
+                data: valores,
+                borderColor:"#007aff",
+                backgroundColor:"rgba(0,122,255,.25)",
+                borderWidth:3,
+                tension:.4,
+                fill:true
+            }]
+        }
+    });
+}
 </script>
 
 </body>
