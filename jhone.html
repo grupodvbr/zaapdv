@@ -263,32 +263,35 @@ if(!localStorage.getItem("usuarioLogado")){
                 <div id="barCount" class="chat-msg">Carregando...</div>
             </div>
         </div>
-
-        <div class="chat-item setor" data-setor="Salão" onclick="openSetor('salao.html')">
-            <img src="icons/salao.png" class="avatar">
-            <div class="chat-info">
-                <div class="chat-title">Salão</div>
-                <div id="salaoCount" class="chat-msg">Carregando...</div>
-            </div>
-        </div>
-
-        <div class="chat-item setor" data-setor="Financeiro" onclick="openSetor('financeiro.html')">
-            <img src="icons/financeiro.png" class="avatar">
-            <div class="chat-info">
-                <div class="chat-title">Financeiro</div>
-                <div id="financeiroCount" class="chat-msg">Carregando...</div>
-            </div>
-        </div>
-
+       
     </div>
 </div>
 
 <nav class="bottombar">
-  <button class="nav-btn"><img src="icons/agenda.png">Reuniões</button>
-  <button class="nav-btn"><img src="icons/analise.png">Análise</button>
-  <button class="nav-btn"><img src="icons/grupodv.png">Grupo DV</button>
-  <button class="nav-btn active"><img src="icons/tarefas.png">Tarefas</button>
-  <button class="nav-btn"><img src="icons/ajustes.png">Ajustes</button>
+  <button class="nav-btn" onclick="window.location.href='agenda.html'">
+      <img src="icons/agenda.png">
+      Agenda
+  </button>
+
+  <button class="nav-btn" onclick="window.location.href='relatoriobar.html'">
+      <img src="icons/analise.png">
+      Análise
+  </button>
+
+  <button class="nav-btn" onclick="window.location.href='grupodv.html'">
+      <img src="icons/grupodv.png">
+      Grupo DV
+  </button>
+
+  <button class="nav-btn active" onclick="window.location.href='tarefas.html'">
+      <img src="icons/tarefas.png">
+      Tarefas
+  </button>
+
+  <button class="nav-btn" onclick="window.location.href='ajustes.html'">
+      <img src="icons/ajustes.png">
+      Ajustes
+  </button>
 </nav>
 
 <!-- ===========================================
