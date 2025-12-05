@@ -7,43 +7,48 @@
 <title>Relatório do Bar</title>
 
 <style>
-/* =============================== */
-/*   ESTILO GERAL + HEADER FIXO    */
-/* =============================== */
 body{
     margin:0;
     background:#efeae2;
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* HEADER FIXO */
 .header{
     position:fixed;
     top:0; left:0; right:0;
-    height:70px;
-    padding:14px;
-    background:#fff;
-    border-bottom:1px solid #ddd;
+    height:80px;
+    padding:14px 16px;
+    background:#ffffff;
+    border-bottom:1px solid #d5d5d5;
     display:flex;
     align-items:center;
     gap:12px;
     z-index:10;
 }
 .header img{
-    width:46px;
-    height:46px;
-    border-radius:50%;
+    width:50px; height:50px; border-radius:50%;
+}
+.header-info{
+    display:flex;
+    flex-direction:column;
 }
 .header-title{
     font-size:20px;
     font-weight:700;
 }
-
-/* área abaixo do header */
-.area{
-    padding:90px 16px 20px;
+.header-sub{
+    margin-top:2px;
+    font-size:13px;
+    color:#777;
 }
 
-/* card de dias */
+/* CONTENT AREA */
+.area{
+    padding:100px 16px 20px;
+}
+
+/* CARD */
 .dia{
     background:white;
     padding:14px;
@@ -58,9 +63,7 @@ body{
 .dif-negativo{color:#e74c3c;font-weight:700;}
 .dif-positivo{color:#2ecc71;font-weight:700;}
 
-/* =============================== */
-/*           POPUP FIXO            */
-/* =============================== */
+/* POPUP */
 .popup{
     position:fixed;
     top:0; left:0; width:100%; height:100%;
@@ -103,8 +106,6 @@ body{
     position:relative;
     white-space:pre-line;
 }
-
-/* Data no canto direito da bolha */
 .msg-date{
     position:absolute;
     bottom:6px;
@@ -112,15 +113,12 @@ body{
     font-size:12px;
     color:#777;
 }
-
-/* Ver mais / menos */
 .vermais{
     color:#3b82f6;
     font-size:14px;
     margin-top:6px;
     cursor:pointer;
 }
-
 .rodape-info{
     font-size:13px;
     text-align:center;
@@ -133,10 +131,14 @@ body{
 
 <body>
 
-<!-- HEADER FIXO -->
+<!-- HEADER -->
 <div class="header">
     <img src="icons/contagembar.png">
-    <div class="header-title">Relatório do Bar</div>
+
+    <div class="header-info">
+        <div class="header-title">Relatório do Bar</div>
+        <div id="ultimaData" class="header-sub">Carregando…</div>
+    </div>
 </div>
 
 <div class="area" id="dias">Carregando…</div>
@@ -145,6 +147,7 @@ body{
 <div id="popup" class="popup">
     <div class="popup-box">
         <div id="popupMsg"></div>
+
         <button onclick="fecharPopup()" style="
             margin-top:20px;width:100%;padding:14px;border:none;
             border-radius:10px;background:#ddd;font-size:17px;">
@@ -153,12 +156,12 @@ body{
     </div>
 </div>
 
-
 <script type="module">
 import { diasComContagem, registrosDoDia } from "./db.js";
 
 const setor = "Bar";
 const divDias = document.getElementById("dias");
+const ultimaDataTxt = document.getElementById("ultimaData");
 const popup = document.getElementById("popup");
 const popupMsg = document.getElementById("popupMsg");
 
@@ -169,18 +172,27 @@ function fmt(d){
 }
 
 /* ================================
-   LISTAR DIAS
+   LISTAR DIAS + ÚLTIMA CONTAGEM
 ================================ */
 async function carregarDias(){
     let dias = await diasComContagem(setor);
-    dias = dias.sort();
+    dias = dias.sort(); // cronológico
+
+    if(!dias.length){
+        divDias.innerHTML = "<p>Nenhuma contagem registrada.</p>";
+        ultimaDataTxt.textContent = "Nenhuma contagem";
+        return;
+    }
+
+    // preencher ultima contagem
+    const ultima = dias[dias.length-1];
+    ultimaDataTxt.textContent = "Última contagem: " + fmt(ultima);
 
     let html = "";
 
     for(let i=0;i<dias.length;i++){
         const dia = dias[i];
         const ant = dias[i-1];
-
         let difs = 0;
 
         if(ant){
@@ -205,7 +217,7 @@ carregarDias();
 
 
 /* ================================
-   POPUP WHATSAPP + ver mais
+   POPUP WHATSAPP
 ================================ */
 window.abrirPopup = async function(dia){
 
@@ -215,11 +227,7 @@ window.abrirPopup = async function(dia){
         .toISOString().split("T")[0];
     const ant = await registrosDoDia(antData,setor);
 
-    /* montar mensagem estilo WhatsApp */
-    let texto = `BOM DIA!
-SEGUEM AS INFORMAÇÕES DA CONTAGEM DO DIA:
-
-`;
+    let texto = "RELATÓRIO DA CONTAGEM DO DIA:\n\n";
 
     hoje.forEach(r=>{
         const a = ant.find(x=>x.item===r.item);
@@ -229,42 +237,17 @@ SEGUEM AS INFORMAÇÕES DA CONTAGEM DO DIA:
             if(dif>0) difTxt = ` (+${dif})`;
             if(dif<0) difTxt = ` (${dif})`;
         }
-        texto += `🟢 ${r.item} — ${r.quantidade}${difTxt}\n`;
+        texto += `• ${r.item}: ${r.quantidade}${difTxt}\n`;
     });
-
-    /* parte dinâmica do ver mais */
-    let pequeno = texto.slice(0,340);
-    let longo = texto;
-
-    const precisaVerMais = longo.length > 340;
 
     popupMsg.innerHTML = `
         <div class="data-chat">${fmt(dia)}</div>
 
         <div class="msg-box">
-            <div id="msgTexto">${precisaVerMais ? pequeno+"..." : longo}</div>
+            <div>${texto}</div>
             <div class="msg-date">${fmt(dia)}</div>
-
-            ${precisaVerMais ?
-                `<div id="toggle" class="vermais">Ver mais</div>` : ""
-            }
         </div>
-        <div class="rodape-info">Clique em Fechar para voltar</div>
     `;
-
-    /* controle ver mais / menos */
-    if(precisaVerMais){
-        document.getElementById("toggle").onclick = function(){
-            const el = document.getElementById("msgTexto");
-            if(this.textContent==="Ver mais"){
-                el.textContent = longo;
-                this.textContent="Ver menos";
-            } else {
-                el.textContent = pequeno+"...";
-                this.textContent="Ver mais";
-            }
-        }
-    }
 
     popup.style.display="flex";
 };
