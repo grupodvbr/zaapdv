@@ -3,231 +3,173 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relatório do Bar • Grupo DV</title>
+<title>Relatório do Bar</title>
 
 <style>
 body{
     margin:0;
-    background:#f3eee6;
+    background:#ece5dd; /* fundo WhatsApp */
     font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* HEADER */
+/****************************
+   CABEÇALHO WHATSAPP
+*****************************/
 .header{
+    background:#075E54;
+    color:white;
+    padding:14px;
     display:flex;
     align-items:center;
-    padding:16px;
-    background:#fff;
-    border-bottom:1px solid #ddd;
 }
 .header img{
-    width:46px; height:46px; border-radius:50%;
+    width:40px; height:40px;
+    border-radius:50%;
+    margin-right:12px;
 }
 .header-title{
-    margin-left:12px;
-    font-size:20px;
-    font-weight:700;
-}
-.status{
-    font-size:13px;
-    color:#888;
-    margin-left:12px;
-}
-
-/* CARD DO MÊS */
-.card-mes{
-    margin:16px;
-    background:white;
-    padding:16px;
-    border-radius:12px;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
-    font-size:17px;
+    font-size:18px;
     font-weight:600;
 }
 
-/* LISTA DE DIAS */
-#dias{
-    padding:16px;
-}
-.dia{
-    background:white;
-    padding:14px;
+/****************************
+   DATA DO CHAT
+*****************************/
+.data-chat{
+    text-align:center;
+    margin:20px auto;
+    background:#e2dfdc;
+    color:#555;
+    padding:6px 14px;
     border-radius:10px;
-    margin-bottom:10px;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+    font-size:14px;
+    width:max-content;
 }
-.dif-alta{color:#e74c3c; font-weight:bold;}
-.dif-baixa{color:#2ecc71; font-weight:bold;}
 
-/* POPUP */
-.popup{
-    position:fixed;
-    top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,.6);
-    display:none; justify-content:center; align-items:center;
-}
-.popup-box{
+/****************************
+   BOLHA DE MENSAGEM
+*****************************/
+.msg-box{
     background:white;
-    width:90%; max-width:420px;
-    padding:20px;
-    border-radius:14px;
-    max-height:80vh;
-    overflow-y:auto;
+    margin:0 auto 20px auto;
+    width:92%;
+    padding:18px;
+    border-radius:12px;
+    font-size:16px;
+    line-height:1.55;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    white-space:pre-line;
 }
-.item-row{
+.item{
     display:flex;
-    justify-content:space-between;
-    border-bottom:1px solid #eee;
-    padding:6px 0;
+    align-items:center;
+    margin-bottom:5px;
+}
+.item span{
+    margin-left:6px;
+}
+
+/****************************
+   DIFERENÇAS
+*****************************/
+.dif-plus{ color:#2ecc71; font-weight:600; }
+.dif-minus{ color:#e74c3c; font-weight:600; }
+
+/****************************
+   RODAPÉ DISCRETO
+*****************************/
+.rodape-info{
+    text-align:center;
+    margin-top:10px;
+    font-size:13px;
+    color:#777;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <img src="icons/contagembar.png">
-    <div>
-        <div class="header-title">Relatório do Bar</div>
-        <div id="status" class="status">Carregando…</div>
-    </div>
+    <div class="header-title">Relatório do Bar</div>
 </div>
 
-<!-- CARD CONTAGEM DO MÊS -->
-<div id="cardMes" class="card-mes">Carregando…</div>
-
-<!-- LISTA DE DIAS -->
-<div id="dias">Carregando…</div>
-
-<!-- POPUP -->
-<div id="popup" class="popup">
-    <div class="popup-box">
-        <h3 id="popupData"></h3>
-        <div id="popupConteudo"></div>
-        <button onclick="fecharPopup()">Fechar</button>
-    </div>
-</div>
+<div id="container"></div>
 
 <script type="module">
 import { diasComContagem, registrosDoDia } from "./db.js";
 
 const setor = "Bar";
-const divDias = document.getElementById("dias");
-const status = document.getElementById("status");
-const cardMes = document.getElementById("cardMes");
+const container = document.getElementById("container");
 
-/* Formatador dd/mm/aaaa */
-const formatar = (d) => {
+/******** FORMATADOR ********/
+const fmt = (d)=> {
     const [ano,mes,dia] = d.split("-");
     return `${dia}/${mes}/${ano}`;
 };
 
-/* ===========================
-    CONTAGENS DO MÊS
-=========================== */
-async function contarMes(dias){
-    const mesAtual = new Date().toISOString().split("T")[0].slice(0,7); // yyyy-mm
+/*********** EXECUTAR ***********/
+(async ()=>{
 
-    const total = dias.filter(d => d.startsWith(mesAtual)).length;
-
-    cardMes.textContent = `Contagens no mês: ${total}`;
-}
-
-/* ===========================
-    CARREGAR DIAS
-=========================== */
-async function carregarDias() {
     let dias = await diasComContagem(setor);
+    dias = dias.sort();
 
-    if (!dias.length) {
-        divDias.innerHTML = "<p>Nenhuma contagem registrada.</p>";
-        status.textContent = "Nenhum dado";
+    if(dias.length === 0){
+        container.innerHTML = "<p style='padding:16px;'>Nenhuma contagem registrada.</p>";
         return;
     }
 
-    dias = dias.sort(); // ordena crescente
-    await contarMes(dias);
+    const ultimaData = dias[dias.length - 1];
+    const penultimaData = dias[dias.length - 2] ?? null;
 
-    status.textContent = "Online";
+    const ultima = await registrosDoDia(ultimaData, setor);
+    const penultima = penultimaData ? await registrosDoDia(penultimaData, setor) : [];
 
-    let html = "";
+    const totalMes = dias.filter(d => d.startsWith(ultimaData.slice(0,7))).length;
 
-    for (let i = 0; i < dias.length; i++) {
-        const dia = dias[i];
-        const anterior = dias[i - 1];
+    /********** CABEÇALHO DE DATA **********/
+    container.innerHTML += `
+        <div class="data-chat">${fmt(ultimaData)}</div>
+    `;
 
-        let diferencas = 0;
+    /********** MENSAGEM WHATSAPP **********/
+    let html = `BOM DIA!\nSEGUEM AS INFORMAÇÕES DA ÚLTIMA CONTAGEM:\n\n`;
 
-        if (anterior) {
-            const regHoje = await registrosDoDia(dia, setor);
-            const regAnt = await registrosDoDia(anterior, setor);
+    ultima.forEach(reg => {
 
-            regHoje.forEach(r => {
-                const ant = regAnt.find(a => a.item === r.item);
-                if (ant && Math.abs(r.quantidade - ant.quantidade) >= 3) {
-                    diferencas++;
+        const ant = penultima.find(a => a.item === reg.item);
+        let difTxt = "";
+        let difClass = "";
+
+        if(ant){
+            const dif = reg.quantidade - ant.quantidade;
+
+            if(Math.abs(dif) >= 1){
+                if(dif > 0){
+                    difTxt = ` (+${dif})`;
+                    difClass = "dif-plus";
+                } else {
+                    difTxt = ` (${dif})`;
+                    difClass = "dif-minus";
                 }
-            });
+            }
         }
 
-        html += `
-            <div class="dia" onclick="abrirPopup('${dia}')">
-                <div>${formatar(dia)}</div>
-                <div>${
-                    diferencas > 0
-                    ? `<span class='dif-alta'>${diferencas} itens</span>`
-                    : ""
-                }</div>
-            </div>`;
-    }
-
-    divDias.innerHTML = html;
-}
-carregarDias();
-
-/* ===========================
-        POPUP
-=========================== */
-window.abrirPopup = async function(dia) {
-    document.getElementById("popupData").textContent = "Comparação de " + formatar(dia);
-
-    const registros = await registrosDoDia(dia, setor);
-    const ontemData = new Date(new Date(dia).getTime() - 86400000)
-        .toISOString().split("T")[0];
-    const ontem = await registrosDoDia(ontemData, setor);
-
-    let html = "";
-
-    registros.forEach(r => {
-        const ant = ontem.find(a => a.item === r.item);
-        const dif = ant ? r.quantidade - ant.quantidade : r.quantidade;
-
-        if (Math.abs(dif) >= 3) {
-            html += `
-                <div class="item-row">
-                    <span>${r.item}</span>
-                    <span class="${dif > 0 ? "dif-baixa" : "dif-alta"}">
-                        ${dif > 0 ? "+"+dif : dif}
-                    </span>
-                </div>`;
-        }
+        html += `🟢 ${reg.item} — <span class="${difClass}">${reg.quantidade}${difTxt}</span>\n`;
     });
 
-    if (!html) {
-        html = "<p>Nenhuma diferença relevante (≥ 3 unidades).</p>";
-    }
+    html += `\n🕒 HORÁRIO DA CONTAGEM: ${new Date(ultima[0]?.data_hora).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`;
 
-    document.getElementById("popupConteudo").innerHTML = html;
-    document.getElementById("popup").style.display = "flex";
-};
+    container.innerHTML += `
+        <div class="msg-box">${html}</div>
+    `;
 
-window.fecharPopup = function() {
-    document.getElementById("popup").style.display = "none";
-};
+    /********** RODAPÉ — CONTAGENS NO MÊS **********/
+    container.innerHTML += `
+        <div class="rodape-info">Contagens realizadas no mês: ${totalMes}</div>
+    `;
+
+})();
 </script>
 
 </body>
