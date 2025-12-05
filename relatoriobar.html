@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relatório do Bar</title>
+<title>Relatório do Bar • Grupo DV</title>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
@@ -28,9 +31,33 @@ body{
 }
 .status{
     font-size:13px;
-    color:#888;
+    color:#444;
     margin-left:12px;
+    font-weight:600;
 }
+
+#cards{
+    padding:16px;
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+}
+.card{
+    background:white;
+    padding:14px;
+    border-radius:12px;
+    min-width:120px;
+    box-shadow:0 3px 6px rgba(0,0,0,0.15);
+}
+.card-title{
+    font-size:13px;
+    color:#777;
+}
+.card-value{
+    font-size:22px;
+    font-weight:700;
+}
+
 #dias{
     padding:16px;
 }
@@ -46,6 +73,7 @@ body{
 }
 .dif-positivo{color:#2ecc71;font-weight:bold;}
 .dif-negativo{color:#e74c3c;font-weight:bold;}
+
 .popup{
     position:fixed; top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,.6);
@@ -70,12 +98,39 @@ body{
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
     <img src="icons/contagembar.png">
     <div class="header-title">Relatório do Bar</div>
     <div id="status" class="status">Carregando…</div>
 </div>
 
+<!-- CARDS -->
+<div id="cards">
+    <div class="card">
+        <div class="card-title">Última Contagem</div>
+        <div id="cardUltima" class="card-value">--</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Divergências</div>
+        <div id="cardDivergencias" class="card-value">0</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Sobras</div>
+        <div id="cardSobras" class="card-value">0</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Perdas</div>
+        <div id="cardPerdas" class="card-value">0</div>
+    </div>
+</div>
+
+<!-- GRÁFICO -->
+<div style="padding:16px;">
+    <canvas id="grafico"></canvas>
+</div>
+
+<!-- LISTA DE DIAS -->
 <div id="dias">Carregando…</div>
 
 <!-- POPUP -->
@@ -88,11 +143,26 @@ body{
 </div>
 
 <script type="module">
-import { diasComContagem, registrosDoDia } from "./db.js";
+import {
+    diasComContagem,
+    registrosDoDia,
+    ultimaContagemAntes
+} from "./db.js";
 
 const setor = "Bar";
 const divDias = document.getElementById("dias");
 const status = document.getElementById("status");
+
+const cardUltima = document.getElementById("cardUltima");
+const cardDivergencias = document.getElementById("cardDivergencias");
+const cardSobras = document.getElementById("cardSobras");
+const cardPerdas = document.getElementById("cardPerdas");
+
+// FORMATAR DATA
+function formatar(d){
+    const p = d.split("-"); // yyyy-mm-dd
+    return `${p[2]}/${p[1]}/${p[0]}`;
+}
 
 // ============================
 // CARREGAR DIAS
@@ -102,65 +172,109 @@ async function carregarDias() {
 
     if (!dias.length) {
         divDias.innerHTML = "<p>Nenhuma contagem registrada.</p>";
-        status.textContent = "Nenhum dado";
+        status.textContent = "Sem dados";
         return;
     }
 
-    status.textContent = "Online";
+    // Exibir última data
+    const ultima = dias[dias.length - 1];
+    status.textContent = formatar(ultima);
+    cardUltima.textContent = formatar(ultima);
 
     let html = "";
+
+    // Para o gráfico
+    const labels = [];
+    const valores = [];
+
+    // Contadores gerais
+    let totalDiverg = 0, totalSobras = 0, totalPerdas = 0;
 
     for (let i = 0; i < dias.length; i++) {
         const dia = dias[i];
         const anterior = dias[i - 1];
 
-        let diferencas = 0;
+        const regHoje = await registrosDoDia(dia, setor);
+        const totalHoje = regHoje.reduce((s, r) => s + r.quantidade, 0);
+
+        labels.push(formatar(dia));
+        valores.push(totalHoje);
+
+        let divergencias = 0;
 
         if (anterior) {
-            const regHoje = await registrosDoDia(dia, setor);
             const regAnt = await registrosDoDia(anterior, setor);
 
             regHoje.forEach(r => {
                 const ant = regAnt.find(a => a.item === r.item);
                 if (ant && ant.quantidade !== r.quantidade) {
-                    diferencas++;
+                    divergencias++;
+                    if (r.quantidade > ant.quantidade) totalSobras++;
+                    if (r.quantidade < ant.quantidade) totalPerdas++;
                 }
             });
         }
 
+        totalDiverg += divergencias;
+
         html += `
             <div class="dia" onclick="abrirPopup('${dia}')">
-                <div>${dia}</div>
-                <div>${diferencas === 0 ? "" :
-                    diferencas > 0 ?
-                    "<span class='dif-negativo'>-" + diferencas + "</span>" :
-                    "<span class='dif-positivo'>+" + diferencas + "</span>"
-                }</div>
+                <div>${formatar(dia)}</div>
+                <div>${divergencias > 0 ? "<span class='dif-negativo'>-" + divergencias + "</span>" : ""}</div>
             </div>`;
     }
 
+    // Atualizar cards
+    cardDivergencias.textContent = totalDiverg;
+    cardSobras.textContent = totalSobras;
+    cardPerdas.textContent = totalPerdas;
+
     divDias.innerHTML = html;
+
+    montarGrafico(labels, valores);
 }
 carregarDias();
+
+// ============================
+// GRÁFICO
+// ============================
+function montarGrafico(labels, valores){
+    new Chart(document.getElementById("grafico"), {
+        type: "line",
+        data: {
+            labels,
+            datasets: [{
+                label: "Itens contados",
+                data: valores,
+                borderWidth: 3,
+                borderColor: "#007aff",
+                backgroundColor: "rgba(0,122,255,0.2)",
+                tension: .3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales:{
+                y:{ beginAtZero:true }
+            }
+        }
+    });
+}
 
 // ============================
 // POPUP
 // ============================
 window.abrirPopup = async function(dia) {
-    document.getElementById("popupData").textContent = "Comparação: " + dia;
+    document.getElementById("popupData").textContent = "Comparação " + formatar(dia);
 
     const registros = await registrosDoDia(dia, setor);
-    const ontem = await registrosDoDia(
-        new Date(new Date(dia).getTime() - 86400000)
-            .toISOString()
-            .split("T")[0],
-        setor
-    );
+    const ontemRegs = await ultimaContagemAntes(dia, setor);
 
     let html = "";
 
     registros.forEach(r => {
-        const ant = ontem.find(a => a.item === r.item);
+        const ant = ontemRegs.find(a => a.item === r.item);
         const dif = ant ? r.quantidade - ant.quantidade : r.quantidade;
 
         html += `
