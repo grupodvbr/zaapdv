@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Analytics Executivo • Excel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+:root{
+  --primary:#0f766e;
+  --accent:#14b8a6;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+header{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;
+  padding:24px;
+}
+
+header h1{margin:0}
+
+.container{
+  max-width:1400px;
+  margin:auto;
+  padding:24px;
+}
+
+.card{
+  background:var(--card);
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:20px;
+}
+
+.upload{
+  border:2px dashed #94a3b8;
+  padding:30px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.upload input{display:none}
+
+.filters{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:12px;
+}
+
+.filters input, .filters select{
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cbd5f5;
+}
+
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+
+.kpi strong{font-size:22px}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+th{background:#f8fafc}
+
+button{
+  padding:10px 16px;
+  border:none;
+  border-radius:10px;
+  background:var(--primary);
+  color:#fff;
+  cursor:pointer;
+}
+
+.abc span{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  font-weight:700;
+  font-size:12px;
+}
+
+.A{background:#16a34a;color:#fff}
+.B{background:#facc15;color:#000}
+.C{background:#ef4444;color:#fff}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📊 Relatório Executivo Inteligente</h1>
+  <p>Excel → Análise → Decisão</p>
+</header>
+
+<div class="container" id="report">
+
+  <label class="card upload">
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <h2>📁 Clique para enviar o Excel</h2>
+    <p>O sistema identifica tudo automaticamente</p>
+  </label>
+
+  <div class="card filters">
+    <input type="date" id="startDate">
+    <input type="date" id="endDate">
+    <select id="empresa"></select>
+    <select id="categoria"></select>
+    <button onclick="filtrar()">Aplicar Filtros</button>
+    <button onclick="exportarPDF()">📄 Exportar PDF</button>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card">
+    <h3>📈 Faturamento por Produto</h3>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>🧮 ABC de Vendas</h3>
+    <table id="abc"></table>
+  </div>
+
+  <div class="card">
+    <h3>📋 Dados Detalhados</h3>
+    <div style="max-height:400px;overflow:auto">
+      <table id="tabela"></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let dados=[], filtrados=[]
+let col={}
+
+document.getElementById('fileInput').addEventListener('change',e=>{
+  const r=new FileReader()
+  r.onload=ev=>{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'})
+    dados=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
+    mapearColunas()
+    popularFiltros()
+    filtrar()
+  }
+  r.readAsArrayBuffer(e.target.files[0])
+})
+
+function mapearColunas(){
+  const c=Object.keys(dados[0])
+  col.data=c.find(v=>/data/i.test(v))
+  col.prod=c.find(v=>/prod|descr|item/i.test(v))
+  col.qtd=c.find(v=>/qtd|quant/i.test(v))
+  col.valor=c.find(v=>/valor|fat|total/i.test(v))
+  col.empresa=c.find(v=>/emp|loja/i.test(v))
+  col.cat=c.find(v=>/cat|grupo/i.test(v))
+}
+
+function popularFiltros(){
+  preencher('empresa',col.empresa)
+  preencher('categoria',col.cat)
+}
+
+function preencher(id,campo){
+  const s=document.getElementById(id)
+  s.innerHTML='<option value="">Todos</option>'
+  [...new Set(dados.map(d=>d[campo]).filter(Boolean))].forEach(v=>{
+    s.innerHTML+=`<option>${v}</option>`
+  })
+}
+
+function filtrar(){
+  const i=document.getElementById
+  filtrados=dados.filter(d=>{
+    const dt=new Date(d[col.data])
+    return (!i('startDate').value||dt>=new Date(i('startDate').value)) &&
+           (!i('endDate').value||dt<=new Date(i('endDate').value)) &&
+           (!i('empresa').value||d[col.empresa]==i('empresa').value) &&
+           (!i('categoria').value||d[col.cat]==i('categoria').value)
+  })
+  gerar()
+}
+
+function gerar(){
+  let total=0,qtd=0,map={}
+  filtrados.forEach(d=>{
+    const v=+String(d[col.valor]).replace(',','.')
+    const q=+d[col.qtd]||0
+    total+=v; qtd+=q
+    map[d[col.prod]]=(map[d[col.prod]]||0)+v
+  })
+
+  document.getElementById('kpis').innerHTML=`
+    <div class="card"><strong>R$ ${total.toFixed(2)}</strong><br>Faturamento</div>
+    <div class="card"><strong>${qtd}</strong><br>Quantidade</div>
+    <div class="card"><strong>${Object.keys(map).length}</strong><br>Produtos</div>
+    <div class="card"><strong>${filtrados.length}</strong><br>Registros</div>
+  `
+
+  new Chart(chart,{
+    type:'bar',
+    data:{labels:Object.keys(map),datasets:[{data:Object.values(map)}]},
+    options:{plugins:{legend:{display:false}}}
+  })
+
+  gerarABC(map)
+  gerarTabela()
+}
+
+function gerarABC(map){
+  const arr=Object.entries(map).sort((a,b)=>b[1]-a[1])
+  const total=arr.reduce((s,a)=>s+a[1],0)
+  let acc=0
+  abc.innerHTML='<tr><th>Produto</th><th>Valor</th><th>Classe</th></tr>'
+  arr.forEach(([p,v])=>{
+    acc+=v
+    const perc=acc/total
+    const cls=perc<=0.8?'A':perc<=0.95?'B':'C'
+    abc.innerHTML+=`<tr><td>${p}</td><td>R$ ${v.toFixed(2)}</td><td class="abc"><span class="${cls}">${cls}</span></td></tr>`
+  })
+}
+
+function gerarTabela(){
+  const cols=Object.keys(filtrados[0]||{})
+  tabela.innerHTML='<tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>'+
+    filtrados.map(l=>'<tr>'+cols.map(c=>`<td>${l[c]||''}</td>`).join('')+'</tr>').join('')
+}
+
+function exportarPDF(){
+  html2pdf().from(document.getElementById('report')).save('relatorio-executivo.pdf')
+}
+</script>
+
+</body>
+</html>
