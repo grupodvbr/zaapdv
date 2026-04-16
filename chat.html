@@ -3,177 +3,325 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Mercatto • WhatsApp</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mercatto • WhatsApp</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
-/* ===== BASE ===== */
-*{box-sizing:border-box}
-
-body{
-margin:0;
-font-family:Inter;
-height:100vh;
-display:flex;
-flex-direction:column;
-overflow:hidden;
-background:#e5ddd5;
+/* ===== RESET ===== */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
-/* FUNDO */
+html, body{
+  width:100%;
+  height:100%;
+  font-family:'Inter', sans-serif;
+  background:#e5ddd5;
+  overflow:hidden;
+}
+
+/* ===== FUNDO ESTILO WHATS ===== */
 body::before{
-content:"MERCATTO";
-position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:120px;
-font-weight:800;
-color:#000;
-opacity:0.04;
-pointer-events:none;
+  content:"MERCATTO";
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size:140px;
+  font-weight:800;
+  color:#000;
+  opacity:0.03;
+  pointer-events:none;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 .header{
-padding:14px 18px;
-background:#075e54;
-color:#fff;
-font-weight:700;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  background:linear-gradient(135deg,#075e54,#0b7d6c);
+  color:#fff;
+  font-weight:600;
+  font-size:16px;
+  z-index:20;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
 }
 
-/* CHAT */
+.header .title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.header .avatar{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#ffffff33;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+}
+
+/* ===== CHAT ===== */
 .messages{
-flex:1;
+position:fixed;
+top:60px;
+bottom:80px;
+left:0;
+right:0;
 overflow:auto;
 padding:20px;
 display:flex;
 flex-direction:column;
 gap:10px;
+scroll-behavior:smooth;
 }
 
-/* DATA */
+/* ===== DATA ===== */
 .date{
-text-align:center;
-font-size:12px;
-background:#ffffffcc;
-padding:4px 10px;
-border-radius:10px;
-margin:10px auto;
+  align-self:center;
+  font-size:11px;
+  background:#ffffffd9;
+  padding:4px 12px;
+  border-radius:20px;
+  color:#555;
+  font-weight:500;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
 }
 
-/* MSG */
+/* ===== MENSAGENS ===== */
 .msg{
-max-width:75%;
-padding:10px;
-border-radius:10px;
-font-size:14px;
+  max-width:75%;
+  padding:10px 12px;
+  border-radius:14px;
+  font-size:14px;
+  line-height:1.4;
+  position:relative;
+  animation:fadeIn .2s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
 }
 
-.user{background:#fff;align-self:flex-start;}
-.assistant{background:#dcf8c6;align-self:flex-end;}
-
-/* MIDIA */
-.msg img,.msg video{
-max-width:220px;
-border-radius:10px;
-margin-bottom:6px;
-cursor:pointer;
+/* RECEBIDA */
+.user{
+  align-self:flex-start;
+  background:#ffffff;
+  border-top-left-radius:4px;
 }
-.msg audio{width:200px}
 
-/* DOC */
+/* ENVIADA */
+.assistant{
+  align-self:flex-end;
+  background:#dcf8c6;
+  border-top-right-radius:4px;
+}
+
+/* ===== TEXTO ===== */
+.msg div{
+  word-wrap:break-word;
+}
+
+/* ===== MIDIA ===== */
+.msg img,
+.msg video{
+  width:100%;
+  border-radius:10px;
+  margin-bottom:6px;
+  cursor:pointer;
+}
+
+.msg audio{
+  width:200px;
+}
+
+/* ===== DOCUMENTO ===== */
 .fileBox{
-background:#fff;
-padding:8px;
-border-radius:8px;
-cursor:pointer;
+  background:#f4f4f4;
+  padding:10px;
+  border-radius:8px;
+  font-size:13px;
+  cursor:pointer;
 }
 
-/* TIME */
+/* ===== HORA ===== */
 .time{
-font-size:10px;
-opacity:.6;
-text-align:right;
+  font-size:10px;
+  opacity:.7;
+  text-align:right;
+  margin-top:4px;
+  display:flex;
+  justify-content:flex-end;
+  gap:4px;
 }
 
-/* INPUT */
+/* ===== INPUT ===== */
 .inputBox{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
 display:flex;
-gap:10px;
+gap:8px;
 padding:10px;
 background:#f0f0f0;
+align-items:center;
+border-top:1px solid #ddd;
+z-index:10;
 }
 
+/* TEXTAREA */
 textarea{
-flex:1;
-border:none;
-border-radius:20px;
-padding:10px;
-resize:none;
-height:40px;
+  flex:1;
+  border:none;
+  outline:none;
+  border-radius:20px;
+  padding:12px 14px;
+  background:#f0f0f0;
+  font-size:15px;
+  resize:none;
+  max-height:120px;
 }
 
 /* BOTÕES */
 button{
-background:#25d366;
-border:none;
-border-radius:50%;
-width:45px;
-height:45px;
-color:#fff;
-cursor:pointer;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  border:none;
+  background:#25d366;
+  color:#fff;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:.2s;
 }
 
-/* PREVIEW */
+button:hover{
+  transform:scale(1.05);
+}
+
+/* ===== PREVIEW ===== */
 .preview{
-position:absolute;
-bottom:90px;
-left:20px;
-background:#fff;
-padding:10px;
-border-radius:10px;
-box-shadow:0 10px 30px rgba(0,0,0,.2);
+  position:fixed;
+  bottom:90px;
+  left:10px;
+  right:10px;
+  max-width:95%;
+  background:#fff;
+  padding:10px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  z-index:50;
 }
 
-/* SCROLL BTN */
+/* ===== BOTÃO SCROLL ===== */
 .scrollBtn{
-position:absolute;
-right:20px;
-bottom:90px;
-background:#25d366;
-color:#fff;
-width:40px;
-height:40px;
+  position:fixed;
+  right:20px;
+  bottom:100px;
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  background:#075e54;
+  color:#fff;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  cursor:pointer;
+  z-index:30;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+}
+
+/* ===== MENU TEMPLATE ===== */
+#menuTemplates{
+  position:fixed;
+  bottom:90px;
+  left:10px;
+  right:10px;
+  max-width:300px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  display:none;
+  flex-direction:column;
+  padding:10px;
+  gap:6px;
+  z-index:50;
+}
+
+#menuTemplates button{
+  width:100%;
+  border-radius:8px;
+  background:#f4f4f4;
+  color:#333;
+}
+
+/* ===== ANIMAÇÃO ===== */
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(5px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* ===== SCROLL BONITO ===== */
+.messages::-webkit-scrollbar{
+  width:6px;
+}
+
+.messages::-webkit-scrollbar-thumb{
+  background:#ccc;
+  border-radius:10px;
+}
+
+.avatar{
+width:38px;
+height:38px;
 border-radius:50%;
-display:none;
+background:linear-gradient(135deg,#25d366,#128c7e);
+color:#fff;
+display:flex;
 align-items:center;
 justify-content:center;
-cursor:pointer;
+font-weight:700;
+font-size:14px;
+text-transform:uppercase;
 }
-.time{
-font-size:11px;
-opacity:.7;
-text-align:right;
-display:flex;
-justify-content:flex-end;
-gap:4px;
-align-items:center;
-}
-
-
-  
 </style>
 
 </head>
 
 <body>
-
+<div class="header">
+  <div class="title">
+    <div class="avatar" id="avatar">--</div>
+    <div>
+      <div id="nomeCliente">Carregando...</div>
+      <div style="font-size:11px;opacity:.7">online</div>
+    </div>
+  </div>
+</div>
 
 <div id="msgs" class="messages"></div>
 
@@ -191,9 +339,11 @@ align-items:center;
 
 
 <div id="menuTemplates" style="
-position:absolute;
-bottom:80px;
+position:fixed;
+bottom:90px;
 left:10px;
+right:10px;
+max-width:300px;
 background:#fff;
 border-radius:10px;
 box-shadow:0 10px 30px rgba(0,0,0,.2);
@@ -201,12 +351,12 @@ display:none;
 flex-direction:column;
 padding:10px;
 gap:5px;
+z-index:999;
 ">
 
 <button onclick="enviarTemplate('confirmao_de_reserva')">Reserva</button>
 <button onclick="enviarTemplate('reserva_especial')">Sala VIP</button>
-<button onclick="enviarTemplate('hello_world')">Teste</button>
-
+<button onclick="abrirDisparoMassa()">📢 Disparo em Massa</button>
 </div>
 
 
@@ -222,6 +372,14 @@ const db = supabase.createClient(
 "sb_publishable_NNFvdfSXgOdGGVcSbphbjQ_brC3_9ed"
 )
 
+/* ===== PERMISSÃO DE NOTIFICAÇÃO ===== */
+if ("Notification" in window) {
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission()
+  }
+}
+
+
 /* ===== VARS ===== */
 let telefone = new URLSearchParams(location.search).get("telefone")
 let mensagensIds = new Set()
@@ -231,23 +389,51 @@ let canal = null
 let arquivo = null
 let ultimaDataRender = null
 
+
+  async function carregarNomeCliente(){
+
+  if(!telefone) return
+
+  const {data} = await db
+    .from("memoria_clientes")
+    .select("nome")
+    .eq("telefone", telefone)
+    .single()
+
+  let nome = data?.nome || telefone
+
+  document.getElementById("nomeCliente").innerText = nome
+
+  gerarAvatar(nome)
+}
+function gerarAvatar(nome){
+
+  let iniciais = nome
+    .split(" ")
+    .slice(0,2)
+    .map(n => n[0])
+    .join("")
+    .toUpperCase()
+
+  document.getElementById("avatar").innerText = iniciais
+}
 /* ===== TIME ===== */
 function hora(d){
 
 let data
 
 if(d.includes("Z")){
-  // veio do Supabase (UTC)
   data = new Date(d)
 }else{
-  // veio do seu envio local
   data = new Date(d.replace(" ", "T"))
 }
 
+/* 🔥 CORREÇÃO: REMOVE 3 HORAS */
+data.setHours(data.getHours() - 3)
+
 return new Intl.DateTimeFormat("pt-BR",{
   hour:"2-digit",
-  minute:"2-digit",
-  timeZone:"America/Bahia"
+  minute:"2-digit"
 }).format(data)
 
 }
@@ -293,8 +479,10 @@ return new Intl.DateTimeFormat("pt-BR",{
 }
 /* ===== SCROLL ===== */
 function scrollBottom(){
-msgs.scrollTop = msgs.scrollHeight
-scrollBtn.style.display="none"
+  requestAnimationFrame(() => {
+    msgs.scrollTop = msgs.scrollHeight
+  })
+  scrollBtn.style.display="none"
 }
 
 msgs.addEventListener("scroll",()=>{
@@ -308,106 +496,112 @@ carregarMais()
 }
 })
 
+
+function notificar(m){
+
+  if (!("Notification" in window)) return
+  if (Notification.permission !== "granted") return
+
+  // 🔥 evita notificar mensagem enviada por você
+  if(m.role === "assistant") return
+
+  const n = new Notification("Nova mensagem 💬", {
+    body: m.mensagem || "Nova mídia recebida",
+    icon: "https://cdn-icons-png.flaticon.com/512/733/733585.png"
+  })
+
+  n.onclick = () => {
+    window.focus()
+  }
+
+}
+
+
+
+
+  
 function gerarHTML(m){
 
 let html = ""
 
-/* TEMPLATE */
-if(m.tipo === "template"){
+/* ===== MIDIA ===== */
 
-  let nomeTemplate = ""
-
-  try{
-    const parsed = JSON.parse(m.mensagem)
-    nomeTemplate = parsed.template
-  }catch{
-    nomeTemplate = m.mensagem
-  }
-
-  html += `
-  <div style="
-    background:#fff3cd;
-    padding:8px 10px;
-    border-radius:8px;
-    font-size:13px;
-    border-left:4px solid #f59e0b;
-  ">
-    📩 Template enviado:<br>
-    <strong>${nomeTemplate}</strong>
-  </div>
-  `
-}
-
-/* MIDIA */
 if(m?.tipo === "imagem" && m?.media_url){
-  html += `<img src="${m.media_url}" onclick="window.open('${m.media_url}')">`
+html += `<img src="${m.media_url}" onclick="window.open('${m.media_url}')">`
 }
 
 else if(m?.tipo === "video" && m?.media_url){
-  html += `
-  <video controls style="max-width:220px;border-radius:10px;">
-    <source src="${m.media_url}">
-  </video>`
+html += `
+<video controls style="max-width:220px;border-radius:10px;">
+  <source src="${m.media_url}">
+</video>`
 }
 
 else if(m?.tipo === "audio" && m?.media_url){
-  html += `
-  <audio controls style="width:200px;">
-    <source src="${m.media_url}">
-  </audio>`
+html += `
+<audio controls style="width:200px;">
+  <source src="${m.media_url}">
+</audio>`
 }
 
 else if(m?.tipo === "documento" && m?.media_url){
 
-  const ext = (m.nome_arquivo || "").split(".").pop()?.toLowerCase()
+const ext = (m.nome_arquivo || "").split(".").pop()?.toLowerCase()
 
-  if(ext === "pdf"){
-    html += `
-    <iframe src="${m.media_url}" width="220" height="260"
-    style="border:none;border-radius:10px;"></iframe>`
-  }else{
-    html += `
-    <div class="fileBox" onclick="window.open('${m.media_url}')">
-      📄 ${m.nome_arquivo || "Abrir arquivo"}
-    </div>`
-  }
+if(ext === "pdf"){
+html += `
+<iframe src="${m.media_url}" width="220" height="260"
+style="border:none;border-radius:10px;"></iframe>`
+}else{
+html += `
+<div class="fileBox" onclick="window.open('${m.media_url}')">
+📄 ${m.nome_arquivo || "Abrir arquivo"}
+</div>`
 }
 
-/* TEXTO */
+}
+
+/* ===== TEXTO ===== */
+
 if(m?.mensagem){
-  html += `<div>${m.mensagem}</div>`
+html += `<div>${m.mensagem}</div>`
 }
 
-/* STATUS */
+/* ===== STATUS ===== */
+
 function statusIcon(status){
-  if(status === "sent") return "✓"
-  if(status === "delivered") return "✓✓"
-  if(status === "read") return "<span style='color:#34b7f1'>✓✓</span>"
-  return ""
+if(status === "sent") return "✓"
+if(status === "delivered") return "✓✓"
+if(status === "read") return "<span style='color:#34b7f1'>✓✓</span>"
+return ""
 }
 
-/* TIME */
+/* ===== TIME ===== */
+
 html += `
 <div class="time">
-  ${hora(m.created_at)} ${statusIcon(m.status)}
+${hora(m.created_at)} ${statusIcon(m.status)}
 </div>
 `
 
 return html
-
 }
 
 
-function render(m,top=false){
+function render(m, top=false){
 
-const existente = document.getElementById(m.id)
+// 🔥 garante ID sempre válido
+const id = m.id || m.message_id || ("tmp-"+Date.now()+Math.random())
+
+const existente = document.getElementById(id)
 
 if(existente){
   existente.innerHTML = gerarHTML(m)
   return
 }
 
-mensagensIds.add(m.id)
+// 🔥 só adiciona se for válido
+mensagensIds.add(id)
 
 const label = dataLabel(m.created_at)
 
@@ -420,15 +614,14 @@ if(label !== ultimaDataRender){
 }
 
 const div = document.createElement("div")
-div.id = m.id || m.message_id
+
+div.id = id
 div.className = "msg " + (m.role==="assistant"?"assistant":"user")
 
 div.innerHTML = gerarHTML(m)
 
 top ? msgs.prepend(div) : msgs.appendChild(div)
 }
-
-
 
 /* ===== LOAD INICIAL ===== */
 async function iniciar(){
@@ -446,16 +639,17 @@ data.reverse().forEach(m=>render(m))
 
 oldestDate = data[0]?.created_at
 
-scrollBottom()
-
+setTimeout(() => {
+  scrollBottom()
+}, 100)
 realtime()
-
+carregarNomeCliente()
 }
 
 /* ===== LOAD MAIS ===== */
 async function carregarMais(){
 
-if(loading) return
+if(loading || !oldestDate) return
 loading = true
 
 const {data} = await db
@@ -471,10 +665,13 @@ loading=false
 return
 }
 
-oldestDate = data[0].created_at
+oldestDate = new Date(data[0].created_at).toISOString()
+const alturaAntes = msgs.scrollHeight
 
 data.reverse().forEach(m=>render(m,true))
 
+const alturaDepois = msgs.scrollHeight
+msgs.scrollTop += (alturaDepois - alturaAntes)
 loading=false
 
 }
@@ -485,22 +682,49 @@ function realtime(){
 if(canal) db.removeChannel(canal)
 
 canal = db.channel("chat-"+telefone)
+
 .on("postgres_changes",{
-event:"*",
-schema:"public",
-table:"conversas_whatsapp",
-filter:`telefone=eq.${telefone}`
+  event:"INSERT",
+  schema:"public",
+  table:"conversas_whatsapp",
+  filter:`telefone=eq.${telefone}`
 },payload=>{
 
-render(payload.new)
+  const m = payload.new
 
-if(msgs.scrollTop > msgs.scrollHeight - msgs.clientHeight - 200){
-scrollBottom()
-}
+  const id = m.id || m.message_id
+
+  if(id && mensagensIds.has(id)) return
+
+  render(m)
+
+  // 🔥 NOVO — VERIFICA POSIÇÃO DO USUÁRIO
+  const pertoDoFim =
+    msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 200
+
+  if(pertoDoFim){
+    setTimeout(() => {
+      scrollBottom()
+    }, 50)
+  }
 
 })
-.subscribe()
 
+.on("postgres_changes",{
+  event:"UPDATE",
+  schema:"public",
+  table:"conversas_whatsapp",
+  filter:`telefone=eq.${telefone}`
+},payload=>{
+
+  const m = payload.new
+
+  // 🔥 atualiza status (✓ ✓✓ azul etc)
+render(m)
+notificar(m)
+})
+
+.subscribe()
 }
 
 /* ===== PREVIEW ===== */
@@ -518,6 +742,60 @@ preview.innerHTML=`📄 ${arquivo.name}`
 }
 }
 
+
+/* ===== AUTO ATUALIZAÇÃO SILENCIOSA ===== */
+async function atualizarSilencioso(){
+
+  const {data} = await db
+  .from("conversas_whatsapp")
+  .select("*")
+  .eq("telefone",telefone)
+  .order("created_at",{ascending:false})
+  .limit(20)
+
+  /* 🔥 SE NÃO EXISTE MAIS CONVERSA */
+  if(!data || data.length === 0){
+
+    msgs.innerHTML = `
+      <div style="
+        margin:auto;
+        text-align:center;
+        color:#555;
+        font-size:14px;
+      ">
+        🗑️ Conversa excluída
+      </div>
+    `
+
+    mensagensIds.clear()
+    return
+  }
+
+  /* NORMAL */
+  data.reverse().forEach(m=>{
+
+    const id = m.id || m.message_id
+
+    if(!mensagensIds.has(id)){
+      render(m)
+
+      const pertoDoFim =
+        msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 200
+
+      if(pertoDoFim){
+        scrollBottom()
+      }
+    }
+
+  })
+
+}
+
+
+
+
+
+  
 /* ===== UPLOAD ===== */
 async function uploadMidia(file){
 
@@ -554,8 +832,10 @@ if(!telefone) return
 
 const texto = msg.value.trim()
 
+const tempId = "temp-"+Date.now()
+
 const temp = {
-id:"temp-"+Date.now(),
+id: tempId,
 mensagem:texto,
 created_at:new Date().toLocaleString("sv-SE").replace("T"," "),
   role:"assistant",
@@ -605,7 +885,27 @@ nome_arquivo:nomeArquivo
 
 const messageId = send?.message_id
 
+/* BANCO */
+await db.from("conversas_whatsapp").insert({
+  telefone,
+  mensagem:texto,
+  tipo,
+  media_url:media,
+  nome_arquivo:nomeArquivo,
+  role:"assistant",
+  message_id: messageId,
+  status:"sent"
+}).select().single().then(({data})=>{
+  
+  // 🔥 substitui temp pelo real
+  const tempEl = document.getElementById(tempId)
+  if(tempEl && data?.id){
+    tempEl.id = data.id
+    mensagensIds.add(data.id)
+  }
 
+})
+  
 
 arquivo=null
 preview.style.display="none"
@@ -615,6 +915,7 @@ preview.style.display="none"
 /* ===== START ===== */
 iniciar()
 
+setInterval(atualizarSilencioso, 5000)
 
 function abrirTemplates(){
   const menu = document.getElementById("menuTemplates")
@@ -624,6 +925,8 @@ function abrirTemplates(){
 async function enviarTemplate(nome){
 
   if(!telefone) return
+
+  console.log("📤 Enviando template:", nome)
 
   let parametros = {}
 
@@ -662,37 +965,11 @@ async function enviarTemplate(nome){
 
     const data = await response.json()
 
+    console.log("📩 RESPOSTA:", data)
+
     if(data?.error){
       alert("Erro: " + JSON.stringify(data.error))
-      return
     }
-
-   const messageId = data?.data?.messages?.[0]?.id || data?.messages?.[0]?.id || null
-
-const { error } = await db
-  .from("conversas_whatsapp")
-  .insert({
-    telefone: telefone.replace(/\D/g, ""),
-    mensagem: JSON.stringify({
-      template: nome,
-      parametros
-    }),
-    tipo: "template",
-    role: "assistant",
-    message_id: messageId,
-    status: "sent",
-    created_at: new Date().toISOString()
-  })
-
-if(error){
-  console.error("❌ ERRO AO SALVAR:", error)
-  alert("Erro ao salvar no banco")
-  return
-}else{
-  console.log("💾 SALVO COM SUCESSO")
-}
-
-    
 
   }catch(err){
     console.error("🔥 ERRO:", err)
@@ -701,7 +978,13 @@ if(error){
   document.getElementById("menuTemplates").style.display = "none"
 }
 
-
+function abrirDisparoMassa(){
+  window.open(
+    "popupmassa.html",
+    "massa",
+    "width=500,height=700"
+  )
+}
 
 
   
