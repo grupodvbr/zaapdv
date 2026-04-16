@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Gestor de Conversas • Mercatto Delícia</title>
+<title>Gestor de Conversas</title>
 
 <meta name="viewport"
 content="width=device-width,
@@ -120,6 +120,8 @@ box-shadow:0 2px 6px rgba(0,0,0,0.05);
 
 cursor:pointer;
 transition:.2s;
+position:relative; /* 🔥 IMPORTANTE */
+
 }
 
 .client:hover{
@@ -186,17 +188,35 @@ color:#dc2626;
 /* MENU */
 
 .menuDots{
-margin-left:auto;
-cursor:pointer;
-font-size:18px;
-opacity:.5;
-color:#111827;
+  margin-left:auto;
+  cursor:pointer;
+  font-size:18px;
+  opacity:.6;
+  color:#111827;
+
+  /* 🔥 ÁREA DE CLICK GRANDE */
+  width:44px;
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:12px;
+  transition:0.2s;
 }
+
+
 
 .menuDots:hover{
-opacity:1;
+  background:#f3f4f6;
+  opacity:1;
 }
 
+.menuDots:active{
+  transform:scale(0.9);
+}
+
+  
 .menu{
 position:absolute;
 background:white;
@@ -611,6 +631,32 @@ margin-top:6px;
   }
 
 }
+
+
+.notificacao {
+  position:absolute;
+  top:8px;
+  right:8px;
+
+  width:10px;
+  height:10px;
+  border-radius:50%;
+
+  background:#ef4444;
+
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  0%{ transform:scale(1); opacity:1 }
+  50%{ transform:scale(1.4); opacity:0.6 }
+  100%{ transform:scale(1); opacity:1 }
+}
+
+
+
+
+  
 </style>
 </head>
 
@@ -684,7 +730,7 @@ schema:"public",
 table:"controle_bot"
 },
 payload=>{
-carregarClientes()
+  atualizarClientesSilencioso()
 }
 )
 .subscribe()
@@ -697,7 +743,6 @@ let clienteSelecionado = null
 /* ================= CARREGAR CLIENTES ================= */
 
 async function carregarClientes(){
-document.getElementById("frameChat").src = ""
 const {data} = await db
 .from("conversas_whatsapp")
 .select("*")
@@ -732,59 +777,72 @@ container.innerHTML = ""
 
 for (const c of clientes){
 
-  const div = document.createElement("div")
-
+const div = document.createElement("div")
+div.setAttribute("data-telefone", c.telefone)
   const inicial = c.telefone.slice(-2)
 
   const pausado = await verificarPausa(c.telefone)
 
   div.className = pausado ? "client pausado" : "client"
 
-  div.innerHTML = `
+const date = new Date(c.created_at + "Z")
+  const hora = date.toLocaleTimeString("pt-BR",{
+  hour:"2-digit",
+  minute:"2-digit",
+  timeZone:"America/Bahia"
+})
+
+div.innerHTML = `
 <div class="avatar">
   <img 
     src="https://ui-avatars.com/api/?name=${nomes[c.telefone] || c.telefone}&background=25d366&color=fff&size=128"
     style="width:100%;height:100%;border-radius:50%">
 </div>
-    <div>
-      <div class="phone">
-        ${nomes[c.telefone] || c.telefone}
-      </div>
 
-      <div class="preview">${c.mensagem}</div>
+<div style="flex:1">
 
-      <div class="status ${pausado?'off':'on'}">
-        ● ${pausado?'BOT PAUSADO':'BOT ATIVO'}
-      </div>
+<div style="display:flex;justify-content:space-between;align-items:flex-start">
+<div class="phone">
+      ${nomes[c.telefone] || c.telefone}
     </div>
+  </div>
 
-<div class="menuDots" onclick="event.stopPropagation(); abrirMenu(event,'${c.telefone}')">⋮</div>
-    <div class="menu" id="menu-${c.telefone}">
-      <button onclick="editarContato('${c.telefone}')">
-        Editar contato
-      </button>
+  <div class="preview">${c.mensagem}</div>
 
-      <button onclick="toggleBot('${c.telefone}')" style="
-        background:${pausado?'#22c55e':'#ef4444'};
-        color:white;
-        padding:6px 10px;
-        border-radius:6px;
-        font-size:12px;
-      ">
-        ${pausado ? "ATIVAR BOT" : "DESATIVAR BOT"}
-      </button>
+<div style="display:flex;align-items:flex-end">
+
+  <div class="status ${pausado?'off':'on'}">
+    ● ${pausado?'BOT PAUSADO':'BOT ATIVO'}
+  </div>
+
+  <div style="margin-left:auto;margin-right:6px">
+    <div class="hora" style="font-size:11px;color:#6b7280">
+      ${hora}
     </div>
-  `
+  </div>
+
+</div>
+
+
+
+
+</div>
+
+${c.role === "user" ? '<div class="notificacao"></div>' : ''}
+
+<div class="menuDots"
+onclick="event.stopPropagation(); abrirMenu(event,'${c.telefone}')">
+⋮
+</div>
+`
 
   /* 🔥 CLICK CORRETO */
 
 div.addEventListener("click", () => {
-
-  // 📱 Se for celular → abre outra página
-  if(window.innerWidth <= 768){
-window.location.assign("chat.html?telefone=" + c.telefone)
-  return
-  }
+if(window.innerWidth <= 768){
+window.location.href = "chat.html?telefone=" + c.telefone
+return
+}
 
   // 💻 Se for desktop → iframe normal
   abrirChatIframe(c.telefone)
@@ -805,7 +863,7 @@ async function abrirConversa(telefone){
 
 clienteSelecionado = telefone
 pagina = 0
-
+acabou = false
 const container = document.getElementById("mensagens")
 container.innerHTML = ""
 
@@ -858,16 +916,14 @@ await db
 .delete()
 .in("id",selecionadas)
 
-abrirConversa(clienteSelecionado)
-
+abrirConversa(telefone)
 }
 
 async function excluirConversa(){
 
 if(!clienteSelecionado) return
 
-if(!confirm("Excluir conversa completa?")) return
-
+if(!confirm("⚠️ Tem certeza que deseja excluir TODA a conversa?\nEssa ação não pode ser desfeita.")) return
 await db
 .from("conversas_whatsapp")
 .delete()
@@ -875,8 +931,11 @@ await db
 
 document.getElementById("mensagens").innerHTML='<div class="empty">Conversa excluída</div>'
 
-carregarClientes()
-
+// 🔥 REMOVE DA TELA DIRETO
+const card = document.querySelector(`[data-telefone="${clienteSelecionado}"]`)
+if(card){
+  card.remove()
+}
 }
 
 document.getElementById("buscar").addEventListener("input",function(){
@@ -951,6 +1010,12 @@ box.innerHTML = `
 <button class="menuAction ${pausado ? 'menuAtivar' : 'menuDesativar'}"
 onclick="toggleBot('${telefone}'); fecharMenu()">
 ${pausado ? "▶️ Ativar BOT" : "⛔ Desativar BOT"}
+</button>
+
+<!-- 🔥 NOVO BOTÃO -->
+<button class="menuAction menuDesativar"
+onclick="clienteSelecionado='${telefone}'; excluirConversa(); fecharMenu()">
+Excluir conversa
 </button>
 
 <button class="menuCancel" onclick="fecharMenu()">
@@ -1033,8 +1098,23 @@ pausado:true
 
 }
 
-carregarClientes()
+// 🔥 ATUALIZA SÓ O CARD
+const card = document.querySelector(`[data-telefone="${telefone}"]`)
 
+if(card){
+
+  const pausado = novoStatus
+
+  card.classList.toggle("pausado", pausado)
+
+  const statusEl = card.querySelector(".status")
+
+  if(statusEl){
+    statusEl.innerHTML = `● ${pausado?'BOT PAUSADO':'BOT ATIVO'}`
+    statusEl.className = "status " + (pausado ? "off" : "on")
+  }
+
+}
 }
 
 
@@ -1132,8 +1212,14 @@ nome:novoNome
 
 }
 
-carregarClientes()
+const card = document.querySelector(`[data-telefone="${telefone}"]`)
 
+if(card){
+  const phoneEl = card.querySelector(".phone")
+  if(phoneEl){
+    phoneEl.innerText = novoNome
+  }
+}
 if(clienteSelecionado === telefone){
 abrirChatIframe(telefone)}
 
@@ -1176,8 +1262,7 @@ const container = document.getElementById("mensagens")
 
 container.onscroll = async () => {
 
-if(container.scrollTop === 0 && !carregando){
-
+if(container.scrollTop < 50 && !carregando){
 carregando = true
 pagina++
 
@@ -1208,7 +1293,11 @@ const date = new Date(m.created_at)
 div.innerHTML = `
 <div>${m.mensagem}</div>
 <div class="time">
-${date.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
+${date.toLocaleTimeString("pt-BR",{
+  hour:"2-digit",
+  minute:"2-digit",
+  timeZone:"America/Bahia"
+})}
 </div>
 `
 
@@ -1255,15 +1344,155 @@ if(sendBox){
 }
 
 
+ let atualizando = false
+
+async function atualizarClientesSilencioso(){
+
+  if(atualizando) return
+  atualizando = true
+
+  try{
+
+    const container = document.getElementById("clientes")
+
+    const {data} = await db
+    .from("conversas_whatsapp")
+.select("telefone,mensagem,created_at,role")
+      .order("created_at",{ascending:false})
+    .limit(50) // 🔥 evita travamento
+
+    const {data:memoria} = await db
+    .from("memoria_clientes")
+    .select("telefone,nome")
+
+    /* nomes */
+    const nomesTemp = {}
+    memoria.forEach(c=>{
+      nomesTemp[c.telefone] = c.nome
+    })
+
+    /* agrupar */
+    const map = {}
+    data.forEach(m=>{
+      if(!map[m.telefone]) map[m.telefone] = m
+    })
+
+    const clientes = Object.values(map)
+
+    /* 🔥 LOOP CORRETO (SEM forEach async) */
+    for(const c of clientes){
+
+      let card = document.querySelector(`[data-telefone="${c.telefone}"]`)
+
+      const pausado = await verificarPausa(c.telefone)
+      const nome = nomesTemp[c.telefone] || c.telefone
+
+      /* 🔥 SE NÃO EXISTE → IGNORA (NÃO CRIA) */
+      if(!card) continue
+
+      /* 🔥 ATUALIZA SEM RECRIAR */
+      const phoneEl = card.querySelector(".phone")
+      const previewEl = card.querySelector(".preview")
+      const statusEl = card.querySelector(".status")
+      const date = new Date(c.created_at + "Z")
+
+const hora = date.toLocaleTimeString("pt-BR",{
+  hour:"2-digit",
+  minute:"2-digit",
+  timeZone:"America/Bahia"
+})
+
+const horaEl = card.querySelector(".hora")
+
+if(horaEl){
+  horaEl.innerText = hora
+}
+      if(phoneEl && phoneEl.innerText !== nome){
+        phoneEl.innerText = nome
+      }
+
+if(
+  previewEl &&
+  previewEl.innerText !== c.mensagem
+){
+
+  previewEl.innerText = c.mensagem
+
+  // 🔴 CONTROLE DA BOLINHA
+  let notif = card.querySelector(".notificacao")
+
+  if(c.role === "user"){
+    if(!notif){
+      const dot = document.createElement("div")
+      dot.className = "notificacao"
+      card.appendChild(dot)
+    }
+  } else {
+    if(notif) notif.remove()
+  }
+
+}{
+
   
+  previewEl.innerText = c.mensagem
 
+  // 🔥 PISCAR IGUAL WHATSAPP
+  card.style.transition = "0.3s"
+  card.style.background = "#bbf7d0"
 
+  setTimeout(()=>{
+    card.style.background = "#dcfce7"
+  },150)
 
+  setTimeout(()=>{
+    card.style.background = ""
+  },600)
 
+  // 🔥 LEVE PULO
+  card.style.transform = "scale(1.02)"
 
+  setTimeout(()=>{
+    card.style.transform = "scale(1)"
+  },200)
 
+}
+
+      if(statusEl){
+        statusEl.innerHTML = `● ${pausado?'BOT PAUSADO':'BOT ATIVO'}`
+        statusEl.className = "status " + (pausado ? "off" : "on")
+      }
+
+    }
+
+  }catch(err){
+    console.error("Erro atualização:", err)
+  }
+
+  atualizando = false
+}
+
+/* ================= INTERVALO ================= */
+
+setInterval(() => {
+  atualizarClientesSilencioso()
+}, 2000)
+window.addEventListener("popstate", () => {
+
+  // 🔥 quando voltar
+  document.getElementById("frameChat").src = ""
+  document.getElementById("clienteAtual").innerText = "Selecione um cliente"
+
+})
   
+window.addEventListener("pageshow", () => {
 
+  console.log("⚡ Voltou para a tela")
+
+  // 🔥 NÃO recria tudo
+  // 🔥 só atualiza o que mudou
+  atualizarClientesSilencioso()
+
+})
   
 </script>
 <div id="popupRepertorio" class="popupOverlay">
